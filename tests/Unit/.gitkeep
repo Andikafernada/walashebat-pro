@@ -1,0 +1,8 @@
+# Direktori ini sengaja diversikan walau kosong.
+#
+# phpunit.xml mendaftarkan tests/Unit sebagai testsuite. Git tidak menyimpan
+# direktori kosong, jadi begitu penghuni terakhirnya dihapus, direktori ini
+# lenyap dari repositori — dan setiap klon segar gagal total dengan
+# 'Test directory "tests/Unit" not found' sebelum satu test pun berjalan.
+# Mesin yang sudah punya salinan lama tidak merasakannya, karena di sana
+# direktorinya masih tertinggal di disk.
