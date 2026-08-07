@@ -14,46 +14,66 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
+/**
+ * Jalur WhatsApp: normalisasi nomor, webhook masuk, dan circuit breaker.
+ *
+ * Semula tiga belas probe yang mencetak keadaan ke STDERR lalu ditutup
+ * assertTrue(true) — ikut gagal saat kode berubah, tanpa menjaga apa pun.
+ *
+ * Yang dikunci di sini hanya perilaku yang memang BENAR. Beberapa hal yang
+ * ditemukan probe ini justru cacat, dan sengaja TIDAK dijadikan assertion:
+ * menuliskannya sebagai "yang diharapkan" akan mengubah bug menjadi kontrak
+ * resmi, sehingga siapa pun yang nanti memperbaikinya malah dianggap merusak
+ * test. Daftarnya ada di komentar masing-masing.
+ */
 class Audit02WhatsAppTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** ---------- 1. Phone::normalize ---------- */
-    public function test_audit_phone_normalize(): void
+    // -- Normalisasi nomor --------------------------------------------------
+
+    /**
+     * Bentuk-bentuk yang benar-benar ditemui di lapangan harus mendarat di
+     * format 62 tanpa spasi, tanda hubung, atau tanda kurung.
+     *
+     * CATATAN CACAT (tidak dikunci di sini): masukan sampah menghasilkan nomor
+     * yang tampak sah — '0' menjadi '62', '08' menjadi '628', dan
+     * '<script>0812345</script>' menjadi '62812345'. Tidak ada pemeriksaan
+     * panjang: 22 digit pun diterima. Nomor semacam itu diteruskan ke gateway
+     * seolah nomor sungguhan.
+     */
+    public function test_nomor_lazim_dinormalkan_ke_format_62(): void
     {
-        $kasus = [
-            '081234567890',
-            '+62 812-3456-7890',
-            '62 812 3456 7890',
-            '8123456789',
-            '0812 3456 7890 ',
-            '021-1234567',
-            '  ',
-            '',
-            'abcdefg',
-            '0',
-            '00',
-            '08',
-            '123',
-            '+1 555 0100',
-            '0812345678901234567890',
-            "0812\n3456",
-            '<script>0812345</script>',
-            '0812-3456-7890 (rumah)',
+        $harapan = [
+            '081234567890' => '6281234567890',
+            '+62 812-3456-7890' => '6281234567890',
+            '62 812 3456 7890' => '6281234567890',
+            '0812 3456 7890 ' => '6281234567890',
+            '0812-3456-7890 (rumah)' => '6281234567890',
         ];
 
-        foreach ($kasus as $k) {
-            fwrite(STDERR, sprintf(
-                "PHONE  in=%-32s out=%s\n",
-                var_export($k, true),
-                var_export(Phone::normalize($k), true)
-            ));
+        foreach ($harapan as $masuk => $keluar) {
+            $this->assertSame($keluar, Phone::normalize($masuk), "gagal menormalkan: {$masuk}");
         }
-        $this->assertTrue(true);
     }
 
-    /** ---------- 2. Dampak sync queue pada penanganan error job ---------- */
-    public function test_audit_job_gagal_pada_queue_sync(): void
+    public function test_masukan_kosong_atau_bukan_angka_menghasilkan_null(): void
+    {
+        foreach (['', '  ', 'abcdefg'] as $masuk) {
+            $this->assertNull(Phone::normalize($masuk), 'seharusnya null: '.var_export($masuk, true));
+        }
+    }
+
+    // -- Kegagalan gateway tercatat pada sesinya ----------------------------
+
+    /**
+     * Gateway yang menolak harus meninggalkan jejak di sesinya sendiri.
+     *
+     * Tanpa itu wali kelas melihat sesi yang tampak baik-baik saja sementara
+     * tautannya tidak pernah sampai ke siapa pun, dan tidak ada tempat untuk
+     * mencari tahu sebabnya.
+     */
+    public function test_penolakan_gateway_tercatat_pada_sesi(): void
     {
         config(['walikelas.whatsapp.driver' => 'log']);
 
@@ -61,8 +81,8 @@ class Audit02WhatsAppTest extends TestCase
         $class = Classroom::factory()->create(['user_id' => $user->id]);
         $this->actingAs($user);
 
-        // Channel yang selalu menolak (mensimulasikan gateway mati / circuit open)
-        $this->app->instance(NotificationChannel::class, new class implements NotificationChannel {
+        $this->app->instance(NotificationChannel::class, new class implements NotificationChannel
+        {
             public function send(string $to, string $message, array $meta = [], ?string $from = null): bool
             {
                 return false;
@@ -72,29 +92,28 @@ class Audit02WhatsAppTest extends TestCase
         $svc = app(AttendanceSessionService::class);
         ['session' => $session, 'pin' => $pin] = $svc->create(classroom: $class);
 
-        $lempar = null;
+        /*
+         * Di test QUEUE_CONNECTION=sync, sehingga job berjalan di dalam
+         * permintaan ini dan kegagalannya melempar ke pemanggil. Di produksi
+         * antreannya redis: kegagalan yang sama terjadi di worker. Karena itu
+         * yang dikunci adalah JEJAKNYA di basis data, bukan exception-nya —
+         * jejak itu sama di kedua lingkungan.
+         */
         try {
             $svc->dispatchMagicLink($session, '6282222222222', $pin, $user->whatsapp_number);
-        } catch (\Throwable $e) {
-            $lempar = $e;
+        } catch (\Throwable) {
+            // sengaja ditelan; yang diuji keadaan sesudahnya
         }
 
         $session->refresh();
-        fwrite(STDERR, sprintf(
-            "JOBSYNC exception=%s msg=%s | delivery_status=%s delivery_error=%s delivered_at=%s\n",
-            $lempar ? get_class($lempar) : 'NONE',
-            $lempar ? $lempar->getMessage() : '-',
-            var_export($session->delivery_status, true),
-            var_export($session->delivery_error, true),
-            var_export($session->delivered_at, true)
-        ));
 
-        fwrite(STDERR, 'JOBSYNC failed_jobs='.\Illuminate\Support\Facades\DB::table('failed_jobs')->count()."\n");
-        $this->assertTrue(true);
+        $this->assertSame('failed', $session->delivery_status);
+        $this->assertNotNull($session->delivery_error);
+        $this->assertNull($session->delivered_at, 'yang gagal tidak boleh bertanda sudah terkirim');
     }
 
-    /** Sama, tapi lewat HTTP controller — apa yang dilihat guru? */
-    public function test_audit_controller_saat_gateway_menolak(): void
+    /** Sesi tetap lahir walau pengirimannya gagal — PIN-nya masih bisa dibacakan. */
+    public function test_sesi_tetap_ada_walau_pengiriman_ditolak(): void
     {
         $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
         config(['walikelas.whatsapp.driver' => 'log']);
@@ -103,217 +122,289 @@ class Audit02WhatsAppTest extends TestCase
         $class = Classroom::factory()->create(['user_id' => $user->id, 'homeroom_wa' => '6282222222222']);
         $this->actingAs($user);
 
-        $this->app->instance(NotificationChannel::class, new class implements NotificationChannel {
+        $this->app->instance(NotificationChannel::class, new class implements NotificationChannel
+        {
             public function send(string $to, string $message, array $meta = [], ?string $from = null): bool
             {
                 return false;
             }
         });
 
-        $resp = $this->post(route('classes.attendance.store', $class), [
-            'target_number' => '6282222222222',
-            'send_wa' => '1',
-        ]);
+        try {
+            $this->post(route('classes.attendance.store', $class), [
+                'target_number' => '6282222222222',
+                'send_wa' => '1',
+            ]);
+        } catch (\Throwable) {
+            // lihat catatan queue sync di test sebelumnya
+        }
 
-        fwrite(STDERR, 'CTRL status='.$resp->getStatusCode()."\n");
-        $sess = AttendanceSession::withoutTenant()->latest('id')->first();
-        fwrite(STDERR, 'CTRL session_delivery_status='.var_export($sess?->delivery_status, true)
-            .' error='.var_export($sess?->delivery_error, true)."\n");
-        $this->assertTrue(true);
+        $sesi = AttendanceSession::withoutTenant()->latest('id')->first();
+
+        $this->assertNotNull($sesi, 'sesi harus tetap tercipta');
+        $this->assertSame('failed', $sesi->delivery_status);
     }
 
-    /** ---------- 3. Webhook masuk ---------- */
-    public function test_audit_webhook_autentikasi(): void
+    // -- Webhook masuk ------------------------------------------------------
+
+    public function test_webhook_menolak_tanpa_secret_dan_secret_salah(): void
     {
         config(['walikelas.whatsapp.n8n.secret' => 'rahasia-benar']);
-
-        $user = User::factory()->create([
-            'wa_session_id' => 'guru-99',
-            'wa_session_status' => 'disconnected',
-        ]);
+        $user = User::factory()->create(['wa_session_id' => 'guru-99', 'wa_session_status' => 'disconnected']);
 
         $payload = ['session_id' => 'guru-99', 'status' => 'connected'];
 
-        $tanpa = $this->postJson('/api/webhooks/whatsapp-session', $payload);
-        $salah = $this->withHeader('X-Webhook-Secret', 'salah')->postJson('/api/webhooks/whatsapp-session', $payload);
-        $benar = $this->withHeader('X-Webhook-Secret', 'rahasia-benar')->postJson('/api/webhooks/whatsapp-session', $payload);
+        $this->postJson('/api/webhooks/whatsapp-session', $payload)->assertForbidden();
+        $this->withHeader('X-Webhook-Secret', 'salah')
+            ->postJson('/api/webhooks/whatsapp-session', $payload)->assertForbidden();
 
-        fwrite(STDERR, "WEBHOOK tanpa-secret={$tanpa->getStatusCode()} secret-salah={$salah->getStatusCode()} secret-benar={$benar->getStatusCode()}\n");
-
-        $user->refresh();
-        fwrite(STDERR, 'WEBHOOK status_setelah='.var_export($user->wa_session_status, true)
-            .' connected_at='.var_export((string) $user->wa_connected_at, true)."\n");
-
-        // Replay: kirim lagi payload identik berkali-kali
-        for ($i = 0; $i < 3; $i++) {
-            $r = $this->withHeader('X-Webhook-Secret', 'rahasia-benar')->postJson('/api/webhooks/whatsapp-session', $payload);
-            fwrite(STDERR, "WEBHOOK replay#{$i}={$r->getStatusCode()}\n");
-        }
-
-        // Payload aneh / injeksi
-        $aneh = $this->withHeader('X-Webhook-Secret', 'rahasia-benar')->postJson('/api/webhooks/whatsapp-session', [
-            'session_id' => "guru-99' OR 1=1 --",
-            'status' => 'connected',
-        ]);
-        fwrite(STDERR, "WEBHOOK sqli={$aneh->getStatusCode()} body=".$aneh->getContent()."\n");
-
-        $arr = $this->withHeader('X-Webhook-Secret', 'rahasia-benar')->postJson('/api/webhooks/whatsapp-session', [
-            'session_id' => ['a' => 'b'],
-            'status' => 'connected',
-        ]);
-        fwrite(STDERR, "WEBHOOK session_id-array={$arr->getStatusCode()}\n");
-
-        $xss = $this->withHeader('X-Webhook-Secret', 'rahasia-benar')->postJson('/api/webhooks/whatsapp-session', [
-            'session_id' => 'guru-99',
-            'status' => 'disconnected',
-            'error' => '<script>alert(1)</script>',
-        ]);
-        $user->refresh();
-        fwrite(STDERR, "WEBHOOK xss={$xss->getStatusCode()} tersimpan=".var_export($user->wa_last_error, true)."\n");
-
-        $this->assertTrue(true);
+        $this->assertSame('disconnected', $user->refresh()->wa_session_status,
+            'permintaan yang ditolak tidak boleh sempat mengubah apa pun');
     }
 
-    /** Secret kosong di config => harus tolak semua. */
-    public function test_audit_webhook_secret_kosong(): void
+    public function test_webhook_dengan_secret_benar_memperbarui_sesi(): void
+    {
+        config(['walikelas.whatsapp.n8n.secret' => 'rahasia-benar']);
+        $user = User::factory()->create(['wa_session_id' => 'guru-99', 'wa_session_status' => 'disconnected']);
+
+        $this->withHeader('X-Webhook-Secret', 'rahasia-benar')
+            ->postJson('/api/webhooks/whatsapp-session', ['session_id' => 'guru-99', 'status' => 'connected'])
+            ->assertOk();
+
+        $user->refresh();
+        $this->assertSame('connected', $user->wa_session_status);
+        $this->assertNotNull($user->wa_connected_at);
+    }
+
+    /** Gateway mengirim ulang saat ragu; kiriman kembar tidak boleh jadi masalah. */
+    public function test_webhook_tahan_kiriman_berulang(): void
+    {
+        config(['walikelas.whatsapp.n8n.secret' => 'rahasia-benar']);
+        $user = User::factory()->create(['wa_session_id' => 'guru-99', 'wa_session_status' => 'disconnected']);
+        $payload = ['session_id' => 'guru-99', 'status' => 'connected'];
+
+        foreach (range(1, 4) as $ke) {
+            $this->withHeader('X-Webhook-Secret', 'rahasia-benar')
+                ->postJson('/api/webhooks/whatsapp-session', $payload)
+                ->assertOk();
+        }
+
+        $this->assertSame('connected', $user->refresh()->wa_session_status);
+    }
+
+    public function test_webhook_menolak_sesi_tak_dikenal_dan_payload_cacat(): void
+    {
+        config(['walikelas.whatsapp.n8n.secret' => 'rahasia-benar']);
+        User::factory()->create(['wa_session_id' => 'guru-99']);
+
+        // Sesi yang tidak ada — termasuk yang berisi upaya injeksi SQL.
+        $this->withHeader('X-Webhook-Secret', 'rahasia-benar')
+            ->postJson('/api/webhooks/whatsapp-session', [
+                'session_id' => "guru-99' OR 1=1 --",
+                'status' => 'connected',
+            ])
+            ->assertNotFound()
+            ->assertJson(['ok' => false, 'reason' => 'unknown_session']);
+
+        // Tipe yang salah ditolak validasi, bukan diteruskan ke query.
+        $this->withHeader('X-Webhook-Secret', 'rahasia-benar')
+            ->postJson('/api/webhooks/whatsapp-session', [
+                'session_id' => ['a' => 'b'],
+                'status' => 'connected',
+            ])
+            ->assertStatus(422);
+    }
+
+    /**
+     * Secret yang tidak dikonfigurasi harus GAGAL TERTUTUP.
+     *
+     * Kalau config kosong diperlakukan sebagai "tidak perlu secret", satu
+     * kesalahan penyetelan di server baru membuka webhook untuk siapa saja —
+     * dan tepat pada saat itu tidak ada yang tampak rusak.
+     */
+    public function test_webhook_tertutup_saat_secret_belum_disetel(): void
     {
         config(['walikelas.whatsapp.n8n.secret' => null]);
         User::factory()->create(['wa_session_id' => 'guru-1']);
 
-        $r1 = $this->postJson('/api/webhooks/whatsapp-session', ['session_id' => 'guru-1', 'status' => 'connected']);
-        $r2 = $this->withHeader('X-Webhook-Secret', '')->postJson('/api/webhooks/whatsapp-session', ['session_id' => 'guru-1', 'status' => 'connected']);
+        $payload = ['session_id' => 'guru-1', 'status' => 'connected'];
 
-        fwrite(STDERR, "WEBHOOK-KOSONG tanpa-header={$r1->getStatusCode()} header-kosong={$r2->getStatusCode()}\n");
-        $this->assertTrue(true);
+        $this->postJson('/api/webhooks/whatsapp-session', $payload)->assertForbidden();
+        $this->withHeader('X-Webhook-Secret', '')
+            ->postJson('/api/webhooks/whatsapp-session', $payload)->assertForbidden();
     }
 
-    /** Session id tebakan: guru-{id} — bisa menyasar guru lain. */
-    public function test_audit_webhook_session_id_tertebak(): void
+    /** Webhook hanya menyentuh sesi yang disebut, bukan guru lain. */
+    public function test_webhook_hanya_mengubah_sesi_yang_disebut(): void
     {
         config(['walikelas.whatsapp.n8n.secret' => 'rahasia']);
 
-        $korban = User::factory()->create([
-            'wa_session_id' => 'guru-'.User::max('id') + 1,
-            'wa_session_status' => 'connected',
-            'wa_connected_at' => now(),
-        ]);
-        $korban->update(['wa_session_id' => 'guru-'.$korban->id]);
+        $sasaran = User::factory()->create(['wa_session_status' => 'connected', 'wa_connected_at' => now()]);
+        $sasaran->update(['wa_session_id' => 'guru-'.$sasaran->id]);
 
-        $r = $this->withHeader('X-Webhook-Secret', 'rahasia')->postJson('/api/webhooks/whatsapp-session', [
-            'session_id' => 'guru-'.$korban->id,
-            'status' => 'disconnected',
-            'error' => 'dipaksa putus oleh pihak ketiga',
-        ]);
+        $lain = User::factory()->create(['wa_session_status' => 'connected', 'wa_connected_at' => now()]);
+        $lain->update(['wa_session_id' => 'guru-'.$lain->id]);
 
-        $korban->refresh();
-        fwrite(STDERR, "WEBHOOK-TEBAK http={$r->getStatusCode()} status=".var_export($korban->wa_session_status, true)
-            .' connected_at='.var_export($korban->wa_connected_at, true)."\n");
-        $this->assertTrue(true);
+        $this->withHeader('X-Webhook-Secret', 'rahasia')
+            ->postJson('/api/webhooks/whatsapp-session', [
+                'session_id' => 'guru-'.$sasaran->id,
+                'status' => 'disconnected',
+                'error' => 'diputus dari gateway',
+            ])->assertOk();
+
+        $this->assertSame('disconnected', $sasaran->refresh()->wa_session_status);
+        $this->assertSame('connected', $lain->refresh()->wa_session_status, 'guru lain tidak boleh ikut terputus');
     }
 
-    /** ---------- 4. CircuitBreaker ---------- */
-    public function test_audit_circuit_breaker_buka_tutup(): void
+    // -- Circuit breaker ----------------------------------------------------
+
+    /**
+     * Keadaannya harus bertahan lewat cache, bukan hanya di dalam satu objek.
+     *
+     * Tiap permintaan HTTP membuat instance baru; kalau hitungannya ikut lahir
+     * baru, circuit tidak akan pernah terbuka di produksi berapa pun seringnya
+     * gateway gagal.
+     *
+     * CATATAN CACAT (tidak dikunci): dalam keadaan half_open, isAvailable()
+     * mengizinkan SELURUH permintaan lewat — probe lama mencatat 10 dari 10 —
+     * padahal komentar di kodenya menyebut "izinkan 1 request". Artinya begitu
+     * gateway pulih, seluruh antrean menyerbu sekaligus alih-alih satu
+     * percobaan pengintai.
+     */
+    public function test_circuit_terbuka_setelah_ambang_dan_bertahan_lintas_instance(): void
     {
         $cb = new CircuitBreaker('audit-cb', failureThreshold: 3, resetTimeout: 60, successThreshold: 2);
 
-        fwrite(STDERR, 'CB awal='.json_encode($cb->getStatus())."\n");
+        $this->assertSame('closed', $cb->getStatus()['state']);
+
         $cb->recordFailure();
         $cb->recordFailure();
-        fwrite(STDERR, 'CB 2 gagal='.json_encode($cb->getStatus()).' available='.var_export($cb->isAvailable(), true)."\n");
+        $this->assertTrue($cb->isAvailable(), 'di bawah ambang masih boleh lewat');
+        $this->assertSame('closed', $cb->getStatus()['state']);
+
         $cb->recordFailure();
-        fwrite(STDERR, 'CB 3 gagal='.json_encode($cb->getStatus()).' available='.var_export($cb->isAvailable(), true)."\n");
+        $this->assertSame('open', $cb->getStatus()['state']);
+        $this->assertFalse($cb->isAvailable());
 
-        // instance baru: apakah state persisten lewat cache?
-        $cb2 = new CircuitBreaker('audit-cb', failureThreshold: 3, resetTimeout: 60, successThreshold: 2);
-        fwrite(STDERR, 'CB instance-baru='.json_encode($cb2->getStatus()).' available='.var_export($cb2->isAvailable(), true)."\n");
-
-        // Paksa waktu maju: geser opened_at ke masa lalu
-        cache()->put('circuit_breaker:audit-cb:opened_at', time() - 61, 600);
-        fwrite(STDERR, 'CB setelah 61s available='.var_export($cb2->isAvailable(), true).' status='.json_encode($cb2->getStatus())."\n");
-
-        // Dalam HALF_OPEN: berapa request yang diizinkan?
-        $izin = 0;
-        for ($i = 0; $i < 10; $i++) {
-            if ($cb2->isAvailable()) {
-                $izin++;
-            }
-        }
-        fwrite(STDERR, "CB half_open mengizinkan {$izin}/10 request (komentar kode: 'izinkan 1 request')\n");
-
-        $cb2->recordSuccess();
-        fwrite(STDERR, 'CB half_open +1 sukses='.json_encode($cb2->getStatus())."\n");
-        $cb2->recordSuccess();
-        fwrite(STDERR, 'CB half_open +2 sukses='.json_encode($cb2->getStatus())."\n");
-
-        $this->assertTrue(true);
+        // Instance baru harus melihat keadaan yang sama.
+        $cbLain = new CircuitBreaker('audit-cb', failureThreshold: 3, resetTimeout: 60, successThreshold: 2);
+        $this->assertSame('open', $cbLain->getStatus()['state']);
+        $this->assertFalse($cbLain->isAvailable());
     }
 
-    /** TTL: apakah OPEN diam-diam jadi CLOSED tanpa lewat HALF_OPEN? */
-    public function test_audit_circuit_breaker_ttl(): void
+    public function test_circuit_pulih_lewat_half_open_setelah_masa_tunggu(): void
     {
-        $cb = new CircuitBreaker('audit-ttl', failureThreshold: 3, resetTimeout: 60);
-        $cb->trip();
-        fwrite(STDERR, 'CBTTL setelah trip='.json_encode($cb->getStatus())."\n");
-
-        // Simulasikan kunci 'state' & 'opened_at' kedaluwarsa (TTL 120s) sementara
-        // 'failures' (TTL 300s) masih hidup.
+        $cb = new CircuitBreaker('audit-cb2', failureThreshold: 3, resetTimeout: 60, successThreshold: 2);
         $cb->recordFailure();
-        cache()->forget('circuit_breaker:audit-ttl:state');
-        cache()->forget('circuit_breaker:audit-ttl:opened_at');
-
-        fwrite(STDERR, 'CBTTL setelah state&opened_at kedaluwarsa='.json_encode($cb->getStatus())
-            .' available='.var_export($cb->isAvailable(), true)."\n");
-
-        // failures masih tersisa -> satu kegagalan berikutnya langsung trip lagi?
         $cb->recordFailure();
-        fwrite(STDERR, 'CBTTL +1 kegagalan='.json_encode($cb->getStatus())."\n");
+        $cb->recordFailure();
+        $this->assertFalse($cb->isAvailable());
 
-        // opened_at hilang tapi state masih open -> macet?
-        $cb2 = new CircuitBreaker('audit-macet', failureThreshold: 3, resetTimeout: 60);
-        $cb2->trip();
-        cache()->forget('circuit_breaker:audit-macet:opened_at');
-        fwrite(STDERR, 'CBMACET state=open tanpa opened_at -> available='
-            .var_export($cb2->isAvailable(), true).' status='.json_encode($cb2->getStatus())."\n");
+        // Majukan waktu dengan menggeser penanda pembukaan ke masa lalu.
+        cache()->put('circuit_breaker:audit-cb2:opened_at', time() - 61, 600);
 
-        $this->assertTrue(true);
+        $this->assertTrue($cb->isAvailable(), 'setelah masa tunggu harus boleh mencoba lagi');
+        $this->assertSame('half_open', $cb->getStatus()['state']);
+
+        $cb->recordSuccess();
+        $this->assertSame('half_open', $cb->getStatus()['state'], 'satu sukses belum cukup');
+
+        $cb->recordSuccess();
+        $this->assertSame('closed', $cb->getStatus()['state'], 'dua sukses menutup circuit');
+        $this->assertSame(0, $cb->getStatus()['failures']);
     }
 
-    /** Circuit breaker n8n: benarkah membuka setelah 3 kegagalan HTTP? */
-    public function test_audit_n8n_channel_membuka_circuit(): void
+    /**
+     * CATATAN CACAT (tidak dikunci): bila kunci 'opened_at' kedaluwarsa lebih
+     * dulu daripada 'state' — TTL keduanya berbeda — circuit tinggal dalam
+     * keadaan open tanpa penanda waktu, dan isAvailable() selamanya false.
+     * Gateway yang sudah sehat tetap dianggap mati sampai cache-nya dibersihkan
+     * dengan tangan. Diuji di sini hanya sebagai catatan perilaku saat ini.
+     */
+    public function test_circuit_open_tanpa_penanda_waktu_tidak_pernah_pulih_sendiri(): void
+    {
+        $cb = new CircuitBreaker('audit-macet', failureThreshold: 3, resetTimeout: 60);
+        $cb->trip();
+
+        cache()->forget('circuit_breaker:audit-macet:opened_at');
+
+        $this->assertSame('open', $cb->getStatus()['state']);
+        $this->assertFalse(
+            $cb->isAvailable(),
+            'perilaku saat ini: macet tertutup. Bila suatu saat diperbaiki agar '
+            .'pulih sendiri, test ini yang harus diperbarui — bukan dianggap regresi.',
+        );
+    }
+
+    // -- Channel n8n --------------------------------------------------------
+
+    /**
+     * Inti gunanya circuit breaker: setelah terbuka, permintaan berikutnya
+     * TIDAK boleh benar-benar keluar. Menghitung permintaan yang lolos adalah
+     * satu-satunya cara membuktikannya — nilai kembalian sama-sama false baik
+     * karena gateway menolak maupun karena circuit menahan.
+     */
+    public function test_circuit_menahan_permintaan_setelah_gateway_gagal_tiga_kali(): void
     {
         Http::fake(['*' => Http::response('nope', 500)]);
 
         $ch = new N8nWhatsAppChannel('http://127.0.0.1:9/send', 'rahasia');
 
-        for ($i = 1; $i <= 5; $i++) {
-            $ok = $ch->send('6281234567890', 'halo');
-            fwrite(STDERR, "N8N kirim#{$i} hasil=".var_export($ok, true)
-                .' circuit='.json_encode($ch->getCircuitStatus())."\n");
+        foreach (range(1, 5) as $ke) {
+            $this->assertFalse($ch->send('6281234567890', 'halo'));
         }
-        fwrite(STDERR, 'N8N jumlah HTTP request yang benar-benar keluar='.count(Http::recorded())."\n");
 
-        $this->assertTrue(true);
+        $this->assertSame('open', $ch->getCircuitStatus()['state']);
+        $this->assertCount(3, Http::recorded(), 'hanya tiga percobaan pertama yang boleh keluar');
     }
 
-    /** Circuit breaker n8n saat gateway benar-benar mati (connection refused). */
-    public function test_audit_n8n_channel_gateway_mati(): void
+    public function test_gateway_yang_tidak_bisa_dihubungi_juga_membuka_circuit(): void
     {
         Http::fake(function () {
             throw new \Illuminate\Http\Client\ConnectionException('Connection refused');
         });
 
         $ch = new N8nWhatsAppChannel('http://127.0.0.1:9/send', 'rahasia');
-        for ($i = 1; $i <= 4; $i++) {
-            $ok = $ch->send('6281234567890', 'halo');
-            fwrite(STDERR, "N8NMATI kirim#{$i} hasil=".var_export($ok, true)
-                .' state='.($ch->getCircuitStatus()['state'])."\n");
+
+        foreach (range(1, 4) as $ke) {
+            $this->assertFalse($ch->send('6281234567890', 'halo'));
         }
-        fwrite(STDERR, 'N8NMATI isHealthy='.var_export($ch->isHealthy(), true)."\n");
-        $this->assertTrue(true);
+
+        $this->assertSame('open', $ch->getCircuitStatus()['state']);
+        $this->assertFalse($ch->isHealthy());
     }
 
-    /** target_number dari form TIDAK dinormalisasi Phone::normalize. */
-    public function test_audit_target_number_tidak_dinormalisasi(): void
+    public function test_payload_ke_gateway_membawa_secret_dan_pengirim(): void
+    {
+        Http::fake(['*' => Http::response(['ok' => true], 200)]);
+
+        $ch = new N8nWhatsAppChannel('http://127.0.0.1:3000/send', 'rahasia-secret');
+        $ch->send('6281234567890', "PIN Harian: *123456*\nlink", ['type' => 'attendance_magic_link'], '6289999');
+
+        Http::assertSent(function ($request) {
+            $body = json_decode($request->body(), true);
+
+            return $request->url() === 'http://127.0.0.1:3000/send'
+                && $request->header('X-Webhook-Secret') === ['rahasia-secret']
+                && $body['from'] === '6289999'
+                && $body['to'] === '6281234567890'
+                && $body['meta']['type'] === 'attendance_magic_link'
+                && str_contains($body['message'], '123456');
+        });
+    }
+
+    // -- Nomor tujuan -------------------------------------------------------
+
+    /**
+     * CATATAN CACAT (tidak dikunci sebagai "benar"): nomor tujuan yang diketik
+     * wali kelas di formulir diteruskan APA ADANYA ke gateway — '0857-0000-001'
+     * dan bahkan 'bukan-nomor' dikirim tanpa melewati Phone::normalize, lalu
+     * tersimpan begitu saja di kolom delivery_target.
+     *
+     * Test ini merekam keadaan itu supaya perbaikannya nanti terlihat sebagai
+     * perubahan yang disengaja, bukan kejutan.
+     */
+    public function test_nomor_tujuan_dari_formulir_belum_dinormalkan(): void
     {
         $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
         config(['walikelas.whatsapp.driver' => 'log']);
@@ -322,7 +413,8 @@ class Audit02WhatsAppTest extends TestCase
         $class = Classroom::factory()->create(['user_id' => $user->id]);
         $this->actingAs($user);
 
-        $rekam = new class implements NotificationChannel {
+        $rekam = new class implements NotificationChannel
+        {
             public array $terkirim = [];
 
             public function send(string $to, string $message, array $meta = [], ?string $from = null): bool
@@ -334,26 +426,27 @@ class Audit02WhatsAppTest extends TestCase
         };
         $this->app->instance(NotificationChannel::class, $rekam);
 
-        foreach (['0857-0000-001', '  0812 3456 7890', 'bukan-nomor', '+62 857 0000 001'] as $input) {
-            $this->post(route('classes.attendance.store', $class), [
-                'target_number' => $input,
-                'send_wa' => '1',
-                'force_new' => '1',
-            ]);
-        }
+        $this->post(route('classes.attendance.store', $class), [
+            'target_number' => '0857-0000-001',
+            'send_wa' => '1',
+            'force_new' => '1',
+        ]);
 
-        fwrite(STDERR, 'TARGET yang benar-benar dikirim ke channel = '.json_encode($rekam->terkirim)."\n");
-        fwrite(STDERR, 'TARGET delivery_target tersimpan = '.json_encode(
-            AttendanceSession::withoutTenant()->pluck('delivery_target')->all()
-        )."\n");
-
-        $this->assertTrue(true);
+        $this->assertSame(
+            ['0857-0000-001'],
+            $rekam->terkirim,
+            'perilaku saat ini: tanpa normalisasi. Begitu Phone::normalize dipasang '
+            .'di jalur ini, harapannya berubah menjadi 62857000001.',
+        );
     }
 
-    /** Polling status: kegagalan gateway sesaat menulis 'disconnected' ke DB. */
-    public function test_audit_polling_status_menandai_guru_terputus(): void
+    /** Kegagalan menghubungi gateway saat polling menandai guru terputus. */
+    public function test_polling_menandai_terputus_saat_gateway_tak_terjangkau(): void
     {
-        config(['walikelas.whatsapp.driver' => 'n8n', 'walikelas.whatsapp.n8n.session_url' => 'http://127.0.0.1:3000/session']);
+        config([
+            'walikelas.whatsapp.driver' => 'n8n',
+            'walikelas.whatsapp.n8n.session_url' => 'http://127.0.0.1:3000/session',
+        ]);
         Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('refused'));
 
         $user = User::factory()->create([
@@ -363,32 +456,14 @@ class Audit02WhatsAppTest extends TestCase
         ]);
         $this->actingAs($user);
 
-        fwrite(STDERR, 'POLLING sebelum: connected='.var_export($user->whatsappConnected(), true)."\n");
+        $this->assertTrue($user->whatsappConnected());
 
-        $r = $this->getJson(route('whatsapp.status'));
+        $this->getJson(route('whatsapp.status'))
+            ->assertOk()
+            ->assertJson(['status' => 'disconnected']);
+
         $user->refresh();
-
-        fwrite(STDERR, 'POLLING http='.$r->getStatusCode().' body='.$r->getContent()."\n");
-        fwrite(STDERR, 'POLLING sesudah: wa_session_status='.var_export($user->wa_session_status, true)
-            .' wa_connected_at='.var_export((string) $user->wa_connected_at, true)
-            .' whatsappConnected()='.var_export($user->whatsappConnected(), true)."\n");
-
-        $this->assertTrue(true);
-    }
-
-    /** Apa yang dikirim ke n8n? Cek payload & header. */
-    public function test_audit_payload_ke_n8n(): void
-    {
-        Http::fake(['*' => Http::response(['ok' => true], 200)]);
-
-        $ch = new N8nWhatsAppChannel('http://127.0.0.1:3000/send', 'rahasia-secret');
-        $ch->send('6281234567890', "PIN Harian: *123456*\nlink", ['type' => 'attendance_magic_link'], '6289999');
-
-        foreach (Http::recorded() as [$req, $res]) {
-            fwrite(STDERR, 'N8NPAYLOAD url='.$req->url()."\n");
-            fwrite(STDERR, 'N8NPAYLOAD headers='.json_encode($req->headers())."\n");
-            fwrite(STDERR, 'N8NPAYLOAD body='.$req->body()."\n");
-        }
-        $this->assertTrue(true);
+        $this->assertSame('disconnected', $user->wa_session_status);
+        $this->assertFalse($user->whatsappConnected());
     }
 }
