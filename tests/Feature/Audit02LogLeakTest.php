@@ -10,7 +10,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Audit: apa yang benar-benar tertulis ke berkas log pada LOG_LEVEL=error?
+ * Apa yang benar-benar tertulis ke berkas log pada LOG_LEVEL=error.
+ *
+ * Berkas log adalah tempat rahasia bocor tanpa siapa pun berniat membocorkannya:
+ * ia dibaca saat panik, disalin ke percakapan dukungan, dan ikut terbawa ke
+ * dalam cadangan. Yang paling penting dijaga di sini adalah PIN absensi —
+ * siapa pun yang memegangnya bisa mengisi kehadiran satu kelas.
  */
 class Audit02LogLeakTest extends TestCase
 {
@@ -46,24 +51,41 @@ class Audit02LogLeakTest extends TestCase
         return is_file($this->path) ? file_get_contents($this->path) : '';
     }
 
-    /** LogChannel (driver=log) menulis PIN? Level info -> harus dibuang. */
-    public function test_audit_logchannel_pada_level_error(): void
+    /**
+     * LogChannel menulis di level info, jadi pada LOG_LEVEL=error seluruh
+     * isinya — termasuk PIN — tidak pernah sampai ke berkas.
+     */
+    public function test_logchannel_tidak_menulis_apa_pun_pada_level_error(): void
     {
-        (new LogChannel)->send('6285700000001', "PIN Harian: *987654*\nhttps://walas.my.id/a/xyz", ['type' => 'attendance_magic_link'], '6281234567890');
+        (new LogChannel)->send(
+            '6285700000001',
+            "PIN Harian: *987654*\nhttps://walas.my.id/a/xyz",
+            ['type' => 'attendance_magic_link'],
+            '6281234567890',
+        );
 
         $isi = $this->isi();
-        fwrite(STDERR, 'LOGLEAK LogChannel panjang-berkas='.strlen($isi)
-            .' memuat-PIN='.var_export(str_contains($isi, '987654'), true)
-            .' memuat-nomor='.var_export(str_contains($isi, '6285700000001'), true)."\n");
-        $this->assertTrue(true);
+
+        $this->assertSame('', $isi);
+        $this->assertStringNotContainsString('987654', $isi, 'PIN tidak boleh sampai ke berkas log');
     }
 
-    /** SendWhatsAppMessage::failed() menulis Log::error -> LOLOS filter level. */
-    public function test_audit_job_failed_menulis_nomor_ke_log(): void
+    /**
+     * PIN tidak boleh ikut tercatat saat job menyerah.
+     *
+     * Ini invarian yang sesungguhnya penting, dan ia berlaku: failed() mencatat
+     * konteks pengiriman tetapi bukan isi pesannya.
+     *
+     * CATATAN CACAT (tidak dinyatakan sebagai harapan): kedua nomor WhatsApp —
+     * tujuan dan pengirim — memang tertulis apa adanya. Itu data pribadi yang
+     * mengendap di berkas yang berumur panjang. Direkam di sini supaya
+     * penyamarannya nanti terlihat sebagai perubahan yang disengaja.
+     */
+    public function test_job_yang_menyerah_tidak_mencatat_pin(): void
     {
         $job = new SendWhatsAppMessage(
             to: '6285700000001',
-            message: "PIN Harian: *987654*",
+            message: 'PIN Harian: *987654*',
             userId: User::factory()->create()->id,
             meta: ['type' => 'attendance_magic_link', 'session_id' => 7, 'class_id' => 3],
             attendanceSessionId: null,
@@ -73,15 +95,26 @@ class Audit02LogLeakTest extends TestCase
         $job->failed(new \RuntimeException('Gateway WhatsApp menolak pesan.'));
 
         $isi = $this->isi();
-        fwrite(STDERR, "LOGLEAK --- isi berkas log setelah failed() ---\n".$isi."--- akhir ---\n");
-        fwrite(STDERR, 'LOGLEAK memuat-nomor-tujuan='.var_export(str_contains($isi, '6285700000001'), true)
-            .' memuat-nomor-guru='.var_export(str_contains($isi, '6281234567890'), true)
-            .' memuat-PIN='.var_export(str_contains($isi, '987654'), true)."\n");
-        $this->assertTrue(true);
+
+        $this->assertStringNotContainsString('987654', $isi, 'PIN tidak boleh ikut tercatat');
+        $this->assertStringContainsString('Pesan gagal setelah semua percobaan', $isi,
+            'kegagalannya sendiri tetap harus meninggalkan jejak');
+
+        // Perilaku saat ini, bukan cita-cita:
+        $this->assertStringContainsString('6285700000001', $isi,
+            'nomor tujuan masih tercatat apa adanya — lihat CATATAN CACAT di docblock');
     }
 
-    /** Fallback diam-diam: driver n8n tapi webhook_url kosong -> LogChannel (selalu true). */
-    public function test_audit_fallback_logchannel_melaporkan_sukses_palsu(): void
+    /**
+     * driver=n8n tanpa webhook_url diam-diam jatuh ke LogChannel, dan
+     * LogChannel selalu menjawab "berhasil".
+     *
+     * Artinya satu kolom .env yang lupa diisi membuat seluruh aplikasi yakin
+     * pesannya terkirim, sementara tidak satu pun benar-benar keluar — dan
+     * tidak ada yang tampak rusak sampai ada yang bertanya kenapa tautannya
+     * tidak pernah datang.
+     */
+    public function test_konfigurasi_gateway_tak_lengkap_jatuh_ke_logchannel(): void
     {
         config([
             'walikelas.whatsapp.driver' => 'n8n',
@@ -89,10 +122,11 @@ class Audit02LogLeakTest extends TestCase
         ]);
 
         $ch = $this->app->make(NotificationChannel::class);
-        $hasil = $ch->send('6285700000001', 'PIN Harian: *987654*');
 
-        fwrite(STDERR, 'FALLBACK kelas='.get_class($ch).' hasil-send='.var_export($hasil, true)
-            ." (tidak ada pesan yang benar-benar terkirim)\n");
-        $this->assertTrue(true);
+        $this->assertInstanceOf(LogChannel::class, $ch);
+        $this->assertTrue(
+            $ch->send('6285700000001', 'PIN Harian: *987654*'),
+            'perilaku saat ini: melaporkan sukses tanpa mengirim apa pun',
+        );
     }
 }
