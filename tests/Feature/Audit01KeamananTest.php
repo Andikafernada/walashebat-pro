@@ -13,6 +13,26 @@ use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
+/**
+ * Batas antar tenant: guru A tidak boleh menyentuh apa pun milik guru B.
+ *
+ * Berkas ini semula alat investigasi — lima belas probe yang mencetak status
+ * HTTP ke STDERR lalu ditutup assertTrue(true). Bentuk itu berbahaya justru
+ * karena terlihat seperti test: ia ikut gagal ketika kode berubah, sehingga
+ * menuntut perawatan, tanpa pernah menjaga satu perilaku pun. Sepanjang sesi
+ * ini ia dua kali memaksa perbaikan atas perubahan yang sepenuhnya sah.
+ *
+ * Keluarannya bahkan sempat menyesatkan: rangkaian "pengambilalihan siswa" di
+ * bawah mencetak "login sebagai siswa tenant lain = 1", yang terbaca seperti
+ * celah terbuka. Padahal langkah pertamanya sudah 404 — yang terbaca adalah
+ * OTP yang dibaca test dari channel palsunya sendiri, sesuatu yang penyerang
+ * sungguhan tidak punya. Angka yang mengerikan tanpa assertion tidak
+ * memberitahu apa pun tentang aman atau tidaknya aplikasi.
+ *
+ * Setiap probe kini menyatakan perilaku yang BENAR. Yang dijaga sebagian besar
+ * adalah perbaikan yang sudah dilakukan — terutama form publik yang kini dicari
+ * lewat token, bukan id kelas yang berurutan.
+ */
 class Audit01KeamananTest extends TestCase
 {
     use RefreshDatabase;
@@ -42,101 +62,171 @@ class Audit01KeamananTest extends TestCase
         ]);
     }
 
-    /** API: daftar siswa kelas milik tenant lain. */
-    public function test_api_students_kelas_orang_lain(): void
+    // -- API ----------------------------------------------------------------
+
+    public function test_api_students_kelas_orang_lain_ditolak(): void
     {
         Sanctum::actingAs($this->guruA);
-        $r = $this->getJson('/api/v1/classes/'.$this->kelasB->id.'/students');
-        fwrite(STDERR, "\n[API students kelas B oleh guru A] status=".$r->status()." body=".$r->getContent()."\n");
-        $this->assertTrue(true);
+
+        $this->getJson('/api/v1/classes/'.$this->kelasB->id.'/students')
+            ->assertNotFound()
+            ->assertDontSee('SISWA RAHASIA B');
     }
 
-    /** API: rekap absensi kelas milik tenant lain. */
-    public function test_api_attendance_today_kelas_orang_lain(): void
+    public function test_api_attendance_today_kelas_orang_lain_ditolak(): void
     {
         Sanctum::actingAs($this->guruA);
-        $r = $this->getJson('/api/v1/classes/'.$this->kelasB->id.'/attendance/today');
-        fwrite(STDERR, "\n[API attendance today kelas B oleh guru A] status=".$r->status()." body=".$r->getContent()."\n");
-        $this->assertTrue(true);
+
+        $this->getJson('/api/v1/classes/'.$this->kelasB->id.'/attendance/today')
+            ->assertNotFound();
     }
 
-    /** Sanctum abilities: token hanya punya read+attendance:verify. Apakah ditegakkan? */
-    public function test_token_ability_ditegakkan(): void
+    /**
+     * Token API hanya boleh melihat kelas pemiliknya sendiri.
+     *
+     * CATATAN: ability token ('read', 'attendance:verify' dari
+     * Api\AuthController::issueToken) TIDAK ditegakkan di mana pun — rute
+     * /api/v1 hanya memasang 'auth:sanctum', tanpa middleware 'abilities'.
+     * Token berability ngawur pun tetap dilayani. Yang benar-benar melindungi
+     * data adalah TenantScope, dan itulah yang dikunci di sini; ability-nya
+     * dilaporkan terpisah sebagai temuan, bukan dikunci dalam keadaan lemah.
+     */
+    public function test_token_api_terkurung_pada_tenant_pemiliknya(): void
     {
-        Sanctum::actingAs($this->guruB, ['nonsense-ability']);
-        $r = $this->getJson('/api/v1/classes');
-        fwrite(STDERR, "\n[API classes dgn ability ngawur] status=".$r->status()."\n");
-        $this->assertTrue(true);
+        Sanctum::actingAs($this->guruA, ['nonsense-ability']);
+
+        $this->getJson('/api/v1/classes')
+            ->assertOk()
+            ->assertJsonMissing(['name' => 'KELAS B'])
+            ->assertDontSee('KELAS B');
     }
 
-    /** Form biodata publik: bisakah orang luar melihat roster kelas tenant lain? */
-    public function test_form_biodata_publik_membocorkan_roster(): void
+    // -- Form publik: dicari lewat token, bukan id berurutan ----------------
+
+    public function test_form_biodata_tidak_bisa_dibuka_lewat_id_kelas(): void
     {
         $r = $this->get('/isi-biodata/'.$this->kelasB->id);
-        fwrite(STDERR, "\n[Form biodata publik kelas B] status=".$r->status()
-            ." memuat_nama_siswa=".(str_contains($r->getContent() ?: '', 'SISWA RAHASIA B') ? 'YA' : 'tidak')
-            ." memuat_nis=".(str_contains($r->getContent() ?: '', '999999') ? 'YA' : 'tidak')."\n");
-        $this->assertTrue(true);
+
+        $r->assertNotFound();
+        $this->assertStringNotContainsString('SISWA RAHASIA B', $r->getContent() ?: '');
+        $this->assertStringNotContainsString('999999', $r->getContent() ?: '');
     }
 
-    /** Form biodata publik: bisakah orang luar MENGUBAH biodata siswa tenant lain? */
-    public function test_form_biodata_publik_menimpa_data_siswa(): void
+    public function test_form_biodata_lewat_id_tidak_bisa_menimpa_siswa(): void
     {
-        $r = $this->post('/isi-biodata/'.$this->kelasB->id, [
+        $this->post('/isi-biodata/'.$this->kelasB->id, [
             'student_id' => $this->siswaB->id,
             'name' => 'DIUBAH PENYERANG',
             'gender' => 'L',
             'parent_phone' => '08123456789',
-        ]);
-        $this->siswaB->refresh();
-        fwrite(STDERR, "\n[POST biodata publik timpa siswa B] status=".$r->status()
-            ." nama_sekarang=".$this->siswaB->name."\n");
-        $this->assertTrue(true);
+        ])->assertNotFound();
+
+        $this->assertSame('SISWA RAHASIA B', $this->siswaB->refresh()->name);
     }
 
-    /** Form biodata publik: sisip siswa baru ke kelas tenant lain. */
-    public function test_form_biodata_publik_sisip_siswa(): void
+    public function test_form_biodata_lewat_id_tidak_bisa_menyisipkan_siswa(): void
     {
-        $r = $this->post('/isi-biodata/'.$this->kelasB->id, [
+        $this->post('/isi-biodata/'.$this->kelasB->id, [
             'name' => 'SISIPAN PENYERANG',
             'gender' => 'L',
             'parent_phone' => '08123456789',
-        ]);
-        $jml = Student::withoutTenant()->where('class_id', $this->kelasB->id)->count();
-        fwrite(STDERR, "\n[POST biodata publik sisip siswa] status=".$r->status()." jumlah_siswa_kelas_B={$jml}\n");
-        $this->assertTrue(true);
+        ])->assertNotFound();
+
+        $this->assertSame(1, Student::withoutTenant()->where('class_id', $this->kelasB->id)->count());
     }
 
-    /** Refleksi publik: student_id lintas tenant (tidak dibatasi ke $class). */
-    public function test_refleksi_publik_student_id_lintas_kelas(): void
+    public function test_refleksi_publik_tidak_bisa_dibuka_lewat_id_kelas(): void
     {
         $dim = CharacterDimension::create([
             'code' => 'X', 'name' => 'Dim', 'is_active' => true, 'sort_order' => 1,
         ]);
 
-        $r = $this->post('/refleksi-karakter/'.$this->kelasA->id, [
+        $this->post('/refleksi-karakter/'.$this->kelasA->id, [
             'student_id' => $this->siswaB->id, // milik tenant B, dikirim ke kelas A
             'character_dimension_id' => $dim->id,
             'self_rating' => 5,
             'what_went_well' => 'x',
             'what_to_improve' => 'y',
             'action_plan' => 'z',
-        ]);
+        ])->assertNotFound();
 
-        $ref = CharacterReflection::withoutTenant()->where('student_id', $this->siswaB->id)->first();
-        fwrite(STDERR, "\n[POST refleksi publik student_id lintas tenant] status=".$r->status()
-            ." tersimpan=".($ref ? 'YA (user_id='.$ref->user_id.', class_id='.$ref->class_id.')' : 'tidak')."\n");
-        $this->assertTrue(true);
+        $this->assertSame(0, CharacterReflection::withoutTenant()->count());
     }
 
-    /** NIS tidak unik global: login siswa memakai ->first() tanpa batas tenant. */
-    public function test_login_siswa_nis_bentrok_antar_tenant(): void
+    public function test_refleksi_publik_lewat_id_tidak_melahirkan_baris_yatim(): void
+    {
+        $dim = CharacterDimension::create(['code' => 'Y', 'name' => 'Dim', 'is_active' => true, 'sort_order' => 1]);
+        $siswaA = Student::factory()->create(['user_id' => $this->guruA->id, 'class_id' => $this->kelasA->id]);
+
+        $this->post('/refleksi-karakter/'.$this->kelasA->id, [
+            'student_id' => $siswaA->id,
+            'character_dimension_id' => $dim->id,
+            'self_rating' => 5,
+            'what_went_well' => 'a', 'what_to_improve' => 'b', 'action_plan' => 'c',
+        ])->assertNotFound();
+
+        $this->assertDatabaseCount('character_reflections', 0);
+    }
+
+    /**
+     * Rantai pengambilalihan siswa, dikunci pada mata rantai PERTAMANYA.
+     *
+     * Rancangan serangannya: timpa parent_phone siswa milik tenant lain lewat
+     * form publik, lalu minta OTP reset kata sandi — OTP itu akan mendarat di
+     * nomor penyerang. Yang memutus rantai ini adalah form publik yang tidak
+     * lagi bisa dijangkau lewat id kelas, jadi di sanalah pengunciannya.
+     */
+    public function test_nomor_orang_tua_tidak_bisa_ditimpa_lewat_form_publik(): void
+    {
+        $this->siswaB->update(['parent_phone' => '628111111111', 'is_active' => true]);
+
+        $terkirim = [];
+        $this->app->bind(\App\Support\Contracts\NotificationChannel::class, function () use (&$terkirim) {
+            return new class($terkirim) implements \App\Support\Contracts\NotificationChannel {
+                public function __construct(public &$log) {}
+
+                public function send(string $to, string $message, array $meta = [], ?string $from = null): bool
+                {
+                    $this->log[] = [$to, $message];
+
+                    return true;
+                }
+            };
+        });
+
+        $this->post('/isi-biodata/'.$this->kelasB->id, [
+            'student_id' => $this->siswaB->id,
+            'name' => $this->siswaB->name,
+            'gender' => 'L',
+            'parent_phone' => '628999999999',   // nomor penyerang
+        ])->assertNotFound();
+
+        $this->assertSame(
+            '628111111111',
+            $this->siswaB->refresh()->parent_phone,
+            'nomor orang tua tidak boleh bisa diubah dari luar',
+        );
+
+        // Dan karena nomornya tidak berubah, OTP tetap mendarat di nomor yang sah.
+        $this->post('/student/lupa-password', ['nis' => $this->siswaB->nis]);
+
+        $tujuan = array_column($terkirim, 0);
+        $this->assertNotContains('628999999999', $tujuan, 'OTP tidak boleh sampai ke nomor penyerang');
+    }
+
+    // -- Login siswa --------------------------------------------------------
+
+    /**
+     * NIS tidak unik antar tenant: dua sekolah bisa sama-sama punya siswa
+     * bernomor 999999. Masing-masing harus masuk sebagai dirinya sendiri.
+     */
+    public function test_nis_yang_sama_antar_tenant_masuk_ke_akun_yang_benar(): void
     {
         $siswaA = Student::factory()->create([
             'user_id' => $this->guruA->id,
             'class_id' => $this->kelasA->id,
             'name' => 'SISWA A',
-            'nis' => '999999', // NIS sama dgn siswa B
+            'nis' => '999999',
             'password' => Hash::make('rahasiaA'),
             'is_active' => true,
             'must_change_password' => false,
@@ -147,99 +237,31 @@ class Audit01KeamananTest extends TestCase
             'must_change_password' => false,
         ]);
 
-        $r = $this->post('/student/login', ['nis' => '999999', 'password' => 'rahasiaA']);
-        $login = auth('student')->id();
-        fwrite(STDERR, "\n[Login siswa NIS bentrok] siswaA_id={$siswaA->id} siswaB_id={$this->siswaB->id}"
-            ." status=".$r->status()." login_sebagai=".var_export($login, true)."\n");
+        $this->post('/student/login', ['nis' => '999999', 'password' => 'rahasiaA']);
+        $this->assertSame($siswaA->id, auth('student')->id(), 'kata sandi A harus membuka akun A');
 
         auth('student')->logout();
-        $r2 = $this->post('/student/login', ['nis' => '999999', 'password' => 'rahasiaB']);
-        fwrite(STDERR, "[Login siswa B dgn passwordnya sendiri] status=".$r2->status()
-            ." login_sebagai=".var_export(auth('student')->id(), true)."\n");
-        $this->assertTrue(true);
+
+        $this->post('/student/login', ['nis' => '999999', 'password' => 'rahasiaB']);
+        $this->assertSame($this->siswaB->id, auth('student')->id(), 'kata sandi B harus membuka akun B');
     }
 
-    /** shareBiodataWa: hanya middleware auth (tanpa auth.tenant). Kelas orang lain? */
-    public function test_share_biodata_wa_kelas_orang_lain(): void
+    public function test_share_biodata_wa_kelas_orang_lain_ditolak(): void
     {
         $this->actingAs($this->guruA);
-        $r = $this->post('/classes/'.$this->kelasB->id.'/share-biodata-wa', ['group_id' => '628999@g.us']);
-        fwrite(STDERR, "\n[shareBiodataWa kelas B oleh guru A] status=".$r->status()."\n");
-        $this->assertTrue(true);
+
+        $this->post('/classes/'.$this->kelasB->id.'/share-biodata-wa', ['group_id' => '628999@g.us'])
+            ->assertNotFound();
     }
 
-    /** Rantai pengambilalihan: ubah parent_phone lewat form publik -> OTP ke penyerang. */
-    public function test_takeover_siswa_via_form_publik(): void
-    {
-        \Illuminate\Support\Facades\Notification::fake();
-        $this->siswaB->update(['parent_phone' => '628111111111', 'is_active' => true]);
+    // -- Sapu IDOR ----------------------------------------------------------
 
-        $terkirim = [];
-        $this->app->bind(\App\Support\Contracts\NotificationChannel::class, function () use (&$terkirim) {
-            return new class($terkirim) implements \App\Support\Contracts\NotificationChannel {
-                public function __construct(public &$log) {}
-                public function send(string $to, string $message, array $meta = [], ?string $from = null): bool
-                { $this->log[] = [$to, $message]; return true; }
-            };
-        });
-
-        // Langkah 1: penyerang menimpa parent_phone siswa milik tenant lain.
-        $this->post('/isi-biodata/'.$this->kelasB->id, [
-            'student_id' => $this->siswaB->id,
-            'name' => $this->siswaB->name,
-            'gender' => 'L',
-            'parent_phone' => '628999999999',   // nomor penyerang
-        ]);
-        $this->siswaB->refresh();
-        fwrite(STDERR, "\n[Takeover 1] parent_phone sekarang=".$this->siswaB->parent_phone."\n");
-
-        // Langkah 2: minta OTP reset kata sandi siswa.
-        $this->post('/student/lupa-password', ['nis' => $this->siswaB->nis]);
-        fwrite(STDERR, "[Takeover 2] OTP dikirim ke: ".json_encode(array_column($terkirim, 0))."\n");
-        if ($terkirim) {
-            preg_match('/\*(\d{6})\*/', $terkirim[0][1], $m);
-            $otp = $m[1] ?? null;
-            fwrite(STDERR, "[Takeover 3] OTP terbaca penyerang = ".var_export($otp, true)."\n");
-
-            $r = $this->post('/student/otp/'.$this->siswaB->nis, [
-                'otp' => $otp,
-                'password' => 'PasswordPenyerang9!',
-                'password_confirmation' => 'PasswordPenyerang9!',
-            ]);
-            fwrite(STDERR, "[Takeover 4] reset status=".$r->status()."\n");
-
-            $r2 = $this->post('/student/login', ['nis' => $this->siswaB->nis, 'password' => 'PasswordPenyerang9!']);
-            fwrite(STDERR, "[Takeover 5] login sebagai siswa tenant lain = ".var_export(auth('student')->id(), true)
-                ." (target id=".$this->siswaB->id.")\n");
-        }
-        $this->assertTrue(true);
-    }
-
-    /** Refleksi publik: user_id tidak fillable -> refleksi jadi yatim, tak terlihat wali kelas. */
-    public function test_refleksi_publik_user_id_null(): void
-    {
-        $dim = CharacterDimension::create(['code' => 'Y', 'name' => 'Dim', 'is_active' => true, 'sort_order' => 1]);
-        $siswaA = Student::factory()->create(['user_id' => $this->guruA->id, 'class_id' => $this->kelasA->id]);
-
-        $rr = $this->post('/refleksi-karakter/'.$this->kelasA->id, [
-            'student_id' => $siswaA->id,
-            'character_dimension_id' => $dim->id,
-            'self_rating' => 5,
-            'what_went_well' => 'a', 'what_to_improve' => 'b', 'action_plan' => 'c',
-        ]);
-
-        fwrite(STDERR, "[Refleksi publik] status=".$rr->status()." jml=".\Illuminate\Support\Facades\DB::table('character_reflections')->count()." errors=".json_encode(session('errors') ? session('errors')->getBag('default')->all() : [])."\n");
-        $raw = \Illuminate\Support\Facades\DB::table('character_reflections')->first();
-        fwrite(STDERR, "\n[Refleksi publik] baris tersimpan user_id=".var_export($raw->user_id ?? 'NO-ROW', true)."\n");
-
-        $this->actingAs($this->guruA);
-        $terlihat = CharacterReflection::where('student_id', $siswaA->id)->count();
-        fwrite(STDERR, "[Refleksi publik] terlihat oleh guru A (dgn TenantScope) = {$terlihat}\n");
-        $this->assertTrue(true);
-    }
-
-    /** Sapu IDOR: guru A menembak objek milik guru B lewat rute anak kelas. */
-    public function test_sapu_idor_objek_tenant_lain(): void
+    /**
+     * Tiga belas rute anak kelas ditembak sekaligus dengan objek milik guru
+     * lain. Semuanya harus ditolak, dan — yang lebih penting — tidak satu pun
+     * objeknya boleh ikut terhapus.
+     */
+    public function test_tidak_ada_rute_anak_kelas_yang_tembus_ke_tenant_lain(): void
     {
         $g = $this->guruB;
         $k = $this->kelasB;
@@ -297,21 +319,32 @@ class Audit01KeamananTest extends TestCase
             ['GET',    '/classes/'.$k->id.'/ekspor/karakter/'.$this->siswaB->id.'/pdf', []],
         ];
 
-        fwrite(STDERR, "\n--- SAPU IDOR (guru A -> objek guru B) ---\n");
         foreach ($probes as [$m, $u, $d]) {
-            $r = $this->call($m, $u, $d);
-            fwrite(STDERR, str_pad($m.' '.$u, 70).' => '.$r->status()."\n");
+            $status = $this->call($m, $u, $d)->status();
+
+            $this->assertContains(
+                $status,
+                [403, 404],
+                "{$m} {$u} harus ditolak, tetapi menjawab {$status}",
+            );
         }
 
-        fwrite(STDERR, "violation masih ada: ".(\App\Models\Violation::withoutTenant()->find($violation->id) ? 'ya' : 'TIDAK/TERHAPUS')."\n");
-        fwrite(STDERR, "cashbook masih ada: ".(\App\Models\CashBook::withoutTenant()->find($cashbook->id) ? 'ya' : 'TIDAK/TERHAPUS')."\n");
-        fwrite(STDERR, "record masih ada: ".(\App\Models\CharacterRecord::withoutTenant()->find($record->id) ? 'ya' : 'TIDAK/TERHAPUS')."\n");
-        fwrite(STDERR, "holiday masih ada: ".(\App\Models\Holiday::find($holiday->id) ? 'ya' : 'TIDAK/TERHAPUS')."\n");
-        $this->assertTrue(true);
+        // Penolakan status saja tidak cukup — buktikan tidak ada yang lenyap.
+        $this->assertNotNull(\App\Models\Violation::withoutTenant()->find($violation->id));
+        $this->assertNotNull(\App\Models\CashBook::withoutTenant()->find($cashbook->id));
+        $this->assertNotNull(\App\Models\Schedule::withoutTenant()->find($schedule->id));
+        $this->assertNotNull(\App\Models\OrganizationStructure::withoutTenant()->find($org->id));
+        $this->assertNotNull(\App\Models\CharacterRecord::withoutTenant()->find($record->id));
+        $this->assertNotNull(\App\Models\Holiday::find($holiday->id));
+        $this->assertSame('T', \App\Models\CharacterRecord::withoutTenant()->find($record->id)->title);
     }
 
-    /** Rute anak kelas dgn objek MILIK SENDIRI tapi KELAS LAIN (dalam tenant yg sama). */
-    public function test_lintas_kelas_dalam_tenant_sama(): void
+    /**
+     * Batasnya bukan cuma antar tenant, tetapi antar KELAS di dalam satu tenant:
+     * catatan milik kelas A2 tidak boleh disunting lewat URL kelas A, sekalipun
+     * kedua kelas itu milik guru yang sama (scopeBindings).
+     */
+    public function test_objek_kelas_lain_tidak_bisa_disunting_lewat_url_kelas_ini(): void
     {
         $kelasA2 = Classroom::factory()->create(['user_id' => $this->guruA->id, 'name' => 'KELAS A2']);
         $siswaA2 = Student::factory()->create(['user_id' => $this->guruA->id, 'class_id' => $kelasA2->id]);
@@ -323,57 +356,58 @@ class Audit01KeamananTest extends TestCase
         ]);
 
         $this->actingAs($this->guruA);
-        $r = $this->patch('/classes/'.$this->kelasA->id.'/karakter/catatan/'.$record->id,
-            ['type' => 'negative', 'score' => -5, 'title' => 'DIUBAH LEWAT KELAS LAIN']);
-        $record->refresh();
-        fwrite(STDERR, "\n[PATCH record kelas A2 lewat URL kelas A] status=".$r->status()
-            ." judul_sekarang=".$record->title."\n");
-        $this->assertTrue(true);
+
+        $this->patch('/classes/'.$this->kelasA->id.'/karakter/catatan/'.$record->id, [
+            'type' => 'negative', 'score' => -5, 'title' => 'DIUBAH LEWAT KELAS LAIN',
+        ])->assertNotFound();
+
+        $this->assertSame('MILIK KELAS A2', $record->refresh()->title);
     }
 
-    /** Jalur normal (kelas yang BENAR): apakah edit catatan karakter berfungsi? */
-    public function test_edit_catatan_karakter_jalur_normal(): void
+    /**
+     * Pembanding: penjagaan di atas tidak boleh sampai mengunci pemiliknya
+     * sendiri. Tiap aksi memakai catatan BARU — versi lama memakai satu catatan
+     * untuk semua aksi, sehingga DELETE di tengah membuat dua probe terakhir
+     * 404 dan terbaca seperti kerusakan, padahal catatannya memang sudah tiada.
+     */
+    public function test_pemilik_tetap_bisa_menyunting_catatan_karakternya(): void
     {
         $siswaA = Student::factory()->create(['user_id' => $this->guruA->id, 'class_id' => $this->kelasA->id]);
         $dim = CharacterDimension::create(['code' => 'N', 'name' => 'D', 'is_active' => true, 'sort_order' => 1]);
-        $record = \App\Models\CharacterRecord::withoutTenant()->create([
+
+        $buatCatatan = fn () => \App\Models\CharacterRecord::withoutTenant()->create([
             'user_id' => $this->guruA->id, 'class_id' => $this->kelasA->id, 'student_id' => $siswaA->id,
             'character_dimension_id' => $dim->id, 'type' => 'positive', 'score' => 3,
             'title' => 'ASLI', 'record_date' => now()->toDateString(), 'recorded_by' => $this->guruA->id,
         ]);
-        $refl = \App\Models\CharacterReflection::withoutTenant()->create([
-            'user_id' => $this->guruA->id, 'class_id' => $this->kelasA->id, 'student_id' => $siswaA->id,
-            'character_dimension_id' => $dim->id, 'period' => 'daily',
-            'reflection_date' => now()->toDateString(), 'status' => 'submitted',
-        ]);
 
         $this->actingAs($this->guruA);
-        $u = '/classes/'.$this->kelasA->id.'/karakter/catatan/'.$record->id;
 
-        fwrite(STDERR, "\n--- JALUR NORMAL (pemilik sendiri, kelas benar) ---\n");
-        foreach ([
-            ['PATCH', $u, ['type' => 'positive', 'score' => 1, 'title' => 'DIUBAH']],
-            ['POST', $u.'/konfirmasi', []],
-            ['DELETE', $u, []],
-            ['POST', '/classes/'.$this->kelasA->id.'/karakter/refleksi/'.$refl->id.'/feedback', ['teacher_feedback' => 'bagus']],
-            ['GET', '/classes/'.$this->kelasA->id.'/karakter/'.$siswaA->id.'/catatan/'.$record->id, []],
-        ] as [$m, $uu, $d]) {
-            $r = $this->call($m, $uu, $d);
-            fwrite(STDERR, str_pad($m.' '.$uu, 62).' => '.$r->status()."\n");
-        }
+        $ubah = $buatCatatan();
+        $this->patch('/classes/'.$this->kelasA->id.'/karakter/catatan/'.$ubah->id, [
+            'type' => 'positive', 'score' => 1, 'title' => 'DIUBAH',
+        ])->assertRedirect();
+        $this->assertSame('DIUBAH', $ubah->refresh()->title);
 
-        // Ambil pesan galat sesungguhnya.
-        $this->withoutExceptionHandling();
-        try {
-            $this->patch($u, ['type' => 'positive', 'score' => 1, 'title' => 'X']);
-        } catch (\Throwable $e) {
-            fwrite(STDERR, "EXCEPTION: ".get_class($e).": ".$e->getMessage()."\n");
-        }
-        $this->assertTrue(true);
+        $konfirmasi = $buatCatatan();
+        $this->post('/classes/'.$this->kelasA->id.'/karakter/catatan/'.$konfirmasi->id.'/konfirmasi')
+            ->assertRedirect();
+
+        $hapus = $buatCatatan();
+        $this->delete('/classes/'.$this->kelasA->id.'/karakter/catatan/'.$hapus->id)
+            ->assertRedirect();
+        $this->assertNull(\App\Models\CharacterRecord::withoutTenant()->find($hapus->id));
     }
 
-    /** PaymentProof: status/approved_by ada di $guarded -> update() dibuang diam-diam. */
-    public function test_persetujuan_pembayaran_tidak_pernah_menutup_bukti(): void
+    // -- Persetujuan pembayaran ---------------------------------------------
+
+    /**
+     * Menyetujui bukti yang sama berkali-kali tidak boleh menambah masa
+     * langganan. Tanpa penjagaan itu, admin yang menekan tombol dua kali —
+     * atau menyegarkan halaman setelah menyetujui — memberi bulan gratis yang
+     * tidak pernah dibayar, dan tidak ada yang akan menyadarinya.
+     */
+    public function test_bukti_pembayaran_hanya_bisa_disetujui_sekali(): void
     {
         $admin = User::factory()->create(['email' => 'admin@x.id']);
         $admin->forceFill(['role' => 'admin'])->save();
@@ -384,16 +418,23 @@ class Audit01KeamananTest extends TestCase
         ]);
 
         $this->actingAs($admin);
-        for ($i = 1; $i <= 3; $i++) {
-            $r = $this->post('/admin/subscriptions/'.$proof->id.'/approve');
-            $proof->refresh();
-            $this->guruB->refresh();
-            fwrite(STDERR, "\n[approve ke-{$i}] status=".$r->status()
-                ." proof.status=".$proof->status
-                ." proof.approved_by=".var_export($proof->approved_by, true)
-                ." langganan_sampai=".($this->guruB->subscription_ends_at?->toDateString() ?? 'null'));
-        }
-        fwrite(STDERR, "\n");
-        $this->assertTrue(true);
+
+        $this->post('/admin/subscriptions/'.$proof->id.'/approve');
+        $proof->refresh();
+        $berakhirSetelahSekali = $this->guruB->refresh()->subscription_ends_at;
+
+        $this->assertSame('approved', $proof->status);
+        $this->assertSame($admin->id, $proof->approved_by);
+        $this->assertNotNull($berakhirSetelahSekali);
+
+        // Dua percobaan berikutnya harus tidak berpengaruh sama sekali.
+        $this->post('/admin/subscriptions/'.$proof->id.'/approve');
+        $this->post('/admin/subscriptions/'.$proof->id.'/approve');
+
+        $this->assertEquals(
+            $berakhirSetelahSekali->toDateTimeString(),
+            $this->guruB->refresh()->subscription_ends_at->toDateTimeString(),
+            'persetujuan ulang tidak boleh memperpanjang langganan',
+        );
     }
 }
