@@ -1,0 +1,335 @@
+<?php
+
+use App\Http\Controllers\JurnalMengajarController;
+use App\Http\Controllers\NilaiHarianController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\AttendanceSessionController;
+use App\Http\Controllers\CashBookController;
+use App\Http\Controllers\CharacterPortfolioController;
+use App\Http\Controllers\ClassroomController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExportController;
+use App\Http\Controllers\HealthController;
+use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\LandingController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OrganizationStructureController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Public\AttendanceMagicLinkController;
+use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\SeatingController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\ViolationController;
+use App\Http\Controllers\ViolationTypeController;
+use App\Http\Controllers\WhatsAppSessionController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Health Check (publik, tidak memerlukan autentikasi)
+|--------------------------------------------------------------------------
+*/
+Route::get('/health', [HealthController::class, 'check'])->name('health');
+Route::get('/health/ready', [HealthController::class, 'ready'])->name('health.ready');
+
+Route::get('/', LandingController::class)->name('landing');
+
+/*
+|--------------------------------------------------------------------------
+| Tamu (belum login)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('guest')->group(function () {
+    Route::get('login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [AuthController::class, 'login']);
+    Route::get('register', [AuthController::class, 'showRegister'])->name('register');
+    /*
+     * Pendaftaran terbuka tanpa batas laju adalah jalan termudah membanjiri
+     * basis data dengan akun palsu. Batas sengaja longgar (20 per 10 menit per
+     * alamat IP) karena satu sekolah kerap mendaftarkan banyak wali kelas
+     * sekaligus dari satu jaringan wifi saat pelatihan.
+     */
+    Route::post('register', [AuthController::class, 'register'])
+        ->middleware('throttle:20,10')
+        ->name('register.store');
+
+    // Reset kata sandi lewat OTP WhatsApp.
+    Route::get('lupa-password', [PasswordResetController::class, 'showRequestForm'])->name('password.request');
+    Route::post('lupa-password', [PasswordResetController::class, 'sendOtp'])->name('password.otp.send');
+    Route::get('reset-password', [PasswordResetController::class, 'showResetForm'])->name('password.reset.form');
+    Route::post('reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Magic Link Absensi (PUBLIK - tanpa login, dilindungi token + PIN)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('a')->middleware('magic-link')->group(function () {
+    Route::get('{token}', [AttendanceMagicLinkController::class, 'show'])->name('magic.show');
+    Route::post('{token}/verify', [AttendanceMagicLinkController::class, 'verify'])->name('magic.verify');
+    /*
+     * Roster punya URL GET sendiri, bukan dirender sebagai balasan POST.
+     * Dengan begitu menyegarkan halaman tidak memicu "kirim ulang formulir",
+     * dan kegagalan validasi pada submit bisa redirect() balik ke sini alih-alih
+     * ke URL POST yang lewat GET akan menjadi 405 Method Not Allowed.
+     */
+    Route::get('{token}/isi', [AttendanceMagicLinkController::class, 'roster'])->name('magic.roster');
+    Route::post('{token}/submit', [AttendanceMagicLinkController::class, 'submit'])->name('magic.submit');
+    Route::get('{token}/done', [AttendanceMagicLinkController::class, 'done'])->name('magic.done');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Area wali kelas (login + akun aktif)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'auth.tenant'])->group(function () {
+    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Panel operator SaaS — role:admin di aplikasi ini berarti pemilik/operator
+    // aplikasi, bukan kepala sekolah di suatu sekolah.
+    Route::middleware('role:admin')->group(function () {
+        Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    });
+
+    // Analytics Dashboard
+    Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+
+    // Notifications
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::patch('{notification}/read', [NotificationController::class, 'markAsRead'])->name('read');
+        Route::patch('read-all', [NotificationController::class, 'markAllAsRead'])->name('read-all');
+        Route::delete('{notification}', [NotificationController::class, 'destroy'])->name('destroy');
+        Route::get('count', [NotificationController::class, 'count'])->name('count');
+        Route::get('latest', [NotificationController::class, 'latest'])->name('latest');
+        Route::get('settings', [NotificationController::class, 'settings'])->name('settings');
+        Route::patch('settings', [NotificationController::class, 'updateSettings'])->name('settings.update');
+        Route::post('push/subscribe', [NotificationController::class, 'subscribePush'])->name('push.subscribe');
+        Route::delete('push/unsubscribe', [NotificationController::class, 'unsubscribePush'])->name('push.unsubscribe');
+    });
+
+    Route::get('profil', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
+    // Penautan nomor WhatsApp guru (satu nomor per wali kelas).
+    Route::get('whatsapp', [WhatsAppSessionController::class, 'show'])->name('whatsapp.index');
+    Route::post('whatsapp/pair', [WhatsAppSessionController::class, 'pair'])->name('whatsapp.pair');
+    Route::get('whatsapp/status', [WhatsAppSessionController::class, 'status'])->name('whatsapp.status');
+    Route::get('whatsapp/groups', [WhatsAppSessionController::class, 'groups'])->name('whatsapp.groups');
+    Route::post('whatsapp/groups/test', [WhatsAppSessionController::class, 'testGroup'])->name('whatsapp.groups.test');
+    Route::post('whatsapp/autoreply', [WhatsAppSessionController::class, 'autoreplySave'])->name('whatsapp.autoreply');
+    // Diagnosa saja, tidak mengirim pesan apa pun ke grup orang tua.
+    Route::post('whatsapp/autoreply/check', [WhatsAppSessionController::class, 'autoreplyCheck'])->name('whatsapp.autoreply.check');
+    Route::match(['post', 'delete'], 'whatsapp/disconnect', [WhatsAppSessionController::class, 'disconnect'])->name('whatsapp.disconnect');
+    Route::match(['post', 'delete'], 'whatsapp', [WhatsAppSessionController::class, 'disconnect']);
+
+    // Kalender libur (menahan absensi otomatis).
+    Route::get('libur', [HolidayController::class, 'index'])->name('holidays.index');
+    Route::post('libur', [HolidayController::class, 'store'])->name('holidays.store');
+    Route::delete('libur/{holiday}', [HolidayController::class, 'destroy'])->name('holidays.destroy');
+
+    // Master jenis pelanggaran (lintas kelas, milik wali kelas).
+    Route::resource('violation-types', ViolationTypeController::class)
+        ->only(['index', 'store', 'destroy'])->parameters(['violation-types' => 'type']);
+
+    /*
+     * Arsip kelas. Didaftarkan SEBELUM Route::resource('classes'), karena
+     * kalau tidak, URI /classes/arsip akan tertangkap oleh /classes/{class}
+     * dan menghasilkan 404.
+     */
+    Route::get('classes/arsip', [ClassroomController::class, 'trashed'])->name('classes.trashed');
+    Route::patch('classes/arsip/{class}/restore', [ClassroomController::class, 'restore'])->name('classes.restore');
+    Route::delete('classes/arsip/{class}', [ClassroomController::class, 'forceDelete'])->name('classes.force-delete');
+
+    // Kelas (resource utama).
+    Route::resource('classes', ClassroomController::class)->parameter('classes', 'class');
+
+    /*
+     * Sub-resource kelas. Prefix menambah "classes/{class}/" ke URI dan
+     * ->name('classes.') menambah "classes." ke setiap nama rute.
+     * scopeBindings() memaksa child (siswa, jadwal, dst.) benar-benar milik {class}.
+     * Nama parameter DISENGAJA cocok dengan nama relasi di model Classroom
+     * (Str::plural(Str::camel($param))), mis. {attendanceSession} -> attendanceSessions().
+     */
+    Route::prefix('classes/{class}')->name('classes.')->scopeBindings()->group(function () {
+        // Siswa — rute arsip didaftarkan lebih dulu agar tidak bentrok
+        // dengan students/{student}.
+        Route::get('students/arsip', [StudentController::class, 'trashed'])->name('students.trashed');
+        Route::patch('students/arsip/{student}/restore', [StudentController::class, 'restore'])
+            ->name('students.restore')->withoutScopedBindings();
+
+        /*
+         * Excel. Sama seperti arsip, URI statis ini WAJIB berada sebelum
+         * Route::resource('students'), kalau tidak "impor" akan tertangkap
+         * sebagai students/{student} dan menghasilkan 404.
+         */
+        Route::get('students/template', [StudentController::class, 'template'])->name('students.template');
+        Route::get('students/ekspor', [StudentController::class, 'export'])->name('students.export');
+        Route::get('students/qr-kartu', [StudentController::class, 'qrCards'])->name('students.qr-cards');
+        Route::get('students/impor', [StudentController::class, 'importForm'])->name('students.import.form');
+        Route::post('students/impor', [StudentController::class, 'import'])->name('students.import');
+
+        // Mengosongkan kelas sekaligus. Alasan urutan yang sama: "hapus-semua"
+        // adalah URI statis dan akan tertangkap sebagai students/{student}
+        // bila didaftarkan setelah resource.
+        Route::delete('students/hapus-semua', [StudentController::class, 'destroyAll'])
+            ->name('students.destroy-all');
+
+        // Profil siswa dalam bentuk PDF. Didaftarkan SEBELUM resource agar
+        // "students/{student}/pdf" tidak tertangkap sebagai parameter.
+        Route::get('students/{student}/pdf', [StudentController::class, 'showPdf'])->name('students.pdf');
+
+        Route::resource('students', StudentController::class)
+            ->parameter('students', 'student');
+
+        // Jadwal
+        Route::get('schedules', [ScheduleController::class, 'index'])->name('schedules.index');
+        Route::post('schedules', [ScheduleController::class, 'store'])->name('schedules.store');
+        Route::delete('schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('schedules.destroy');
+
+        // Struktur organisasi
+        Route::get('organization', [OrganizationStructureController::class, 'index'])->name('organization.index');
+        Route::post('organization', [OrganizationStructureController::class, 'store'])->name('organization.store');
+        Route::delete('organization/{organizationStructure}', [OrganizationStructureController::class, 'destroy'])->name('organization.destroy');
+
+        // Pelanggaran / poin
+        Route::get('violations', [ViolationController::class, 'index'])->name('violations.index');
+        Route::post('violations', [ViolationController::class, 'store'])->name('violations.store');
+        Route::delete('violations/{violation}', [ViolationController::class, 'destroy'])->name('violations.destroy');
+
+        // Portofolio Karakter
+        Route::get('karakter', [CharacterPortfolioController::class, 'index'])->name('character-portfolio.index');
+        Route::get('karakter/{student}', [CharacterPortfolioController::class, 'showStudent'])->name('character-portfolio.student');
+        Route::get('karakter/{student}/catatan/baru', [CharacterPortfolioController::class, 'createRecord'])->name('character-portfolio.record.create');
+        Route::get('karakter/{student}/catatan/{record}', [CharacterPortfolioController::class, 'showRecord'])->name('character-portfolio.record.show');
+        Route::post('karakter/catatan', [CharacterPortfolioController::class, 'storeRecord'])->name('character-portfolio.record.store');
+        Route::patch('karakter/catatan/{record}', [CharacterPortfolioController::class, 'updateRecord'])->name('character-portfolio.record.update');
+        Route::delete('karakter/catatan/{record}', [CharacterPortfolioController::class, 'destroyRecord'])->name('character-portfolio.record.destroy');
+        Route::post('karakter/catatan/{record}/konfirmasi', [CharacterPortfolioController::class, 'acknowledgeRecord'])->name('character-portfolio.record.acknowledge');
+        Route::post('karakter/refleksi', [CharacterPortfolioController::class, 'storeReflection'])->name('character-portfolio.reflection.store');
+        Route::post('karakter/refleksi/{reflection}/feedback', [CharacterPortfolioController::class, 'storeFeedback'])->name('character-portfolio.reflection.feedback');
+
+        // Buku kas
+        Route::get('cashbook', [CashBookController::class, 'index'])->name('cashbook.index');
+        Route::post('cashbook', [CashBookController::class, 'store'])->name('cashbook.store');
+        Route::delete('cashbook/{cashbook}', [CashBookController::class, 'destroy'])->name('cashbook.destroy');
+
+        Route::get('rekap-kehadiran', [ReportController::class, 'attendance'])->name('reports.attendance');
+
+        /*
+         * Analisis kehadiran & jurnal mengajar.
+         *
+         * Terbuka untuk semua kelas, bukan hanya kelas ajar: wali kelas juga
+         * berkepentingan tahu siapa yang jarang hadir, dan jurnal pada kelas
+         * perwalian hanya menampilkan sesi yang memang punya materi. Membatasi
+         * rutenya justru memaksa penjagaan tambahan tanpa melindungi apa pun —
+         * TenantScope sudah memastikan kelas orang lain tidak terjangkau.
+         */
+        Route::get('analisis-kehadiran', [ReportController::class, 'analisisKehadiran'])->name('reports.analisis');
+        Route::get('jurnal-mengajar', [JurnalMengajarController::class, 'index'])->name('jurnal.index');
+
+        // Nilai harian per Capaian Pembelajaran.
+        Route::get('nilai', [NilaiHarianController::class, 'index'])->name('nilai.index');
+        Route::get('nilai/baru', [NilaiHarianController::class, 'create'])->name('nilai.create');
+        Route::post('nilai', [NilaiHarianController::class, 'store'])->name('nilai.store');
+        Route::get('nilai/{assessment}', [NilaiHarianController::class, 'edit'])->name('nilai.edit');
+        Route::patch('nilai/{assessment}', [NilaiHarianController::class, 'update'])->name('nilai.update');
+        Route::delete('nilai/{assessment}', [NilaiHarianController::class, 'destroy'])->name('nilai.destroy');
+        Route::patch('jurnal-mengajar/{attendanceSession}', [JurnalMengajarController::class, 'updateMateri'])->name('jurnal.materi');
+        Route::get('laporan-administrasi', [ReportController::class, 'full'])->name('reports.full');
+        Route::get('laporan-administrasi/pdf', [ReportController::class, 'fullPdf'])->name('reports.full.pdf');
+
+        // Export Routes
+        Route::get('ekspor/absensi/excel', [ExportController::class, 'attendanceExcel'])->name('exports.attendance.excel');
+        Route::get('ekspor/absensi/pdf', [ExportController::class, 'attendancePdf'])->name('exports.attendance.pdf');
+        Route::get('ekspor/pelanggaran/excel', [ExportController::class, 'violationsExcel'])->name('exports.violations.excel');
+        Route::get('ekspor/pelanggaran/pdf', [ExportController::class, 'violationsPdf'])->name('exports.violations.pdf');
+        Route::get('ekspor/buku-kas/excel', [ExportController::class, 'cashBookExcel'])->name('exports.cashbook.excel');
+        Route::get('ekspor/buku-kas/pdf', [ExportController::class, 'cashBookPdf'])->name('exports.cashbook.pdf');
+        Route::get('ekspor/karakter/{student}/excel', [ExportController::class, 'characterPortfolioExcel'])->name('exports.character.excel');
+        Route::get('ekspor/karakter/{student}/pdf', [ExportController::class, 'characterPortfolioPdf'])->name('exports.character.pdf');
+
+        // Denah tempat duduk
+        Route::get('seating', [SeatingController::class, 'index'])->name('seating.index');
+        Route::post('seating', [SeatingController::class, 'save'])->name('seating.save');
+
+        // Sesi absensi
+        Route::get('attendance', [AttendanceSessionController::class, 'index'])->name('attendance.index');
+        Route::post('attendance', [AttendanceSessionController::class, 'store'])->name('attendance.store');
+        Route::get('attendance/{attendanceSession}', [AttendanceSessionController::class, 'show'])->name('attendance.show');
+        /*
+         * Koreksi absensi. Sengaja tersedia juga untuk sesi yang sudah
+         * submitted: surat dokter yang menyusul sehari kemudian adalah
+         * kejadian rutin, dan setiap perubahan tercatat di riwayat.
+         */
+        Route::get('attendance/{attendanceSession}/koreksi', [AttendanceSessionController::class, 'edit'])->name('attendance.edit');
+        Route::patch('attendance/{attendanceSession}', [AttendanceSessionController::class, 'update'])->name('attendance.update');
+        Route::patch('attendance/{attendanceSession}/cancel', [AttendanceSessionController::class, 'cancel'])->name('attendance.cancel');
+        Route::post('attendance/{attendanceSession}/resend', [AttendanceSessionController::class, 'resend'])->name('attendance.resend');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Student Portal Routes
+|--------------------------------------------------------------------------
+*/
+require __DIR__.'/student.php';
+
+/*
+| Form Mandiri Siswa & Refleksi Karakter (Publik)
+|
+| Kelas dicari lewat {class:public_token}, BUKAN id. Halaman-halaman ini
+| terbuka tanpa login supaya orang tua bisa membukanya langsung dari tautan
+| WhatsApp, dan dengan id yang berurutan siapa pun bisa menghitung naik dari
+| satu kelas ke kelas berikutnya lalu memanen nama serta NIS seluruh siswa —
+| data anak di bawah umur — sekaligus mengirim biodata ke kelas orang lain.
+|
+| Throttle juga dipasang pada GET, bukan hanya POST. Tanpa itu token masih bisa
+| ditembaki tanpa batas, dan halaman ini menjalankan query daftar siswa pada
+| setiap permintaan sehingga sekaligus menjadi cara memberatkan server.
+| Batasnya longgar (60/menit) karena satu keluarga di balik satu NAT publik
+| bisa membuka formulir beberapa kali secara wajar.
+*/
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('isi-biodata/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'showBiodataForm'])->name('public.biodata.show');
+    Route::get('refleksi-karakter/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'showReflectionForm'])->name('public.reflection.show');
+});
+
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('isi-biodata/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'storeBiodata'])->name('public.biodata.store');
+    Route::post('refleksi-karakter/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'storeReflection'])->name('public.reflection.store');
+});
+
+Route::post('classes/{class}/share-biodata-wa', [App\Http\Controllers\PublicStudentFormController::class, 'shareBiodataWa'])->middleware('auth')->name('classes.share-biodata-wa');
+
+// Route Absensi Manual Langsung (Tanpa Magic Link)
+Route::get('classes/{class}/attendance-manual', [App\Http\Controllers\AttendanceSessionController::class, 'createManual'])->middleware(['auth', 'auth.tenant'])->name('classes.attendance.manual.create');
+Route::post('classes/{class}/attendance-manual', [App\Http\Controllers\AttendanceSessionController::class, 'storeManual'])->middleware(['auth', 'auth.tenant'])->name('classes.attendance.manual.store');
+
+// Route Langganan PRO & QRIS Payment
+Route::middleware(['auth'])->group(function () {
+    Route::get('subscription', [App\Http\Controllers\SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::post('subscription/upload', [App\Http\Controllers\SubscriptionController::class, 'storeProof'])->name('subscription.upload');
+    // Berkas bukti pembayaran tersimpan di disk privat; ini satu-satunya jalan
+    // membacanya, dan hanya untuk pengunggahnya sendiri atau admin.
+    Route::get('subscription/bukti/{proof}', [App\Http\Controllers\SubscriptionController::class, 'showProof'])->name('subscription.proof');
+
+    // Admin Only Approval Routes - MUST have role:admin
+    Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('subscriptions', [App\Http\Controllers\AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
+        Route::post('subscriptions/{proof}/approve', [App\Http\Controllers\AdminSubscriptionController::class, 'approve'])->name('subscriptions.approve');
+        Route::post('subscriptions/{proof}/reject', [App\Http\Controllers\AdminSubscriptionController::class, 'reject'])->name('subscriptions.reject');
+    });
+});
+
+Route::post('whatsapp/template', [App\Http\Controllers\WhatsAppSessionController::class, 'templateSave'])->middleware('auth')->name('whatsapp.template.save');

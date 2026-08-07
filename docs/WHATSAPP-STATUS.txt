@@ -1,0 +1,127 @@
+================================================================================
+            WALI KELAS PRO - WHATSAPP INTEGRATION STATUS
+================================================================================
+Tanggal: 2026-07-24
+Pilihan: STAY WITH LOG MODE (Launch Sekarang)
+
+================================================================================
+                          DECISION RATIONALE
+================================================================================
+
+ALASAN MEMILIH STAY WITH LOG MODE:
+- Budget terbatas (solo developer)
+- Prioritas kemudahan maintenance
+- User butuh fitur работа web sekarang
+- WhatsApp enhancement nanti saan income
+
+TRADE-OFFS:
+✅ Advantage:
+   - Launch sekarang (zero cost)
+   - Fokus ke fitur core (dashboard, absensi, laporan)
+   - Tidak ada infrastruktur baru untuk maintenance
+
+⚠️ Kekurangan:
+   - WhatsApp tidak berfungsi untuk user
+   - User harus check manual ke web untuk absensi
+
+================================================================================
+                          CURRENT STATE
+================================================================================
+
+WHATSAPP DRIVER: log (testing mode)
+-----------------------------------------
+Pesan tidak dikirim ke WhatsApp nyata
+Pesan tercatat di storage/logs/laravel-YYYY-MM-DD.log
+
+Konfigurasi .env:
+-----------------------------------------
+WHATSAPP_DRIVER=log
+N8N_WEBHOOK_URL=https://n8n.walas.my.id/webhook/whatsapp-send
+N8N_SESSION_WEBHOOK_URL=https://n8n.walas.my.id/webhook/session
+N8N_WEBHOOK_SECRET=ubah-secret-ini
+
+Yang Sudah Berfungai:
+-----------------------------------------
+✅ Landing page
+✅ Login/Register
+✅ Dashboard
+✅ CRUD Kelas & Siswa
+✅ Absensi (logic berjalan)
+✅ Pelanggaran
+✅ Laporan
+✅ Cloudflare Tunnel (walas.my.id)
+
+Yang Belum:
+-----------------------------------------
+❌ WhatsApp notification (driver=log)
+
+================================================================================
+                    NEXT STEPS - UPGRADE TO WHATSAPP
+================================================================================
+
+OPTION A: CHAT-API (REKOMENDASI)
+================================================================================
+Cost: ~$5-15/bulan
+Effort: ~1-2 jam
+Maintenance: Zero (managed service)
+Ban Risk: Low (official-ish)
+-------------------------------------
+
+STEP 1: Daftar chat-api.com.au
+STEP 2: Dapatkan API token
+STEP 3: Update .env:
+    WHATSAPP_DRIVER=chatapi
+    CHATAPI_TOKEN=your_token_here
+
+STEP 4: Buat ChatApiChannel.php:
+-------------------------------------
+
+OPTION B: BAKEYS + VENOM (FREE)
+================================================================================
+Cost: $0 + VPS $5/bulan
+Effort: ~4-8 jam
+Maintenance: Medium (monitoring)
+Ban Risk: Medium (unofficial)
+
+STEP 1: Sewa VPS ($5/bulan)
+STEP 2: Install Baileys/Venom
+STEP 3: Setup n8n + Baileys workflow
+STEP 4: Update konfigurasi
+
+================================================================================
+                    UPGRADE CHECKLIST (Saat Ready)
+================================================================================
+
+[ ] Dapat budget $5-15/bulan untuk Chat-API
+[ ] Daftar chat-api.com.au atau setup Baileys
+[ ] Buat channel implementation
+[ ] Update .env
+[ ] Test end-to-end (login → absensi → WhatsApp → siswa isi absensi)
+
+================================================================================
+                         CURRENT WORKFLOW (LOG MODE)
+================================================================================
+
+Guru bikin absensi:
+1. Login ke walas.my.id
+2. Klik "Mulai absensi"
+3. Sistem generate magic link + PIN
+4. Status: "terkirim" (log only - tidak nyata)
+5. Link bisa dicopy manual / kirim manual via WA pribadi
+
+Siswa isi absensi:
+1. Buka link manual
+2. Input PIN manual
+3. Pilih status hadir/sakit/izin/alfa
+4. Submit
+
+================================================================================
+                           NOTES
+================================================================================
+
+- Driver architecture sudah flexible (tukar channel tanpa ubah logic utama)
+- Queue system sudah jalan (async, retry 3x)
+- Error logging sudah lengkap
+- Tenant isolation untuk multi-user
+
+================================================================================

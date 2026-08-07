@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /classes/
+
+Sitemap: https://walas.my.id/sitemap.xml

@@ -1,0 +1,286 @@
+================================================================================
+                        LAPORAN REVIEW WALIKELAS PRO
+                        Fullstack Developer Review
+                        Tanggal: 2026-07-24
+================================================================================
+
+================================================================================
+SECTION 1: RINGKASAN PROJECT
+================================================================================
+
+Nama Project   : WaliKelas Pro
+Teknologi      : Laravel 11, Blade + Tailwind CSS + Alpine.js, MySQL/PostgreSQL
+Deskripsi      : SaaS multi-tenant untuk otomatisasi administrasi wali kelas
+Fitur Utama    : Absensi anti-curang, Magic Link, WhatsApp integration, Multi-tenancy
+URL Production : https://absen.walas.my.id
+
+================================================================================
+SECTION 2: ARSITEKTUR SISTEM
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           FRONTEND LAYER                                    │
+│  Blade Templates + Tailwind CSS + Alpine.js + Vite                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           BACKEND LAYER                                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
+│  │ Controllers │  │   Models    │  │  Services   │  │    Jobs     │       │
+│  │  (20+)      │  │  (15+)      │  │  (1)        │  │  (1)        │       │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘       │
+│                                                                            │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                     MULTI-TENANCY LAYER                              │   │
+│  │  BelongsToTenant Trait + TenantScope Global Scope                   │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        INTEGRATION LAYER                                    │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                       │
+│  │  WhatsApp   │  │    API      │  │   Queue     │                       │
+│  │  (n8n)      │  │ (Sanctum)   │  │ (Database)  │                       │
+│  └─────────────┘  └─────────────┘  └─────────────┘                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+SECTION 3: DATABASE SCHEMA
+================================================================================
+
+Tabel Utama:
++-------------+-------------------------------------+------------------------+
+| Tabel       | Fungsi                              | Tenant Scope           |
++-------------+-------------------------------------+------------------------+
+| users       | Akun wali kelas                     | Tidak (global)         |
+| classes     | Kelas/Semester                      | Ya                     |
+| students    | Siswa                               | Ya                     |
+| schedules   | Jadwal pelajaran                    | Ya                     |
+| attendances | Kehadiran siswa                     | Ya                     |
+| attendance_ | Sesi absensi (magic link, PIN)     | Ya                     |
+| sessions    |                                     |                        |
+| violations  | Pelanggaran siswa                   | Ya                     |
+| violation_  | Jenis pelanggaran                   | Ya                     |
+| types      |                                     |                        |
+| cash_books  | Buku kas kelas                      | Ya                     |
+| seats       | Denah tempat duduk                  | Ya                     |
+| holidays    | Kalender libur                      | Ya                     |
+| organization| Struktur organisasi kelas            | Ya                     |
+| _structures |                                     |                        |
+| class_user  | Relasi kelas-guru (dicadangkan)    | Ya                     |
++-------------+-------------------------------------+------------------------+
+
+Kolom di Tabel Users (sudah lengkap):
+- id, name, email, password
+- whatsapp_number, school_name
+- school_address, school_npsn (sudah ada)
+- principal_name, principal_nip (sudah ada)
+- subscription_plan, is_active
+- wa_session_status, wa_session_id, wa_connected_at, wa_last_error
+
+================================================================================
+SECTION 4: FITUR YANG SUDAH IMPLEMENTASI
+================================================================================
+
+✓ Multi-tenancy (TenantScope + BelongsToTenant trait)
+✓ Absensi Anti-Curang (Magic Link + PIN + Expiry)
+✓ Rate Limiting (Login, PIN, Magic Link)
+✓ Soft Delete dengan Cascade Restore
+✓ OTP Reset Password via WhatsApp
+✓ WhatsApp Integration (n8n webhook)
+✓ QR Code Pairing untuk WhatsApp
+✓ API Sanctum untuk CBT/ExamBrowser
+✓ Scheduled Attendance (auto-generate dari jadwal)
+✓ Queue Job dengan Failure Handling
+✓ Dashboard dengan Real-time Alerts
+✓ Laporan Kehadiran dan Administrasi
+✓ Denah Tempat Duduk Interaktif
+✓ Buku Kas Kelas
+✓ Manajemen Pelanggaran
+
+================================================================================
+SECTION 5: ISSUE YANG DITEMUKAN & SUDAH DIPERBAIKI
+================================================================================
+
+[1] MIGRATION - SELESAI
+━━━━━━━━━━━━━━━━━━━━━━━━
+Status  : SUDAH ADA (migration 2026_07_23_000001_add_school_identity_to_users_table.php)
+Problem : Static checker报告显示 kolom tidak ada, padahal SUDAH ada di database
+Solusi  : Verified - kolom school_address, school_npsn, principal_name, principal_nip SUDAH ADA
+
+[2] REDUNDANT AUTH CHECK - SELESAI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Files   : app/Http/Controllers/Api/AttendanceApiController.php
+          app/Http/Controllers/Api/ClassApiController.php
+Problem : Redundant Auth::check() padahal middleware auth:sanctum sudah handle
+Solusi  : Dihapus check manual dan import Auth yang tidak terpakai
+
+[3] DB::TRANSACTION - SUDAH BAIK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Status  : SUDAH IMPLEMENTASI
+Files   : CashBookController, ViolationController, SeatingController,
+          AttendanceMagicLinkController
+Problem : Tidak ada (sudah punya transaction)
+Solusi  : Tidak perlu perubahan
+
+[4] RATE LIMITS KE CONFIG - SELESAI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Files   : config/walikelas.php (BARU)
+          bootstrap/app.php (MODIFIKASI)
+          routes/web.php (MODIFIKASI)
+          app/Http/Controllers/Public/AttendanceMagicLinkController.php (MODIFIKASI)
+          app/Http/Middleware/ThrottleMagicLink.php (BARU)
+          .env, .env.example (MODIFIKASI)
+
+Problem : Hardcoded rate limits (10, 30, 600)
+
+Konfigurasi Baru:
+  WALIKELAS_PIN_MAX_ATTEMPTS=10       # Maks percobaan PIN per sesi
+  WALIKELAS_PIN_DECAY_SECONDS=600     # Durasi kunci PIN (10 menit)
+  WALIKELAS_MAGIC_LINK_THROTTLE=30    # Request per menit
+
+Solusi  : Dibuat custom middleware ThrottleMagicLink yang membaca dari config
+
+[5] VIEW CONSISTENCY - SELESAI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File    : resources/views/attendance/public/pin.blade.php
+Problem : Test expect "kedaluwarsa" tapi UI显示 "tidak berlaku"
+Solusi  : Diubah menjadi "Tautan kedaluwarsa" untuk konsistensi
+
+================================================================================
+SECTION 6: HASIL TEST
+================================================================================
+
+php artisan test
+
+PASS  Tests\Unit\ExampleTest
+  ✓ that true is true
+
+PASS  Tests\Feature\AuthHardeningTest
+  ✓ login dikunci setelah lima percobaan gagal
+  ✓ akun nonaktif tidak bisa mengakses dashboard
+
+PASS  Tests\Feature\ExampleTest
+  ✓ tamu diarahkan ke login
+  ✓ halaman login dapat diakses
+
+PASS  Tests\Feature\MagicLinkAttendanceTest
+  ✓ pin salah ditolak dan pin benar membuka roster
+  ✓ sesi kedaluwarsa tidak bisa diisi
+
+PASS  Tests\Feature\ScheduledAttendanceTest
+  ✓ membuat satu sesi mengikuti jam pelajaran pertama
+  ✓ tetap satu pesan meski ada lima mata pelajaran
+  ✓ tanpa penerima sama sekali ditandai gagal
+  ✓ tanpa seksi absensi jatuh ke nomor cadangan kelas
+  ✓ tidak mengirim di luar jendela waktu
+  ✓ hanya satu sesi per hari meski dijalankan berkali kali
+  ✓ hari libur dilewati
+  ✓ hari tanpa jadwal tidak menghasilkan sesi
+  ✓ whatsapp belum tersambung ditandai gagal
+  ✓ tanpa nomor wali kelas ditandai gagal bukan senyap
+
+PASS  Tests\Feature\SoftDeleteTest
+  ✓ hapus kelas mengarsipkan siswanya dan bisa dipulihkan
+  ✓ arsip hanya menampilkan kelas sendiri
+
+PASS  Tests\Feature\TenantIsolationTest
+  ✓ wali kelas hanya melihat kelasnya sendiri
+  ✓ tidak bisa membuka kelas milik orang lain
+
+PASS  Tests\Feature\WhatsAppSessionTest
+  ✓ tidak bisa menautkan sebelum nomor diisi
+  ✓ webhook menolak secret yang salah
+  ✓ webhook memperbarui status sesi
+  ✓ sesi putus membuat status tidak tersambung
+
+───────────────────────────────────────────────────────────────────────────────
+TOTAL: 25 passed (70 assertions)
+DURATION: 1.74s
+───────────────────────────────────────────────────────────────────────────────
+
+================================================================================
+SECTION 7: WHATSAPP INTEGRATION STATUS
+================================================================================
+
+ARSITEKTUR YANG SUDAH ADA:
+✓ Interface NotificationChannel (app/Support/Contracts/)
+✓ N8nWhatsAppChannel (app/Support/Notifications/)
+✓ LogChannel (mode dev - log saja)
+✓ N8nSessionManager (manage sesi per guru)
+✓ NullSessionManager (mock untuk dev)
+✓ WhatsAppSessionController (UI pairing + QR)
+✓ WhatsAppWebhookController (callback dari gateway)
+✓ SendWhatsAppMessage Job (async queue)
+✓ Binding di AppServiceProvider
+
+KONFIGURASI .ENV SAAT INI:
+WHATSAPP_DRIVER=log                    ← MASIH LOG, BUKAN N8N
+N8N_WEBHOOK_URL=https://n8n.walas.my.id/webhook/whatsapp-send
+N8N_SESSION_WEBHOOK_URL=https://n8n.walas.my.id/webhook/whatsapp-session
+N8N_WEBHOOK_SECRET=ubah-secret-ini   ← BELUM DIUBAH
+
+YANG BELUM ADA:
+✗ n8n Workflow WhatsApp Send     - SUDAH DIBUAT (docs/n8n-workflow-whatsapp-send.json)
+✗ n8n Workflow Session Manager   - SUDAH DIBUAT (docs/n8n-workflow-session-manager.json)
+✗ Setup Guide n8n                 - SUDAH DIBUAT (docs/n8n-setup-guide.md)
+✗ Akun Fonnte/WaBlas             - BELUM DAFTAR
+✗ n8n deployment                  - BELUM DEPLOY
+
+================================================================================
+SECTION 8: FILE YANG DIMODIFIKASI
+================================================================================
+
+MODIFIKASI:
+  app/Http/Controllers/Api/AttendanceApiController.php
+  app/Http/Controllers/Api/ClassApiController.php
+  app/Http/Controllers/Public/AttendanceMagicLinkController.php
+  app/Http/Middleware/ThrottleMagicLink.php           [BARU]
+  bootstrap/app.php
+  routes/web.php
+  config/walikelas.php
+  .env
+  .env.example
+  resources/views/attendance/public/pin.blade.php
+
+DOKUMEN BARU:
+  docs/n8n-workflow-whatsapp-send.json
+  docs/n8n-workflow-session-manager.json
+  docs/n8n-setup-guide.md
+
+================================================================================
+SECTION 9: RATING & KESIMPULAN
+================================================================================
+
+┌─────────────────┬────────┐
+│ Aspek           │ Rating │
+├─────────────────┼────────┤
+│ Security        │ ⭐⭐⭐⭐⭐  │
+│ Code Quality    │ ⭐⭐⭐⭐    │
+│ Architecture     │ ⭐⭐⭐⭐⭐  │
+│ Performance     │ ⭐⭐⭐⭐    │
+│ Documentation   │ ⭐⭐⭐⭐⭐  │
+│ Testing         │ ⭐⭐⭐     │
+├─────────────────┼────────┤
+│ OVERALL         │ ⭐⭐⭐⭐    │
+└─────────────────┴────────┘
+
+KESIMPULAN:
+Proyek Laravel yang sangat SOLID dengan arsitektur multi-tenancy yang bagus,
+keamanan absensi yang kuat (anti-cheat), dan dokumentasi lengkap.
+
+Issue yang ditemukan sebagian besar MINOR dan tidak mempengaruhi fungsi utama
+aplikasi.
+
+PRIORITAS SELANJUTNYA:
+1. Deploy n8n workflow
+2. Daftar Fonnte/WaBlas
+3. Update .env ke driver=n8n
+4. Test end-to-end WhatsApp
+5. Jalankan queue worker di production
+
+================================================================================
+END OF REPORT
+================================================================================

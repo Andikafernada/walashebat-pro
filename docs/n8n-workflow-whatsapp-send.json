@@ -1,0 +1,287 @@
+{
+  "name": "WaliKelas Pro - WhatsApp Send",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-send",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "walikelas-whatsapp-send"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "secret-check",
+              "leftValue": "={{ $json.headers['x-webhook-secret'] }}",
+              "rightValue": "={{ $env.WHATSAPP_WEBHOOK_SECRET }}",
+              "operator": {
+                "type": "equals",
+                "operation": "equals"
+              }
+            }
+          ],
+          "options": {}
+        },
+        "options": {}
+      },
+      "id": "validate-secret",
+      "name": "Validate Secret",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract payload data\nconst body = $input.first().json;\nconst { from, to, message, meta } = body;\n\n// Normalize phone numbers (ensure international format)\nconst normalizePhone = (phone) => {\n  if (!phone) return null;\n  let num = phone.replace(/\\D/g, '');\n  if (num.startsWith('0')) {\n    num = '62' + num.slice(1);\n  }\n  if (!num.startsWith('62')) {\n    num = '62' + num;\n  }\n  return num + '@s.whatsapp.net';\n};\n\nreturn {\n  json: {\n    from: normalizePhone(from),\n    to: normalizePhone(to),\n    message: message,\n    meta: meta || {},\n    // For Fonnte/WaBlas format\n    target: to.replace(/\\D/g, ''),\n    messageText: message\n  }\n};"
+      },
+      "id": "format-payload",
+      "name": "Format Payload",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.FONNTE_API_URL || 'https://api.fonnte.com/api/send-message' }}",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $env.FONNTE_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "target",
+              "value": "={{ $json.target }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.messageText }}"
+            },
+            {
+              "name": "schedule",
+              "value": ""
+            },
+            {
+              "name": "countryCode",
+              "value": "62"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fonnte-send",
+      "name": "Fonnte API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1000, 200]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.WABLAS_API_URL || 'https://api.wablas.com/api/v2/send-message' }}",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $env.WABLAS_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $json.target }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.messageText }}"
+            },
+            {
+              "name": "type",
+              "value": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wablas-send",
+      "name": "WaBlas API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1000, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "ok": true,
+          "message": "Pesan berhasil dikirim",
+          "timestamp": "={{ $now.toISO() }}"
+        }
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "ok": false,
+          "error": "Secret tidak valid"
+        }
+      },
+      "id": "respond-fail",
+      "name": "Respond Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [750, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "ok": false,
+          "error": "Gagal mengirim pesan",
+          "detail": "={{ $json.message || 'Unknown error' }}"
+        }
+      },
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 100]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Secret": {
+      "main": [
+        [
+          {
+            "node": "Format Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Payload": {
+      "main": [
+        [
+          {
+            "node": "Fonnte API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WaBlas API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fonnte API": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WaBlas API": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fonnte API": {
+      "error": [
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WaBlas API": {
+      "error": [
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "walikelas-whatsapp-send",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "templateId": "custom"
+  },
+  "tags": [
+    {
+      "name": "WaliKelas Pro"
+    }
+  ]
+}

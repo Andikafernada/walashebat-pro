@@ -1,0 +1,619 @@
+@extends('layouts.app')
+
+@section('title', 'Integrasi WhatsApp & Balasan Otomatis')
+
+@section('content')
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+<div class="space-y-6 pb-12" x-data="waSession({ connected: {{ auth()->user()->whatsappConnected() ? 'true' : 'false' }}, statusUrl: '{{ route('whatsapp.status') }}' })">
+    <!-- Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">
+                Integrasi WhatsApp &amp; Balasan Otomatis 📲
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">Tautkan nomor WhatsApp Anda, atur kata kunci patokan izin/sakit, dan tentukan grup mana yang dibalas otomatis.</p>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    @include('partials.flash')
+
+    <!-- PAIRING / CONNECTION STATUS CARD -->
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 font-bold text-2xl">
+                    💬
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Status Koneksi WhatsApp</h3>
+                    <p class="text-xs text-slate-500">Nomor Guru: <strong class="text-slate-800">{{ auth()->user()->whatsapp_number ?: 'Belum diisi' }}</strong></p>
+                </div>
+            </div>
+
+            <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
+                  :class="status === 'connected' ? 'bg-emerald-100 text-emerald-800' : (status === 'pairing' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')"
+                  x-text="label()">
+            </span>
+        </div>
+
+        @if(!auth()->user()->whatsappConnected())
+            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-3">
+                <div>
+                    <p class="font-bold text-sm text-amber-950">⚠️ Nomor WhatsApp Belum Tersambung</p>
+                    <p class="text-slate-600 mt-0.5">Klik tombol <strong>"Tautkan Nomor WhatsApp"</strong> di bawah untuk menerbitkan Kode QR resmi.</p>
+                </div>
+                <form method="POST" action="{{ route('whatsapp.pair') }}">
+                    @csrf
+                    <button type="submit" class="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95 flex items-center gap-2">
+                        <span>📱 Tautkan Nomor WhatsApp (Terbitkan QR Code)</span>
+                    </button>
+                </form>
+            </div>
+        @else
+            <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
+                <span class="font-semibold text-emerald-700">✓ WhatsApp Aktif &amp; Siap Mengirim Pesan / Balas Otomatis</span>
+                <form method="POST" action="{{ route('whatsapp.disconnect') }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" onclick="return confirm('Putus koneksi WhatsApp ini?')" class="text-xs font-bold text-rose-600 hover:underline">
+                        Putus Koneksi
+                    </button>
+                </form>
+            </div>
+        @endif
+    </div>
+
+    <!-- DYNAMIC REAL-TIME QR CODE DISPLAY CARD -->
+    <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
+         x-show="status !== 'connected' && qr">
+        <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+            <span>Kode QR WhatsApp Berhasil Diterbitkan</span>
+        </div>
+        
+        <h3 class="text-xl font-black text-slate-900">Pindai Kode QR Ini Menggunakan WhatsApp HP</h3>
+        
+        <p class="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+            Buka aplikasi WhatsApp di HP Anda &rarr; Ketuk <strong>Setelan (atau Titik Tiga)</strong> &rarr; <strong>Perangkat Tertaut</strong> &rarr; <strong>Tautkan Perangkat</strong>.
+        </p>
+
+        <!-- QR CODE CANVAS CONTAINER -->
+        <div class="py-2 flex justify-center">
+            <div class="p-3 bg-white border-2 border-slate-900 rounded-2xl shadow-xl inline-block">
+                <canvas id="wa-qr-canvas-dynamic"></canvas>
+            </div>
+        </div>
+
+        <p class="text-xs font-bold text-indigo-600 animate-pulse">
+            ⏳ Menunggu pemindaian dari HP... Halaman akan otomatis terhubung begitu dipindai.
+        </p>
+    </div>
+
+    <!-- AUTOREPLY GROUPS SELECTION & EDITING (IF WA CONNECTED) -->
+    @if(auth()->user()->whatsappConnected())
+        <div class="rounded-2xl border-2 border-indigo-200 bg-white p-6 shadow-md space-y-5"
+             x-data="autoreply({ grupUrl: '{{ route('whatsapp.groups') }}', terpilih: {{ json_encode($autoreply['groups'] ?? []) }} })"
+             x-init="muat()">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <span>👥 Pilih &amp; Kelola Grup WhatsApp yang Dibalas Otomatis</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Centang grup WhatsApp orang tua yang ingin diaktifkan. Anda bisa menambah, mengurangi, atau mengedit kapan saja.</p>
+                </div>
+
+                <div class="shrink-0 flex items-center gap-2">
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span x-text="terpilih.length"></span> Grup Terkoneksi
+                    </span>
+                    <button type="button" @click="muat()" class="text-xs text-indigo-600 hover:underline font-bold">
+                        🔄 Refresh Grup
+                    </button>
+                </div>
+            </div>
+
+            @php
+                /*
+                 * Pengaturan yang ditampilkan hanya bisa dipercaya bila gateway
+                 * benar-benar menjawab. Bila tidak, autoreplyStatus() membalas
+                 * "mati, tanpa grup" — kebetulan sama persis dengan tampilan
+                 * seorang guru yang memang mematikannya. Menyajikannya sebagai
+                 * fakta membuat guru menyangka pengaturannya hilang dan menyetel
+                 * ulang sesuatu yang sebenarnya utuh.
+                 */
+                $gatewayTerjangkau = blank($autoreply['error'] ?? null);
+                $tungguDetik = (int) ($gatewayStatus['circuit']['time_until_retry'] ?? 0);
+                $kirimTerganggu = ! ($channelStatus['healthy'] ?? true);
+            @endphp
+
+            @unless ($gatewayTerjangkau)
+                <div class="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950 space-y-1">
+                    <p class="font-bold">⚠️ Pengaturan di bawah belum bisa dibaca</p>
+                    <p>Sistem sedang tidak bisa menghubungi layanan WhatsApp, jadi keadaan balasan otomatis Anda <strong>tidak diketahui</strong> — bukan berarti mati, dan pilihan grup Anda <strong>tidak hilang</strong>.</p>
+                    <p class="text-amber-800">Ini gangguan di sisi kami, bukan pengaturan Anda.
+                        @if ($tungguDetik > 0)
+                            Sistem mencoba lagi otomatis dalam <strong>{{ $tungguDetik }} detik</strong>.
+                        @else
+                            Sistem mencoba lagi otomatis. Muat ulang halaman ini beberapa saat lagi.
+                        @endif
+                    </p>
+                    <p class="text-amber-800">Selama gangguan ini, <strong>jangan menekan Simpan</strong> — biarkan pengaturan lama tetap berjalan.</p>
+                </div>
+            @endunless
+
+            @if ($gatewayTerjangkau && $kirimTerganggu)
+                {{-- Sirkuit berbeda: yang ini soal MENGIRIM pesan, bukan membaca
+                     pengaturan. Magic link absensi lewat jalur yang sama. --}}
+                <div class="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950">
+                    <p class="font-bold">⚠️ Pengiriman WhatsApp sedang terganggu</p>
+                    <p>Pengaturan Anda terbaca normal, tetapi pesan keluar (balasan otomatis dan magic link absensi) sedang gagal terkirim. Sistem mencoba lagi otomatis.</p>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('whatsapp.autoreply') }}" class="space-y-4">
+                @csrf
+
+                {{--
+                    Pasangan hidden + checkbox adalah pola baku Laravel: tidak
+                    dicentang mengirim 0, dicentang mengirim 1.
+
+                    Desain ulang 1 Agustus menghapus checkbox-nya dan menyisakan
+                    hidden value="1", sehingga formulir SELALU mengirim "nyala".
+                    Melepas semua centang grup pun tidak menolong — controller
+                    menolaknya dengan peringatan dan tidak menyimpan apa pun.
+                    Akibatnya wali kelas bisa menyalakan bot yang membalas orang
+                    tua di grup, tetapi tidak punya satu pun cara mematikannya
+                    selain memutus seluruh sambungan WhatsApp — yang sekalian
+                    mematikan magic link absensi.
+                --}}
+                <input type="hidden" name="enabled" value="0">
+
+                <label class="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-white p-3 cursor-pointer hover:bg-slate-50 transition-colors">
+                    <input type="checkbox" name="enabled" value="1" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                           @checked($autoreply['enabled'] ?? false)>
+                    <span class="text-xs">
+                        <span class="font-bold text-slate-800">Nyalakan balasan otomatis</span>
+                        @if ($gatewayTerjangkau)
+                            <span class="ml-1.5 align-middle inline-block rounded-full px-2 py-0.5 text-[10px] font-bold
+                                  {{ ($autoreply['enabled'] ?? false) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
+                                {{ ($autoreply['enabled'] ?? false) ? 'Sedang aktif' : 'Sedang mati' }}
+                            </span>
+                        @else
+                            {{-- Jangan mengaku tahu. "Mati" di sini akan keliru. --}}
+                            <span class="ml-1.5 align-middle inline-block rounded-full px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800">
+                                Tidak diketahui
+                            </span>
+                        @endif
+                        <span class="block text-slate-500 mt-0.5">Lepas centang ini untuk menghentikan balasan tanpa memutus sambungan WhatsApp.</span>
+                    </span>
+                </label>
+
+                <div class="flex gap-2">
+                    <input type="text" x-model="cari" placeholder="🔍 Cari nama grup WhatsApp..."
+                           class="flex-1 h-10 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:outline-none">
+                    {{-- Daftar grup di-cache 5 menit untuk menghindari batas laju
+                         WhatsApp; tombol ini untuk guru yang baru menambah grup. --}}
+                    <button type="button" @click="muat(true)" :disabled="memuat" title="Ambil ulang daftar grup dari WhatsApp"
+                            class="h-10 shrink-0 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 text-xs font-bold text-slate-700 transition-colors disabled:opacity-50">
+                        <span x-show="!memuat">↻ Muat ulang</span>
+                        <span x-show="memuat">Memuat…</span>
+                    </button>
+                </div>
+
+                <p x-show="dariCache && !memuat && !galat && !catatan" class="text-[10px] text-slate-400 -mt-1">
+                    Daftar dari simpanan sementara. Tekan “Muat ulang” bila ada grup baru.
+                </p>
+
+                {{-- Muat ulang gagal tapi daftar lama masih ada: tampilkan daftarnya,
+                     jangan dikosongkan, dan beri tahu bahwa datanya belum tersegarkan. --}}
+                <p x-show="catatan && !memuat && !galat" x-text="catatan"
+                   class="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 -mt-1"></p>
+
+                <div x-show="memuat" class="flex items-center justify-center gap-2 py-8 text-xs text-slate-500 bg-slate-50 rounded-xl">
+                    <span class="h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
+                    <span>Memuat daftar grup WhatsApp dari ponsel...</span>
+                </div>
+
+                <div x-show="!memuat && tersaring.length > 0" class="max-h-72 overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+                    <template x-for="g in tersaring" :key="g.id">
+                        <label class="flex cursor-pointer items-center justify-between gap-3 p-3 hover:bg-indigo-50/50 transition-colors"
+                               :class="terpilih.includes(g.id) ? 'bg-emerald-50/30' : ''">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <input type="checkbox" name="groups[]" :value="g.id" x-model="terpilih"
+                                       class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                <div class="min-w-0">
+                                    <span class="block truncate text-xs font-bold text-slate-900" x-text="g.subject"></span>
+                                    <span class="block text-[10px] text-slate-400" x-text="g.peserta + ' Anggota'"></span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 shrink-0">
+                                {{-- Diagnosa, bukan uji kirim: tidak ada pesan yang masuk ke
+                                     grup orang tua, jadi aman ditekan berkali-kali. --}}
+                                <button type="button" x-show="terpilih.includes(g.id)"
+                                        @click.prevent="periksa(g.id)" :disabled="memeriksa === g.id"
+                                        class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50">
+                                    <span x-show="memeriksa !== g.id">Cek status</span>
+                                    <span x-show="memeriksa === g.id">Memeriksa…</span>
+                                </button>
+
+                                <span x-show="terpilih.includes(g.id)"
+                                      class="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                    ✓ Terkoneksi (Aktif)
+                                </span>
+                                <span x-show="!terpilih.includes(g.id)" 
+                                      class="inline-flex items-center text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                                    Tidak Aktif
+                                </span>
+                            </div>
+                        </label>
+                    </template>
+                </div>
+
+                {{-- Gagal memuat BUKAN sama dengan tidak punya grup. Dulu keduanya
+                     tampil sebagai pesan "tidak ditemukan grup" yang menyesatkan. --}}
+                <div x-show="!memuat && galat" class="py-6 px-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-2">
+                    <p class="font-bold">Daftar grup gagal dimuat.</p>
+                    <p x-text="galat"></p>
+                    <button type="button" @click="muat(true)"
+                            class="h-8 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 transition-colors">
+                        Coba muat ulang
+                    </button>
+                </div>
+
+                <div x-show="!memuat && !galat && tersaring.length === 0" class="py-8 text-center bg-slate-50 rounded-xl text-xs text-slate-500">
+                    Tidak ditemukan grup WhatsApp. Pastikan WhatsApp ponsel Anda sudah bergabung di grup.
+                </div>
+
+                {{-- Hasil "Cek status": daftar syarat yang bisa ditindaklanjuti guru,
+                     bukan sekadar aktif/tidak. --}}
+                <div x-show="hasilCek" x-cloak class="rounded-xl border p-3 text-xs space-y-2"
+                     :class="hasilCek && hasilCek.siap ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'">
+                    <div class="flex items-start justify-between gap-2">
+                        <p class="font-bold" :class="hasilCek && hasilCek.siap ? 'text-emerald-800' : 'text-amber-800'">
+                            <span x-text="hasilCek && hasilCek.siap ? '✓ Siap membalas' : '⚠ Belum siap membalas'"></span>
+                            — <span x-text="hasilCek ? hasilCek.grup : ''"></span>
+                        </p>
+                        <button type="button" @click.prevent="hasilCek = null" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+                    </div>
+
+                    <p x-show="hasilCek && hasilCek.pesan" x-text="hasilCek ? hasilCek.pesan : ''" class="text-amber-800"></p>
+
+                    <template x-if="hasilCek && hasilCek.syarat">
+                        <div class="space-y-1">
+                            <template x-for="[kunci, label] in [
+                                ['sesi_tersambung', 'Nomor WhatsApp tersambung'],
+                                ['fitur_menyala', 'Balasan otomatis dinyalakan'],
+                                ['grup_terdaftar', 'Grup ini terdaftar'],
+                                ['dalam_jam_kerja', 'Sekarang di dalam jam aktif'],
+                            ]" :key="kunci">
+                                <p class="flex items-center gap-1.5 text-slate-700">
+                                    <span x-text="hasilCek.syarat[kunci] ? '✓' : '✕'"
+                                          :class="hasilCek.syarat[kunci] ? 'text-emerald-600' : 'text-rose-600'"
+                                          class="font-bold w-3"></span>
+                                    <span x-text="label"></span>
+                                </p>
+                            </template>
+                            <p class="flex items-center gap-1.5 text-slate-700">
+                                <span class="font-bold w-3"
+                                      x-text="hasilCek.syarat.kuota_tersisa > 0 ? '✓' : '✕'"
+                                      :class="hasilCek.syarat.kuota_tersisa > 0 ? 'text-emerald-600' : 'text-rose-600'"></span>
+                                <span>Kuota harian tersisa
+                                    <strong x-text="hasilCek.syarat.kuota_tersisa"></strong>
+                                    dari <span x-text="hasilCek.kuota"></span>
+                                </span>
+                            </p>
+                            <p class="text-[10px] text-slate-500 pt-1">
+                                Jam aktif <strong x-text="hasilCek.jam"></strong>.
+                                Pemeriksaan ini tidak mengirim pesan ke grup.
+                            </p>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="flex items-center justify-between border-t border-slate-100 pt-3">
+                    <span class="text-xs text-slate-500">
+                        Total terpilih: <strong class="text-indigo-600" x-text="terpilih.length"></strong> grup.
+                    </span>
+                    <button type="submit" class="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 transition-all shadow-md shadow-indigo-500/20 active:scale-95">
+                        💾 Simpan Perubahan Grup WA
+                    </button>
+                </div>
+            </form>
+        </div>
+    @endif
+
+    <!-- CUSTOM KEYWORDS & TEMPLATE FORM -->
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-6">
+        <div class="border-b border-slate-100 pb-3">
+            <h3 class="text-base font-bold text-slate-900">🔤 Klasifikasi Kata Kunci &amp; Templat Balasan Guru</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Tentukan sendiri kata kunci yang dijadikan patokan balasan otomatis. Pesan di luar kata kunci ini <strong>TIDAK AKAN DIBALAS</strong>.</p>
+        </div>
+
+        <form method="POST" action="{{ route('whatsapp.template.save') }}" class="space-y-6 text-xs">
+            @csrf
+
+            <!-- KEYWORDS CONFIGURATION -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                {{--
+                    Kolom ini TAMBAHAN, bukan daftar utama.
+
+                    Dulu kolomnya diisi otomatis dengan daftar contoh, dan
+                    apa pun yang tersimpan MENGGANTIKAN daftar bawaan di
+                    gateway. Akibatnya guru yang cuma membuka halaman ini lalu
+                    menekan Simpan diam-diam mematikan puluhan kata bawaan —
+                    "muntah", "takziyah", "ke luar kota", dan seluruh kata
+                    Sunda berhenti dikenali tanpa ada yang tahu sebabnya.
+
+                    Sekarang bawaan selalu berlaku dan isian di sini menambah,
+                    jadi kolomnya sengaja DIBIARKAN KOSONG.
+                --}}
+                <div class="md:col-span-2 flex items-start gap-2 text-[11px] text-indigo-900">
+                    <span>ℹ️</span>
+                    <p>Kata umum seperti <span class="font-mono">izin, sakit, demam, acara, takziyah</span> — termasuk kata Sunda seperti <span class="font-mono">gering, muriang, teu tiasa</span> — <strong>sudah dikenali otomatis</strong>. Kolom di bawah hanya untuk menambah kata khas daerah atau kebiasaan grup Anda. Boleh dikosongkan.</p>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block font-bold text-indigo-950 uppercase tracking-wider text-[11px]">1. Tambahan Kata Kunci IZIN <span class="text-indigo-600 font-normal lowercase">(pisahkan koma, boleh kosong)</span></label>
+                    <input type="text" name="wa_permission_keywords"
+                           value="{{ auth()->user()->wa_permission_keywords }}"
+                           placeholder="mis. wangsul, ngalayad..."
+                           class="w-full rounded-xl border border-indigo-200 bg-white p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none font-mono">
+                    <p class="text-[10px] text-slate-500">Ditambahkan ke kata bawaan, bukan menggantikannya.</p>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block font-bold text-indigo-950 uppercase tracking-wider text-[11px]">2. Tambahan Kata Kunci SAKIT <span class="text-indigo-600 font-normal lowercase">(pisahkan koma, boleh kosong)</span></label>
+                    <input type="text" name="wa_sick_keywords"
+                           value="{{ auth()->user()->wa_sick_keywords }}"
+                           placeholder="mis. meriang, nyeri huntu..."
+                           class="w-full rounded-xl border border-indigo-200 bg-white p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none font-mono">
+                    <p class="text-[10px] text-slate-500">Ditambahkan ke kata bawaan, bukan menggantikannya.</p>
+                </div>
+            </div>
+
+            {{--
+                Dua kolom ini dulu satu kolom yang DITULIS ke basis data lalu
+                tidak pernah dibaca siapa pun — gateway bahkan tidak mengenal
+                kata "template". Guru menyunting balasannya, menekan Simpan,
+                melihat "berhasil disimpan", dan tidak ada yang berubah.
+
+                Teks bawaannya juga menjanjikan "telah tercatat dalam sistem
+                absensi", padahal balasan otomatis memang tidak menyentuh
+                absensi sama sekali. Janji itu ikut dihapus.
+            --}}
+            <div class="space-y-2 border-t border-slate-100 pt-4">
+                <div class="flex items-start justify-between gap-3">
+                    <label class="block font-bold text-slate-800 uppercase tracking-wider">Variasi Balasan Anda Sendiri</label>
+                    <span class="text-[11px] font-bold text-indigo-600 shrink-0">Tag: {nama}</span>
+                </div>
+                <div class="flex items-start gap-2 text-[11px] text-slate-600 bg-slate-50 rounded-xl p-2.5">
+                    <span>💬</span>
+                    <p>Balasan sudah berganti-ganti otomatis dari 8 kalimat bawaan, jadi kolom ini <strong>boleh dikosongkan</strong>. Isi hanya bila ingin menambah kalimat dengan gaya bahasa Anda sendiri — <strong>satu kalimat per baris</strong>. Tulis <span class="font-mono">{nama}</span> untuk menyebut nama anaknya. Kalimat Anda <strong>ditambahkan</strong>, tidak menggantikan yang bawaan.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">Untuk kabar IZIN</label>
+                        <textarea name="wa_permission_template" rows="4"
+                                  placeholder="Nuhun infona Bu, mugia urusan {nama} lancar.&#10;Baik Pak, izin {nama} sudah saya terima."
+                                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 font-sans focus:border-indigo-500 focus:bg-white focus:outline-none">{{ auth()->user()->wa_permission_template }}</textarea>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">Untuk kabar SAKIT</label>
+                        <textarea name="wa_sick_template" rows="4"
+                                  placeholder="Mugia {nama} enggal damang nya Bu.&#10;Semoga {nama} lekas sehat, salam dari saya."
+                                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 font-sans focus:border-indigo-500 focus:bg-white focus:outline-none">{{ auth()->user()->wa_sick_template }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEMPLATE 2: MAGIC LINK ABSENSI BROADCAST -->
+            <div class="space-y-2 border-t border-slate-100 pt-4">
+                <div class="flex items-center justify-between">
+                    <label class="block font-bold text-slate-800 uppercase tracking-wider">Format Broadcast Magic Link Presensi Kelas</label>
+                    <span class="text-[11px] font-bold text-indigo-600">Tag: {nama_kelas}, {magic_link}, {pin}, {jam_berlaku}</span>
+                </div>
+                <textarea name="wa_magic_link_template" rows="5" 
+                          placeholder="Ketikkan templat pesan magic link..." 
+                          class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 font-sans focus:border-indigo-500 focus:bg-white focus:outline-none">{{ auth()->user()->wa_magic_link_template ?: "*Wali Kelas Hebat - Absensi Kelas {nama_kelas}*\n\nPetugas absensi, silakan isi kehadiran hari ini melalui tautan berikut:\n{magic_link}\n\nPIN Harian: *{pin}*\nBerlaku s/d: {jam_berlaku} WIB\n\nJangan bagikan PIN ini ke siapa pun." }}</textarea>
+            </div>
+
+            <div class="flex items-center justify-end border-t border-slate-100 pt-4">
+                <button type="submit" class="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 text-xs transition-all shadow-md shadow-indigo-500/20">
+                    ✓ Simpan Kata Kunci &amp; Templat WhatsApp
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    function waSession(cfg) {
+        return {
+            status: cfg.connected ? 'connected' : 'disconnected',
+            qr: @json(session('wa_qr')),
+            timer: null,
+            lastQrRendered: null,
+            init() {
+                if (this.qr) this.renderQr(this.qr);
+
+                /*
+                 * Polling hanya berguna selama menunggu guru memindai QR.
+                 * Kalau sesi SUDAH tersambung saat halaman dibuka, tidak ada
+                 * yang perlu ditunggu — dan menjalankan poll() di sini justru
+                 * langsung memicu window.location.reload() di bawah, sehingga
+                 * halaman memuat ulang tanpa henti.
+                 */
+                if (this.status === 'connected') return;
+
+                this.poll();
+                this.timer = setInterval(() => this.poll(), 2500);
+            },
+            label() {
+                if (this.status === 'connected') return 'Tersambung ✓';
+                if (this.status === 'pairing') return 'Menunggu Pemindaian QR';
+                return 'Belum Tersambung';
+            },
+            renderQr(qrStr) {
+                if (!qrStr || this.lastQrRendered === qrStr) return;
+                this.lastQrRendered = qrStr;
+                this.$nextTick(() => {
+                    const canvas = document.getElementById('wa-qr-canvas-dynamic');
+                    if (canvas && typeof qrcode === 'function') {
+                        // Clear previous QR
+                        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+
+                        // Generate QR code using qrcode-generator library
+                        const typeNumber = 0; // Auto-detect
+                        const errorCorrectionLevel = 'M';
+                        const qr = qrcode(typeNumber, errorCorrectionLevel);
+                        qr.addData(qrStr);
+                        qr.make();
+
+                        // Calculate cell size to fit canvas
+                        const cellSize = Math.floor(260 / qr.getModuleCount());
+                        const qrSize = cellSize * qr.getModuleCount();
+
+                        canvas.width = qrSize;
+                        canvas.height = qrSize;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, qrSize, qrSize);
+                        ctx.fillStyle = '#0f172a';
+
+                        for (let row = 0; row < qr.getModuleCount(); row++) {
+                            for (let col = 0; col < qr.getModuleCount(); col++) {
+                                if (qr.isDark(row, col)) {
+                                    ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+            async poll() {
+                try {
+                    const res = await fetch(cfg.statusUrl, { headers: { 'Accept': 'application/json' } });
+                    const data = await res.json();
+                    if (data.status) {
+                        this.status = data.status;
+                        if (data.qr) {
+                            this.qr = data.qr;
+                            this.renderQr(data.qr);
+                        }
+                        // Hanya tercapai bila halaman dibuka dalam keadaan belum
+                        // tersambung, jadi ini benar-benar peralihan: QR baru
+                        // saja dipindai. Muat ulang sekali untuk menampilkan
+                        // tampilan tersambung, lalu berhenti.
+                        if (data.status === 'connected') {
+                            clearInterval(this.timer);
+                            this.timer = null;
+                            window.location.reload();
+                        }
+                    }
+                } catch (e) {}
+            }
+        }
+    }
+
+    function autoreply(cfg) {
+        return {
+            grup: [],
+            memuat: true,
+            galat: '',
+            catatan: '',
+            dariCache: false,
+            memeriksa: '',
+            hasilCek: null,
+            cari: '',
+            terpilih: cfg.terpilih || [],
+            get tersaring() {
+                const kata = this.cari.trim().toLowerCase();
+                if (!kata) return this.grup;
+
+                return this.grup.filter((g) =>
+                    g.subject.toLowerCase().includes(kata) || this.terpilih.includes(g.id)
+                );
+            },
+            /*
+             * Memeriksa apakah balasan otomatis akan benar-benar jalan untuk
+             * satu grup. Tidak mengirim pesan apa pun — berbeda dari uji kirim.
+             */
+            async periksa(idGrup) {
+                this.memeriksa = idGrup;
+                this.hasilCek = null;
+                try {
+                    const res = await fetch('{{ route('whatsapp.autoreply.check') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                        body: JSON.stringify({ group_id: idGrup }),
+                    });
+                    const data = await res.json();
+
+                    const nama = (this.grup.find((g) => g.id === idGrup) || {}).subject || idGrup;
+
+                    if (!data.ok) {
+                        this.hasilCek = { grup: nama, siap: false, pesan: data.pesan || 'Pemeriksaan gagal.', syarat: null };
+                        return;
+                    }
+
+                    this.hasilCek = {
+                        grup: nama,
+                        siap: data.siap,
+                        syarat: data.syarat,
+                        jam: data.jam,
+                        kuota: data.kuota_harian,
+                        terpakai: data.terpakai_hari_ini,
+                        pesan: null,
+                    };
+                } catch (e) {
+                    this.hasilCek = { grup: idGrup, siap: false, pesan: 'Tidak bisa menghubungi server.', syarat: null };
+                } finally {
+                    this.memeriksa = '';
+                }
+            },
+
+            async muat(paksaSegar = false) {
+                this.memuat = true;
+                this.galat = '';
+                try {
+                    const url = cfg.grupUrl + (paksaSegar ? '?refresh=1' : '');
+                    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+                    const data = await res.json();
+
+                    // data.ok membedakan "pengambilan gagal" dari "memang tidak
+                    // punya grup" — keduanya sama-sama berupa daftar kosong.
+                    if (!data.ok) {
+                        this.galat = data.warning || 'Gateway tidak merespons dengan benar.';
+                        this.grup = [];
+                        return;
+                    }
+
+                    // ok=true tapi ada warning berarti muat ulang gagal dan yang
+                    // tampil adalah data terakhir — daftarnya tetap dipakai.
+                    this.catatan = data.warning || '';
+                    this.dariCache = data.cached === true;
+                    this.grup = (data.groups || []).sort((a, b) => a.peserta - b.peserta);
+                } catch (e) {
+                    console.error('Gagal memuat grup:', e);
+                    this.galat = 'Tidak bisa menghubungi server. Periksa koneksi lalu coba lagi.';
+                    this.grup = [];
+                } finally {
+                    this.memuat = false;
+                }
+            }
+        }
+    }
+</script>
+@endsection

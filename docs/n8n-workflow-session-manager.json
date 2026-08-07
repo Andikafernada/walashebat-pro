@@ -1,0 +1,259 @@
+{
+  "name": "WaliKelas Pro - Session Manager",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-session",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "walikelas-session-manager"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "secret-check",
+              "leftValue": "={{ $json.headers['x-webhook-secret'] }}",
+              "rightValue": "={{ $env.WHATSAPP_WEBHOOK_SECRET }}",
+              "operator": {
+                "type": "equals",
+                "operation": "equals"
+              }
+            }
+          ],
+          "options": {}
+        },
+        "options": {}
+      },
+      "id": "validate-secret",
+      "name": "Validate Secret",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "action-filter",
+              "leftValue": "={{ $json.body.action }}",
+              "rightValue": "pair",
+              "operator": {
+                "type": "equals",
+                "operation": "equals"
+              }
+            }
+          ],
+          "options": {}
+        },
+        "options": {}
+      },
+      "id": "switch-action",
+      "name": "Switch Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// PAIR ACTION\n// Generate QR code for WhatsApp pairing\n\nconst sessionId = $input.first().json.body.session_id;\nconst msisdn = $input.first().json.body.msisdn;\n\n// Generate a unique pairing ID\nconst pairingId = 'pair-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);\n\n// For Baileys-based gateway, you would typically:\n// 1. Create a new session in the WhatsApp library\n// 2. Generate QR code from the session\n// 3. Store session mapping\n\n// This example uses a mock response - replace with actual WhatsApp library integration\nreturn {\n  json: {\n    status: 'pairing',\n    session_id: sessionId,\n    qr: 'WALIKELAS:' + pairingId + ':' + msisdn,\n    error: null,\n    // Store in database/session store (example key)\n    store_key: 'wa_session:' + sessionId\n  }\n};"
+      },
+      "id": "pair-action",
+      "name": "Pair Action",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1000, 100]
+    },
+    {
+      "parameters": {
+        "functionCode": "// STATUS ACTION\n// Check WhatsApp session status\n\nconst sessionId = $input.first().json.body.session_id;\nconst msisdn = $input.first().json.body.msisdn;\n\n// In production, check actual WhatsApp library session state:\n// - Is the session still connected?\n// - Is the device linked?\n// - Last activity timestamp\n\n// Mock response - replace with actual status check\n// Example: Check if session exists in Redis/database\nconst isConnected = true; // Replace with actual check\n\nreturn {\n  json: {\n    status: isConnected ? 'connected' : 'disconnected',\n    session_id: sessionId,\n    qr: null,\n    error: isConnected ? null : 'Sesi tidak ditemukan atau sudah terputus'\n  }\n};"
+      },
+      "id": "status-action",
+      "name": "Status Action",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// DISCONNECT ACTION\n// Terminate WhatsApp session\n\nconst sessionId = $input.first().json.body.session_id;\nconst msisdn = $input.first().json.body.msisdn;\n\n// In production:\n// 1. Find session by session_id\n// 2. Logout/disconnect from WhatsApp\n// 3. Clean up stored credentials\n// 4. Return success\n\nreturn {\n  json: {\n    ok: true,\n    session_id: sessionId,\n    disconnected_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "disconnect-action",
+      "name": "Disconnect Action",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1000, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "respond-pair",
+      "name": "Respond Pair",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "respond-status",
+      "name": "Respond Status",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "respond-disconnect",
+      "name": "Respond Disconnect",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "ok": false,
+          "error": "Secret tidak valid"
+        }
+      },
+      "id": "respond-unauthorized",
+      "name": "Respond Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [750, 500]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Secret": {
+      "main": [
+        [
+          {
+            "node": "Switch Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Action": {
+      "main": [
+        [
+          {
+            "node": "Pair Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "node": "Status Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Disconnect Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pair Action": {
+      "main": [
+        [
+          {
+            "node": "Respond Pair",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status Action": {
+      "main": [
+        [
+          {
+            "node": "Respond Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disconnect Action": {
+      "main": [
+        [
+          {
+            "node": "Respond Disconnect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "walikelas-session-manager",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "templateId": "custom"
+  },
+  "tags": [
+    {
+      "name": "WaliKelas Pro"
+    }
+  ]
+}

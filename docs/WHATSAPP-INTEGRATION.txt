@@ -1,0 +1,183 @@
+================================================================================
+                    WALI KELAS PRO - WHATSAPP INTEGRATION NOTES
+================================================================================
+Tanggal: 2026-07-24
+Status: READY FOR SETUP (butuh n8n/Baileys)
+
+================================================================================
+                              CURRENT STATE
+================================================================================
+
+Arsitektur sudah BAGUS:
+- Interface-based design (bisa tukar gateway)
+- Queue-based sending (async, retry 3x)
+- Error handling complete
+- Tenant isolation untuk multi-user
+- Webhook security (hash_equals)
+
+Yang belum aktif:
+- WHATSAPP_DRIVER=log (testing mode)
+- n8n workflow belum di-setup
+- Baileys belum di-deploy
+
+================================================================================
+                         LANGKAH-LANGKAH SETUP
+================================================================================
+
+STEP 1: Setup n8n (Free Tier)
+----------------------------
+1. Daftar di https://n8n.cloud (free tier tersedia)
+   ATAU
+2. Self-host n8n di VPS ($5-10/bulan)
+
+STEP 2: Setup Baileys
+--------------------
+Di VPS, install Baileys:
+```bash
+npm init -y
+npm install @whiskeys4/baileys
+```
+
+STEP 3: Buat n8n Workflow
+-------------------------
+Workflow 1: Send WhatsApp Message
+```
+Webhook (POST) → HTTP Request → WhatsApp → Respond 200
+```
+
+Workflow 2: Session Management
+```
+Webhook (pair) → Init Baileys → Generate QR → Return JSON
+Webhook (status) → Check Session → Return JSON
+Webhook (disconnect) → Close Session → Return JSON
+```
+
+STEP 4: Update .env
+--------------------
+```env
+WHATSAPP_DRIVER=n8n
+N8N_WEBHOOK_URL=https://your-n8n.com/webhook/whatsapp-send
+N8N_SESSION_WEBHOOK_URL=https://your-n8n.com/webhook/session
+N8N_WEBHOOK_SECRET=<strong-secret-here>
+```
+
+STEP 5: Test
+------------
+1. Login sebagai user
+2. Buka menu WhatsApp
+3. Scan QR code
+4. Buat attendance session
+5. Cek WhatsApp message diterima
+
+================================================================================
+                            TROUBLESHOOTING
+================================================================================
+
+MASALAH: Pesan tidak terkirim
+--------------------------------
+1. Cek n8n workflow running?
+2. Cek Baileys session aktif?
+3. Cek N8N_WEBHOOK_SECRET match?
+4. Cek log di storage/logs/laravel.log
+
+MASALAH: QR tidak muncul
+------------------------
+1. Cek WhatsApp number terisi di profil?
+2. Cek browser console error?
+3. Cek network tab - ada request ke /whatsapp/status?
+
+MASALAH: Session terputus terus
+-------------------------------
+1. WhatsApp Web/Desktop jangan login di nomor yang sama
+2. Pastikan HP tetap online (bisa airplane mode tapi WhatsApp stay logged in)
+3. Cek https://your-n8n.com/status
+
+================================================================================
+                        ALTERNATIF: VENOM BOT
+================================================================================
+
+Venom Bot (gratis) alternatif Baileys:
+
+Setup:
+```bash
+npm init -y
+npm install venom-bot
+```
+
+Benefit:
+- Lebih stabil dari Baileys
+- Auto-reconnect
+- Multiple sessions
+
+Setup di Laravel:
+Buat class baru app/Support/Notifications/VenomChannel.php
+
+================================================================================
+                        ALTERNATIF: CHAT-API
+================================================================================
+
+chat-api.com.au ($5/bulan):
+- Managed service
+- Tidak perlu maintain sendiri
+- API simple:
+  POST https://api.chat-api.com/sendMessage
+  Headers: Token: YOUR_TOKEN
+  Body: { "phone": "628123456", "message": "Hello" }
+
+Benefit:
+- ✅ No maintenance
+- ✅ No ban risk (official-ish)
+- ✅ Scalable
+- ✅ Multi-device support
+
+Setup di Laravel:
+Buat class baru app/Support/Notifications/ChatApiChannel.php
+
+================================================================================
+                          COST ESTIMATES
+================================================================================
+
+Opsi 1: Self-hosted (Baileys/Venom)
+--------------------------------------
+VPS:          $5-10/bulan (DigitalOcean/Vultr)
+n8n:          Free (self-hosted) atau $20/bulan (cloud)
+Time setup:    ~4-8 jam
+
+Opsi 2: Chat-API
+-----------------
+Chat-API:     $5-20/bulan
+n8n:          $0 (free tier) atau $20/bulan
+Time setup:    ~1 jam
+Plus:          Tidak perlu maintain Baileys sendiri
+
+Opsi 3: WhatsApp Business API
+-----------------------------
+Meta verification: Free (process bisa lama)
+Per message: $0.05-0.15
+Setup effort: ~8-16 jam
+Plus: Legal, scalable, tidak ban
+
+Opsi 4: Stay with log mode
+----------------------------
+Cost: $0
+Benefit: Bisa launch tanpa WhatsApp
+WhatsApp: Bisa ditambahkan nanti
+
+================================================================================
+                            NEXT STEPS
+================================================================================
+
+Immediate (Sekarang):
+1. [ ] Deploy app ke server
+2. [ ] Test semua fitur (tanpa WhatsApp)
+3. [ ] User acceptance testing
+4. [ ] Documentation for users
+
+WhatsApp Setup (Nanti):
+1. [ ] Setup n8n.cloud account
+2. [ ] Deploy Baileys/Venom di VPS
+3. [ ] Buat n8n workflows
+4. [ ] Test end-to-end flow
+5. [ ] Monitor & improve
+
+================================================================================
