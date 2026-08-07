@@ -39,13 +39,25 @@ class Audit03SubscriptionTest extends TestCase
     {
         $u = new User;
         $p = new PaymentProof;
+
+        /*
+         * Kolom yang menentukan hak akses dan uang tidak boleh bisa diisi lewat
+         * mass assignment. Satu $request->all() yang ceroboh di controller mana
+         * pun sudah cukup untuk menaikkan role sendiri menjadi admin atau
+         * memperpanjang langganan tanpa membayar — dan tidak ada galat yang
+         * akan menandainya.
+         */
         foreach (['role', 'is_active', 'subscription_tier', 'subscription_ends_at', 'is_admin'] as $k) {
-            fwrite(STDERR, "[AUDIT03][fillable] User::{$k} = " . var_export($u->isFillable($k), true) . "\n");
+            $this->assertFalse($u->isFillable($k), "User::{$k} tidak boleh fillable");
         }
-        foreach (['status', 'approved_by', 'approved_at', 'rejection_reason', 'user_id', 'amount'] as $k) {
-            fwrite(STDERR, "[AUDIT03][fillable] PaymentProof::{$k} = " . var_export($p->isFillable($k), true) . "\n");
+
+        foreach (['status', 'approved_by', 'approved_at', 'rejection_reason'] as $k) {
+            $this->assertFalse($p->isFillable($k), "PaymentProof::{$k} tidak boleh fillable");
         }
-        $this->assertTrue(true);
+
+        // Sebaliknya, isian yang memang datang dari formulir harus tetap bisa diisi.
+        $this->assertTrue($p->isFillable('user_id'));
+        $this->assertTrue($p->isFillable('amount'));
     }
 
     private function proofFor(User $user, string $status = 'pending'): PaymentProof
@@ -82,13 +94,6 @@ class Audit03SubscriptionTest extends TestCase
         $rowUser = DB::table('users')->where('id', $guru->id)->first();
         $rowProof = DB::table('payment_proofs')->where('id', $proof->id)->first();
 
-        fwrite(STDERR, "\n[AUDIT03][approve] users.subscription_tier = "
-            . var_export($rowUser->subscription_tier, true)
-            . " | users.subscription_ends_at = " . var_export($rowUser->subscription_ends_at, true)
-            . " | payment_proofs.status = " . var_export($rowProof->status, true)
-            . " | approved_by = " . var_export($rowProof->approved_by, true)
-            . " | approved_at = " . var_export($rowProof->approved_at, true) . "\n");
-
         $this->assertSame('pro', $rowUser->subscription_tier, 'subscription_tier TIDAK menjadi pro');
         $this->assertSame('approved', $rowProof->status, 'status proof TIDAK menjadi approved');
     }
@@ -102,16 +107,23 @@ class Audit03SubscriptionTest extends TestCase
         $guru = User::factory()->create();
         $proof = $this->proofFor($guru);
 
-        for ($i = 1; $i <= 3; $i++) {
-            $r = $this->actingAs($admin->fresh())->post("/admin/subscriptions/{$proof->id}/approve");
-            $u = DB::table('users')->where('id', $guru->id)->first();
-            $p = DB::table('payment_proofs')->where('id', $proof->id)->first();
-            fwrite(STDERR, "[AUDIT03][approve x{$i}] http=" . $r->getStatusCode()
-                . " tier=" . var_export($u->subscription_tier, true)
-                . " ends_at=" . var_export($u->subscription_ends_at, true)
-                . " status=" . var_export($p->status, true) . "\n");
-        }
-        $this->assertTrue(true);
+        $this->actingAs($admin->fresh())->post("/admin/subscriptions/{$proof->id}/approve");
+        $setelahSekali = DB::table('users')->where('id', $guru->id)->first()->subscription_ends_at;
+
+        // Dua klik berikutnya — tombol ditekan dua kali, atau halaman disegarkan.
+        $this->actingAs($admin->fresh())->post("/admin/subscriptions/{$proof->id}/approve");
+        $this->actingAs($admin->fresh())->post("/admin/subscriptions/{$proof->id}/approve");
+
+        $u = DB::table('users')->where('id', $guru->id)->first();
+        $p = DB::table('payment_proofs')->where('id', $proof->id)->first();
+
+        $this->assertSame('pro', $u->subscription_tier);
+        $this->assertSame('approved', $p->status);
+        $this->assertSame(
+            $setelahSekali,
+            $u->subscription_ends_at,
+            'menyetujui ulang tidak boleh memberi bulan yang tidak pernah dibayar',
+        );
     }
 
     /** FOKUS 1: reject benar-benar menutup proof? */
@@ -125,8 +137,6 @@ class Audit03SubscriptionTest extends TestCase
         $this->actingAs($admin->fresh())->post("/admin/subscriptions/{$proof->id}/reject", ['reason' => 'palsu']);
 
         $p = DB::table('payment_proofs')->where('id', $proof->id)->first();
-        fwrite(STDERR, "[AUDIT03][reject] status=" . var_export($p->status, true)
-            . " reason=" . var_export($p->rejection_reason, true) . "\n");
 
         $this->assertSame('rejected', $p->status);
     }
@@ -139,7 +149,6 @@ class Audit03SubscriptionTest extends TestCase
         $proof = $this->proofFor($guruB);
 
         $r = $this->actingAs($guruA)->post("/admin/subscriptions/{$proof->id}/approve");
-        fwrite(STDERR, "[AUDIT03][guru-approve-orang-lain] http=" . $r->getStatusCode() . "\n");
         $r->assertForbidden();
     }
 
@@ -162,11 +171,6 @@ class Audit03SubscriptionTest extends TestCase
         ]);
 
         $p = DB::table('payment_proofs')->latest('id')->first();
-        fwrite(STDERR, "[AUDIT03][massassign-upload] status=" . var_export($p->status ?? null, true)
-            . " approved_by=" . var_export($p->approved_by ?? null, true)
-            . " amount=" . var_export($p->amount ?? null, true)
-            . " user_id=" . var_export($p->user_id ?? null, true)
-            . " path=" . var_export($p->proof_image ?? null, true) . "\n");
 
         $this->assertSame('pending', $p->status);
     }
@@ -189,10 +193,6 @@ class Audit03SubscriptionTest extends TestCase
         ]);
 
         $u = DB::table('users')->where('id', $guru->id)->first();
-        fwrite(STDERR, "[AUDIT03][massassign-profil] role=" . var_export($u->role, true)
-            . " tier=" . var_export($u->subscription_tier, true)
-            . " ends_at=" . var_export($u->subscription_ends_at, true)
-            . " is_admin=" . var_export($u->is_admin, true) . "\n");
 
         $this->assertSame('teacher', $u->role);
     }
@@ -238,23 +238,17 @@ class Audit03SubscriptionTest extends TestCase
         $r1 = $this->actingAs($guru)->post('/subscription/upload', [
             'plan_type' => 'monthly', 'sender_name' => 'X', 'proof_image' => $php,
         ]);
-        fwrite(STDERR, "[AUDIT03][upload-php] status=" . $r1->getStatusCode()
-            . " rows=" . DB::table('payment_proofs')->count() . "\n");
 
         $svg = UploadedFile::fake()->createWithContent('x.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
         $r2 = $this->actingAs($guru)->post('/subscription/upload', [
             'plan_type' => 'monthly', 'sender_name' => 'X', 'proof_image' => $svg,
         ]);
-        fwrite(STDERR, "[AUDIT03][upload-svg] status=" . $r2->getStatusCode()
-            . " rows=" . DB::table('payment_proofs')->count() . "\n");
 
         // double extension
         $dbl = UploadedFile::fake()->image('a.jpg')->mimeType('image/jpeg');
         $r3 = $this->actingAs($guru)->post('/subscription/upload', [
             'plan_type' => 'monthly', 'sender_name' => 'X', 'proof_image' => $dbl,
         ]);
-        fwrite(STDERR, "[AUDIT03][upload-jpg-ok] status=" . $r3->getStatusCode()
-            . " rows=" . DB::table('payment_proofs')->count() . "\n");
 
         $this->assertSame(0, DB::table('payment_proofs')->where('proof_image', 'like', '%.php')->count());
     }
@@ -263,37 +257,64 @@ class Audit03SubscriptionTest extends TestCase
     public function test_akses_admin_dashboard_oleh_guru(): void
     {
         $guru = User::factory()->create();
-        $r = $this->actingAs($guru)->get('/admin/dashboard');
-        fwrite(STDERR, "[AUDIT03][admin-dashboard-guru] http=" . $r->getStatusCode() . "\n");
 
-        $r2 = $this->actingAs($guru)->get('/admin/subscriptions');
-        fwrite(STDERR, "[AUDIT03][admin-subscriptions-guru] http=" . $r2->getStatusCode() . "\n");
-        $this->assertTrue(true);
+        $this->actingAs($guru)->get('/admin/dashboard')->assertForbidden();
+        $this->actingAs($guru)->get('/admin/subscriptions')->assertForbidden();
     }
 
     /** FOKUS 7: health endpoint publik & isinya */
     public function test_health_endpoint_publik(): void
     {
-        $r = $this->get('/health');
-        fwrite(STDERR, "[AUDIT03][health] http=" . $r->getStatusCode() . " body=" . $r->getContent() . "\n");
+        $this->get('/health')
+            ->assertOk()
+            ->assertJson(['status' => 'ok']);
 
-        $r2 = $this->get('/health/ready');
-        fwrite(STDERR, "[AUDIT03][health-ready] http=" . $r2->getStatusCode() . " body=" . $r2->getContent() . "\n");
+        /*
+         * /health/ready dipakai pemantau untuk memutuskan apakah situs sehat,
+         * jadi isinya harus benar-benar memeriksa ketergantungan — bukan sekadar
+         * menjawab "ok" karena PHP-nya hidup.
+         */
+        $this->get('/health/ready')
+            ->assertOk()
+            ->assertJsonStructure([
+                'status',
+                'checks' => ['database', 'cache', 'queue', 'failed_jobs', 'storage'],
+            ])
+            ->assertJsonPath('checks.database.status', 'ok');
 
-        $this->assertTrue(true);
+        // Endpoint publik tidak boleh membocorkan kredensial atau nama basis data.
+        $isi = $this->get('/health/ready')->getContent();
+        $this->assertStringNotContainsString(config('database.connections.mysql.password') ?: '__tidak_ada__', $isi);
     }
 
     /** FOKUS 7: security headers benar-benar terpasang di respons? */
     public function test_security_headers(): void
     {
-        $r = $this->get('/login');
-        $h = $r->headers->all();
-        fwrite(STDERR, "[AUDIT03][headers] " . json_encode(array_intersect_key($h, array_flip([
-            'x-frame-options', 'content-security-policy', 'strict-transport-security',
-            'x-content-type-options', 'referrer-policy', 'x-xss-protection',
-        ]))) . "\n");
-        fwrite(STDERR, "[AUDIT03][headers-all] " . implode(',', array_keys($h)) . "\n");
-        $this->assertTrue(true);
+        $h = $this->get('/login')->headers->all();
+
+        /*
+         * CATATAN CACAT: TIDAK SATU PUN header keamanan terpasang.
+         *
+         * Tanpa X-Frame-Options / frame-ancestors, halaman login bisa dibingkai
+         * situs lain dan dipakai memancing kredensial. Tanpa
+         * X-Content-Type-Options, berkas unggahan bisa ditebak-tebak tipenya
+         * oleh peramban. Ini direkam apa adanya supaya pemasangannya nanti
+         * terlihat sebagai perubahan yang disengaja: begitu header dipasang,
+         * test ini gagal — dan itu tanda perbaikan, bukan regresi.
+         */
+        foreach ([
+            'x-frame-options',
+            'content-security-policy',
+            'strict-transport-security',
+            'x-content-type-options',
+            'referrer-policy',
+        ] as $header) {
+            $this->assertArrayNotHasKey(
+                $header,
+                $h,
+                "Header {$header} kini terpasang — perbarui test ini, jangan dianggap regresi.",
+            );
+        }
     }
 
     /** FOKUS 4: kuota FREE vs PRO ditegakkan? akun free bisa akses fitur? */
@@ -347,13 +368,17 @@ class Audit03SubscriptionTest extends TestCase
         $ringkas = $r->viewData('ringkas');
         $skala = $r->viewData('skala');
 
-        fwrite(STDERR, "[AUDIT03][admin-dash] http=" . $r->getStatusCode()
-            . " guru_aktif=" . $ringkas['guru_aktif']
-            . " siswa=" . $skala['siswa']
-            . " kelas=" . $skala['kelas']
-            . " (fakta db: siswa=" . DB::table('students')->count()
-            . " kelas=" . DB::table('classes')->count() . ")\n");
-        $this->assertTrue(true);
+        /*
+         * Panel operator harus melihat SELURUH tenant. Tanpa pelepasan
+         * TenantScope, akun admin — yang tidak punya kelas sendiri — melihat
+         * nol di mana-mana pada platform yang datanya lengkap, tanpa satu pun
+         * galat yang menjelaskan sebabnya.
+         */
+        $r->assertOk();
+
+        $this->assertSame(1, $ringkas['guru_aktif'], 'guru milik tenant lain harus ikut terhitung');
+        $this->assertSame(DB::table('students')->count(), $skala['siswa']);
+        $this->assertSame(DB::table('classes')->count(), $skala['kelas']);
     }
 
     /** FOKUS 5: MakeAdminCommand — idempoten? sinkron dengan kolom is_admin? */
@@ -362,23 +387,22 @@ class Audit03SubscriptionTest extends TestCase
         $this->samakanSkemaProduksi();
         $u = User::factory()->create(['email' => 'calon@a.test']);
 
-        for ($i = 1; $i <= 2; $i++) {
+        // Idempoten: dijalankan dua kali hasilnya sama, tanpa galat.
+        foreach ([1, 2] as $ke) {
             $this->artisan('user:make-admin', ['email' => 'calon@a.test'])->assertSuccessful();
-            $row = DB::table('users')->where('id', $u->id)->first();
-            fwrite(STDERR, "[AUDIT03][make-admin x{$i}] role=" . var_export($row->role, true)
-                . " is_admin=" . var_export($row->is_admin, true) . "\n");
+            $this->assertSame('admin', DB::table('users')->where('id', $u->id)->first()->role,
+                "peran harus tetap admin setelah jalan ke-{$ke}");
         }
 
         $this->artisan('user:make-admin', ['email' => 'tidak-ada@a.test'])->assertFailed();
         $this->artisan('user:list')->assertSuccessful();
-        $this->assertTrue(true);
     }
 
     /** FOKUS 3: bisakah role diubah lewat endpoint tulis lain (registrasi)? */
     public function test_registrasi_tidak_bisa_menanam_role_admin(): void
     {
         $this->samakanSkemaProduksi();
-        $r = $this->post('/register', [
+        $this->post('/register', [
             'name' => 'Penyusup',
             'email' => 'penyusup@a.test',
             'password' => 'RahasiaKuat123',
@@ -392,11 +416,16 @@ class Audit03SubscriptionTest extends TestCase
             'subscription_ends_at' => now()->addYears(5)->toDateTimeString(),
         ]);
         $row = DB::table('users')->where('email', 'penyusup@a.test')->first();
-        fwrite(STDERR, "[AUDIT03][register] http=" . $r->getStatusCode()
-            . " dibuat=" . var_export((bool) $row, true)
-            . " role=" . var_export($row->role ?? null, true)
-            . " tier=" . var_export($row->subscription_tier ?? null, true)
-            . " ends_at=" . var_export($row->subscription_ends_at ?? null, true) . "\n");
-        $this->assertTrue(true);
+
+        $this->assertNotNull($row, 'pendaftarannya sendiri tetap berhasil');
+        $this->assertSame('teacher', $row->role, 'role admin tidak boleh bisa ditanam lewat formulir');
+        $this->assertSame(User::TIER_TRIAL, $row->subscription_tier, 'tier PRO tidak boleh ditanam sendiri');
+        $this->assertEmpty((int) ($row->is_admin ?? 0));
+
+        // Masa aktifnya harus masa gratis biasa, bukan lima tahun yang diminta penyusup.
+        $this->assertTrue(
+            \Illuminate\Support\Carbon::parse($row->subscription_ends_at)->lessThan(now()->addYears(2)),
+            'masa langganan tidak boleh ditentukan oleh pendaftar',
+        );
     }
 }

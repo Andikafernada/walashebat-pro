@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\CharacterDimension;
 use App\Models\CharacterReflection;
 use App\Models\Classroom;
+use App\Models\Notification;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -47,6 +47,16 @@ class Audit04RelasiTest extends TestCase
         return [$user, $student, $dimId, $refId];
     }
 
+    /**
+     * Relasi dimension harus benar di KETIGA jalur pemakaiannya.
+     *
+     * Kolomnya bernama character_dimension_id, bukan dimension_id yang ditebak
+     * Eloquent dari nama metodenya. Tebakan yang salah tidak melempar galat
+     * pada pemuatan malas — ia hanya mengembalikan null, sehingga portofolio
+     * karakter tampil tanpa nama dimensi seolah datanya memang belum diisi.
+     * Pada whereHas akibatnya lebih keras: kueri menyebut kolom yang tidak ada
+     * dan laporan meledak 500.
+     */
     public function test_relasi_dimension_pada_character_reflection(): void
     {
         [$user, $student, $dimId, $refId] = $this->bikinRefleksi();
@@ -54,46 +64,67 @@ class Audit04RelasiTest extends TestCase
 
         $ref = CharacterReflection::find($refId);
 
-        fwrite(STDERR, "\n[AUDIT04] character_reflections.character_dimension_id di DB = "
-            . var_export(DB::table('character_reflections')->where('id', $refId)->value('character_dimension_id'), true) . "\n");
+        $this->assertSame(
+            'character_dimension_id',
+            $ref->dimension()->getForeignKeyName(),
+            'relasi harus menunjuk kolom yang benar-benar ada di tabel',
+        );
 
-        $rel = $ref->dimension();
-        fwrite(STDERR, "[AUDIT04] CharacterReflection::dimension() foreignKeyName = "
-            . $rel->getForeignKeyName() . " (kolom yang ADA: character_dimension_id)\n");
-        fwrite(STDERR, "[AUDIT04] \$ref->dimension = " . var_export($ref->dimension?->name, true) . "\n");
-
-        // Eager loading yang dipakai controller
-        $eager = CharacterReflection::with('dimension')->find($refId);
-        fwrite(STDERR, "[AUDIT04] with('dimension') -> " . var_export($eager->dimension?->name, true) . "\n");
-
-        // whereHas seperti yang biasa dipakai laporan
-        try {
-            $n = CharacterReflection::whereHas('dimension')->count();
-            fwrite(STDERR, "[AUDIT04] whereHas('dimension')->count() = $n\n");
-        } catch (\Throwable $e) {
-            fwrite(STDERR, "[AUDIT04] whereHas('dimension') THROW: " . get_class($e) . ' :: '
-                . substr(preg_replace('/\s+/', ' ', $e->getMessage()), 0, 250) . "\n");
-        }
-
+        // Pemuatan malas — jalur yang dipakai halaman detail.
         $this->assertSame('Gotong Royong', $ref->dimension?->name,
             'CharacterReflection::dimension() TIDAK mengembalikan dimensi yang benar');
+
+        // Eager loading yang dipakai controller saat menampilkan daftar.
+        $eager = CharacterReflection::with('dimension')->find($refId);
+        $this->assertTrue($eager->relationLoaded('dimension'), 'with() harus benar-benar memuat relasinya');
+        $this->assertSame($dimId, $eager->dimension?->id);
+        $this->assertSame('Gotong Royong', $eager->dimension?->name);
+
+        // whereHas seperti yang biasa dipakai laporan — dulu melempar
+        // QueryException karena kolom tebakan tidak ada di tabel.
+        $this->assertSame(1, CharacterReflection::whereHas('dimension')->count());
+
+        // Dan saringannya harus benar-benar menyaring, bukan meloloskan semua.
+        $this->assertSame(
+            0,
+            CharacterReflection::whereHas('dimension', fn ($q) => $q->where('code', 'tidak_ada'))->count(),
+        );
     }
 
+    /**
+     * Tabel `notifications` di aplikasi ini berskema kustom (user_id, title,
+     * body), bukan skema polimorfik bawaan Laravel. Trait Notifiable tetap
+     * dipasang di User demi ->notify(), dan relasi morphMany bawaannya menyebut
+     * notifiable_type/notifiable_id yang tidak ada — setiap pemanggilan
+     * melempar QueryException. User menimpanya; test ini menjaga override itu
+     * tidak hilang saat trait dirapikan.
+     */
     public function test_relasi_notifikasi_bawaan_notifiable_pada_user(): void
     {
         $user = User::factory()->create();
 
-        foreach (['notifications', 'readNotifications'] as $rel) {
-            try {
-                $n = $user->{$rel}()->count();
-                fwrite(STDERR, "[AUDIT04] \$user->$rel()->count() = $n\n");
-            } catch (\Throwable $e) {
-                fwrite(STDERR, "[AUDIT04] \$user->$rel() THROW: " . get_class($e) . ' :: '
-                    . substr(preg_replace('/\s+/', ' ', $e->getMessage()), 0, 250) . "\n");
-            }
+        $belum = Notification::create([
+            'user_id' => $user->id, 'type' => 'AttendanceReminder',
+            'title' => 'Absensi belum diisi', 'body' => 'Kelas 5A belum diabsen.',
+        ]);
+        Notification::create([
+            'user_id' => $user->id, 'type' => 'NewViolation',
+            'title' => 'Pelanggaran baru', 'body' => 'Budi terlambat.',
+            'read_at' => now(),
+        ]);
+
+        // Milik guru lain tidak boleh ikut terbawa.
+        Notification::create([
+            'user_id' => User::factory()->create()->id, 'type' => 'NewViolation',
+            'title' => 'Punya orang lain', 'body' => 'Tidak boleh terlihat.',
+        ]);
+
+        foreach (['notifications' => 2, 'unreadNotifications' => 1, 'readNotifications' => 1] as $rel => $jumlah) {
+            $this->assertSame($jumlah, $user->{$rel}()->count(),
+                "Relasi {$rel}() rusak terhadap tabel notifications kustom");
         }
 
-        $this->assertSame(0, $user->notifications()->count(),
-            'Relasi Notifiable::notifications() rusak terhadap tabel notifications kustom');
+        $this->assertSame($belum->id, $user->unreadNotifications()->first()->id);
+        $this->assertSame(1, $user->unreadCount());
     }
 }
