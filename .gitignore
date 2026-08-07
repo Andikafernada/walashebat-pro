@@ -23,7 +23,7 @@ yarn-error.log
 
 # Pengaturan Claude Code khusus mesin ini (memuat daftar izin lokal, bukan
 # bagian dari aplikasi).
-/.claude/settings.local.json
+/.claude/settings.local.json*
 
 # Cadangan manual yang tertinggal saat menyunting langsung di server.
 *.bak*
