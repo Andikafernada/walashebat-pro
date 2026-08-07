@@ -4,6 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Jurnal Refleksi Karakter Siswa - {{ $class->name }}</title>
+    {{-- Sama seperti form biodata: isinya refleksi pribadi anak, dan tautannya
+         beredar di grup WhatsApp yang sewaktu-waktu bisa jadi terbuka. --}}
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{-- Alpine sudah ikut di dalam bundel Vite (resources/js/app.js) dan
          dijalankan di sana. Memuatnya sekali lagi dari CDN membuat dua

@@ -1,7 +1,26 @@
 User-agent: *
 Allow: /
+
+# Halaman di balik login: crawler tidak bisa membukanya, jadi merayapinya
+# hanya menghabiskan jatah rayapan dan memenuhi Search Console dengan galat
+# pengalihan yang menutupi masalah sungguhan.
+Disallow: /dashboard
 Disallow: /admin/
-Disallow: /dashboard/
 Disallow: /classes/
+Disallow: /students/
+Disallow: /analytics
+Disallow: /subscription
+Disallow: /profil
+Disallow: /notifications/
+Disallow: /whatsapp/
+
+# Tautan bertoken yang isinya data anak. Tautan ini beredar di grup WhatsApp
+# dan sesekali tertempel di tempat terbuka; sekali dirayapi, nama siswa bisa
+# muncul di hasil pencarian. Halamannya sendiri juga memasang meta noindex,
+# karena robots.txt hanya melarang MERAYAPI — bukan mengindeks tautan yang
+# sudah telanjur ditemukan dari tempat lain.
+Disallow: /isi-biodata/
+Disallow: /refleksi-karakter/
+Disallow: /a/
 
 Sitemap: https://walas.my.id/sitemap.xml

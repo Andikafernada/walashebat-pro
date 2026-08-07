@@ -1,17 +1,25 @@
 {
-  "name": "WaliKelas Pro",
-  "short_name": "WaliKelas",
-  "description": "Aplikasi Manajemen Kelas & Administrasi Wali Kelas Modern",
+  "name": "Wali Kelas Hebat",
+  "short_name": "Wali Kelas",
+  "description": "Administrasi wali kelas: presensi WhatsApp otomatis, biodata mandiri siswa, refleksi karakter P5, dan laporan siap cetak.",
+  "lang": "id",
   "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#4f46e5",
+  "background_color": "#020617",
+  "theme_color": "#020617",
   "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/favicon.ico",
       "sizes": "64x64",
       "type": "image/x-icon"
+    },
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
