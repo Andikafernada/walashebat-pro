@@ -24,8 +24,16 @@
             <p class="text-xs text-slate-500 mt-0.5">Pencatatan uang kas masuk dan keluar beserta laporan keuangan transparan.</p>
         </div>
 
-        <div class="flex items-center gap-2">
-            <a href="{{ route('classes.exports.cashbook.excel', $classroom) }}" 
+        <div class="flex flex-wrap items-center gap-2">
+            {{-- Buku besar ini urut waktu dan bercampur masuk/keluar — bentuk
+                 yang tepat untuk mempertanggungjawabkan saldo, tetapi tidak
+                 bisa menjawab "siapa yang belum bayar?" tanpa dijumlahkan
+                 sendiri per anak. --}}
+            <a href="{{ route('classes.cashbook.per-siswa', $classroom) }}"
+               class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 shadow-xs hover:bg-emerald-100">
+                👥 Kas per Siswa
+            </a>
+            <a href="{{ route('classes.exports.cashbook.excel', $classroom) }}"
                class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50">
                 <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                 Excel

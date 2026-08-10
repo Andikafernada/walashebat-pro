@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CashBook;
 use App\Models\Classroom;
+use App\Support\PeriodeLaporan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,85 @@ class CashBookController extends Controller
         $balance = $this->currentBalance($class);
 
         return view('cashbook.index', ['classroom' => $class, 'entries' => $entries, 'balance' => $balance]);
+    }
+
+
+    /**
+     * Siapa yang sudah menyetor kas dan siapa yang belum.
+     *
+     * Buku kas berbentuk buku besar: urut waktu, bercampur pemasukan dan
+     * pengeluaran. Bentuk itu tepat untuk mempertanggungjawabkan saldo, tetapi
+     * tidak bisa menjawab pertanyaan yang justru paling sering diajukan wali
+     * kelas — "siapa yang belum bayar?" — karena jawabannya tersebar di puluhan
+     * baris dan harus dijumlahkan sendiri per anak.
+     *
+     * "Belum" di sini berarti TIDAK ADA setoran atas namanya pada periode ini,
+     * bukan "kurang dari sekian". Buku kas tidak menyimpan besaran iuran yang
+     * seharusnya, jadi menghitung kekurangan akan menuntut angka yang belum
+     * pernah ada. Untuk kas bulanan yang lazim, "nol setoran bulan ini" sudah
+     * menjawab pertanyaannya.
+     *
+     * Pengeluaran (type=out) tidak ikut dihitung sekalipun bertanda siswa:
+     * uang yang keluar bukan setoran, dan menjumlahkannya akan membuat anak
+     * yang uangnya dipakai untuk keperluan kelas terlihat lebih sedikit
+     * membayar daripada yang sebenarnya.
+     */
+    public function perSiswa(Request $request, Classroom $class): View
+    {
+        $periode = PeriodeLaporan::resolve($request);
+
+        $setoran = $class->cashBooks()
+            ->where('type', 'in')
+            ->whereNotNull('student_id')
+            ->whereBetween('transaction_date', [
+                $periode['awal']->copy()->startOfDay(),
+                $periode['akhir']->copy()->endOfDay(),
+            ])
+            ->get(['student_id', 'amount', 'transaction_date']);
+
+        $perSiswa = [];
+        foreach ($setoran as $t) {
+            $perSiswa[$t->student_id]['jumlah'] = ($perSiswa[$t->student_id]['jumlah'] ?? 0) + (int) $t->amount;
+            $perSiswa[$t->student_id]['kali'] = ($perSiswa[$t->student_id]['kali'] ?? 0) + 1;
+
+            $terakhir = $perSiswa[$t->student_id]['terakhir'] ?? null;
+            if ($terakhir === null || $t->transaction_date->gt($terakhir)) {
+                $perSiswa[$t->student_id]['terakhir'] = $t->transaction_date;
+            }
+        }
+
+        $students = $class->students()->where('is_active', true)->orderBy('name')->get();
+
+        $baris = $students->map(fn ($s) => [
+            'siswa' => $s,
+            'jumlah' => $perSiswa[$s->id]['jumlah'] ?? 0,
+            'kali' => $perSiswa[$s->id]['kali'] ?? 0,
+            'terakhir' => $perSiswa[$s->id]['terakhir'] ?? null,
+        ]);
+
+        /*
+         * Setoran tanpa nama siswa tetap dilaporkan. Kalau tidak, jumlah pada
+         * halaman ini tidak akan pernah cocok dengan saldo di buku besar, dan
+         * selisihnya terlihat seperti uang hilang.
+         */
+        $tanpaNama = (int) $class->cashBooks()
+            ->where('type', 'in')
+            ->whereNull('student_id')
+            ->whereBetween('transaction_date', [
+                $periode['awal']->copy()->startOfDay(),
+                $periode['akhir']->copy()->endOfDay(),
+            ])
+            ->sum('amount');
+
+        return view('cashbook.per_siswa', [
+            'classroom' => $class,
+            'periode' => $periode,
+            'baris' => $baris,
+            'sudah' => $baris->where('jumlah', '>', 0)->count(),
+            'belum' => $baris->where('jumlah', 0)->count(),
+            'total' => $baris->sum('jumlah'),
+            'tanpaNama' => $tanpaNama,
+        ]);
     }
 
     public function store(Request $request, Classroom $class): RedirectResponse
