@@ -88,7 +88,7 @@ class StudentController extends Controller
 
         $periode = PeriodeLaporan::resolve($request);
         $profil = app(StudentProfileBuilder::class)
-            ->build($student, $periode['awal'], $periode['akhir']);
+            ->build($student, $periode['awal'], $periode['akhir'], $periode['semester']);
 
         return view('students.show', $profil + [
             'classroom' => $class,
@@ -103,7 +103,7 @@ class StudentController extends Controller
 
         $periode = PeriodeLaporan::resolve($request);
         $profil = app(StudentProfileBuilder::class)
-            ->build($student, $periode['awal'], $periode['akhir']);
+            ->build($student, $periode['awal'], $periode['akhir'], $periode['semester']);
 
         $pdf = Pdf::loadView('reports.pdf.siswa', $profil + [
             'classroom' => $class,

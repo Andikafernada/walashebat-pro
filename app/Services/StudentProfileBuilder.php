@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Assessment;
+use App\Models\CharacterRecord;
 use App\Models\Student;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -25,10 +27,22 @@ class StudentProfileBuilder
     /**
      * @return array<string, mixed>
      */
-    public function build(Student $student, Carbon $awal, Carbon $akhir): array
+    /**
+     * @param  ?int  $semester  Semester untuk nilai rapor. Nilai PTS/PAS
+     *                          disandarkan pada semester yang tersimpan, bukan
+     *                          pada rentang tanggal — nilai akhir semester 1
+     *                          lazim baru dimasukkan pada Januari, yang menurut
+     *                          kalender sudah semester 2. Menyaringnya dengan
+     *                          tanggal akan membuat nilai itu hilang dari
+     *                          profil tanpa jejak. Null berarti disimpulkan
+     *                          dari bulan $akhir.
+     * @return array<string, mixed>
+     */
+    public function build(Student $student, Carbon $awal, Carbon $akhir, ?int $semester = null): array
     {
         $dari = $awal->copy()->startOfDay();
         $hingga = $akhir->copy()->endOfDay();
+        $semester ??= $hingga->month >= 7 ? 1 : 2;
 
         $absensi = $student->attendances()
             ->withCount('revisions')
@@ -58,7 +72,149 @@ class StudentProfileBuilder
             'kelengkapan' => $this->kelengkapanData($student),
             'peran' => $student->classroom?->organizationStructures()
                 ->where('student_id', $student->id)->get(),
+            'nilai' => $this->rekapNilai($student, $dari, $hingga, $semester),
+            'karakter' => $this->rekapKarakter($student, $dari, $hingga),
+            'semester' => $semester,
         ];
+    }
+
+    /**
+     * Nilai: rapor (PTS/PAS) satu semester, dan nilai harian pada periode.
+     *
+     * Keduanya dipisah karena tidak setara. PTS/PAS adalah penilaian rapor,
+     * jumlahnya sedikit dan menjadi bahan keputusan; nilai harian jumlahnya
+     * banyak dan bergerak. Meleburnya menjadi satu rata-rata menghasilkan
+     * angka yang tidak dimaksudkan siapa pun.
+     *
+     * @return array<string, mixed>
+     */
+    private function rekapNilai(Student $student, Carbon $dari, Carbon $hingga, int $semester): array
+    {
+        /*
+         * Rapor disaring per SEMESTER, tanpa menyentuh tanggal sama sekali.
+         * Lihat catatan pada build(): tanggal memasukkan nilai tidak selalu
+         * jatuh di dalam semesternya.
+         */
+        $rapor = $student->assessmentScores()
+            ->whereNotNull('nilai')
+            ->whereHas('assessment', fn ($q) => $q
+                ->whereIn('jenis', [Assessment::JENIS_PTS, Assessment::JENIS_PAS])
+                ->where('semester', $semester))
+            ->with('assessment:id,jenis,mapel,semester')
+            ->get();
+
+        $perMapel = [];
+        foreach ($rapor as $skor) {
+            $mapel = $skor->assessment?->mapel ?: '—';
+            $perMapel[$mapel][$skor->assessment->jenis][] = $skor->nilai;
+        }
+
+        $daftarRapor = [];
+        foreach ($perMapel as $mapel => $jenis) {
+            $daftarRapor[] = [
+                'mapel' => $mapel,
+                'pts' => $this->rata($jenis[Assessment::JENIS_PTS] ?? []),
+                'pas' => $this->rata($jenis[Assessment::JENIS_PAS] ?? []),
+            ];
+        }
+        usort($daftarRapor, fn ($a, $b) => strcmp($a['mapel'], $b['mapel']));
+
+        // Nilai harian tetap disaring per tanggal: ia memang peristiwa harian,
+        // dan periode yang sedang dilihat wali kelas adalah konteksnya.
+        $harian = $student->assessmentScores()
+            ->whereNotNull('nilai')
+            ->whereHas('assessment', fn ($q) => $q
+                ->where('jenis', Assessment::JENIS_HARIAN)
+                ->whereBetween('assessment_date', [$dari, $hingga]))
+            ->with('assessment:id,mapel,assessment_date')
+            ->get();
+
+        $perMapelHarian = [];
+        foreach ($harian as $skor) {
+            $perMapelHarian[$skor->assessment?->mapel ?: '—'][] = $skor->nilai;
+        }
+
+        $daftarHarian = [];
+        foreach ($perMapelHarian as $mapel => $angka) {
+            $daftarHarian[] = [
+                'mapel' => $mapel,
+                'rata' => $this->rata($angka),
+                'jumlah' => count($angka),
+            ];
+        }
+        usort($daftarHarian, fn ($a, $b) => strcmp($a['mapel'], $b['mapel']));
+
+        $semuaRapor = $rapor->pluck('nilai')->all();
+
+        return [
+            'rapor' => $daftarRapor,
+            'harian' => $daftarHarian,
+            'rata_rapor' => $this->rata($semuaRapor),
+            'ada' => $daftarRapor !== [] || $daftarHarian !== [],
+        ];
+    }
+
+    /**
+     * Karakter P5, dikelompokkan per dimensi.
+     *
+     * Yang dicari wali kelas di sini bukan satu angka melainkan bentuknya:
+     * anak dengan sepuluh catatan positif pada dimensi Gotong Royong dan
+     * tiga catatan negatif pada Kemandirian menuntut pembinaan yang sama
+     * sekali berbeda dari anak yang sebaliknya — padahal jumlah bersihnya
+     * bisa sama persis.
+     *
+     * @return array<string, mixed>
+     */
+    private function rekapKarakter(Student $student, Carbon $dari, Carbon $hingga): array
+    {
+        $catatan = $student->characterRecords()
+            ->with('dimension:id,name')
+            ->whereBetween('record_date', [$dari, $hingga])
+            ->orderByDesc('record_date')->orderByDesc('id')
+            ->get();
+
+        $perDimensi = [];
+        foreach ($catatan as $c) {
+            $nama = $c->dimension?->name ?: 'Tanpa dimensi';
+
+            $perDimensi[$nama] ??= ['dimensi' => $nama, 'positif' => 0, 'negatif' => 0, 'lainnya' => 0, 'skor' => 0];
+            $perDimensi[$nama]['skor'] += (int) $c->score;
+
+            match ($c->type) {
+                CharacterRecord::TYPE_POSITIVE,
+                CharacterRecord::TYPE_ACHIEVEMENT => $perDimensi[$nama]['positif']++,
+                CharacterRecord::TYPE_NEGATIVE => $perDimensi[$nama]['negatif']++,
+                default => $perDimensi[$nama]['lainnya']++,
+            };
+        }
+
+        $daftar = array_values($perDimensi);
+        usort($daftar, fn ($a, $b) => strcmp($a['dimensi'], $b['dimensi']));
+
+        return [
+            'dimensi' => $daftar,
+            'catatan' => $catatan,
+            'total' => [
+                'positif' => array_sum(array_column($daftar, 'positif')),
+                'negatif' => array_sum(array_column($daftar, 'negatif')),
+                'lainnya' => array_sum(array_column($daftar, 'lainnya')),
+                'skor' => array_sum(array_column($daftar, 'skor')),
+            ],
+        ];
+    }
+
+    /**
+     * Rata-rata satu digit di belakang koma, atau null bila tidak ada isian.
+     *
+     * Null, BUKAN nol: "belum dinilai" dan "dapat nol" adalah dua keadaan yang
+     * berbeda, dan menyamakannya sudah pernah membuat rata-rata kelas anjlok
+     * oleh siswa yang sebenarnya belum diuji.
+     *
+     * @param  array<int, int|float>  $angka
+     */
+    private function rata(array $angka): ?float
+    {
+        return $angka === [] ? null : round(array_sum($angka) / count($angka), 1);
     }
 
     /**

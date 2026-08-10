@@ -336,6 +336,69 @@
     </tbody>
 </table>
 
+<!-- NILAI RAPOR -->
+{{-- Disaring per SEMESTER, bukan per rentang tanggal: nilai akhir semester 1
+     lazim baru dimasukkan pada Januari, yang menurut kalender sudah semester 2.
+     Menyaringnya dengan tanggal membuat nilai itu hilang dari berkas yang
+     justru diserahkan ke orang tua. --}}
+<div class="section-title">IV. NILAI RAPOR — SEMESTER {{ $semester }}</div>
+<table class="tbl">
+    <thead>
+        <tr>
+            <th>Mata Pelajaran</th>
+            <th style="width: 18%;" class="c">PTS</th>
+            <th style="width: 18%;" class="c">PAS</th>
+        </tr>
+    </thead>
+    <tbody>
+    @forelse ($nilai['rapor'] as $b)
+        <tr>
+            <td>{{ $b['mapel'] }}</td>
+            {{-- "-" berarti belum dinilai, bukan nol. --}}
+            <td class="c tebal" style="color: {{ $b['pts'] !== null && $b['pts'] < 75 ? '#991b1b' : '#0f172a' }};">
+                {{ $b['pts'] ?? '-' }}
+            </td>
+            <td class="c tebal" style="color: {{ $b['pas'] !== null && $b['pas'] < 75 ? '#991b1b' : '#0f172a' }};">
+                {{ $b['pas'] ?? '-' }}
+            </td>
+        </tr>
+    @empty
+        <tr><td colspan="3" class="c" style="color: #94a3b8; font-style: italic; padding: 8pt;">Belum ada nilai PTS/PAS pada semester ini.</td></tr>
+    @endforelse
+    @if ($nilai['rata_rapor'] !== null)
+        <tr>
+            <td class="tebal">Rata-rata seluruh nilai rapor</td>
+            <td colspan="2" class="c tebal">{{ $nilai['rata_rapor'] }}</td>
+        </tr>
+    @endif
+    </tbody>
+</table>
+
+<!-- KARAKTER P5 -->
+<div class="section-title">V. PERKEMBANGAN KARAKTER (P5)</div>
+<table class="tbl">
+    <thead>
+        <tr>
+            <th>Dimensi</th>
+            <th style="width: 16%;" class="c">Positif</th>
+            <th style="width: 16%;" class="c">Negatif</th>
+            <th style="width: 16%;" class="c">Pengamatan</th>
+        </tr>
+    </thead>
+    <tbody>
+    @forelse ($karakter['dimensi'] as $d)
+        <tr>
+            <td>{{ $d['dimensi'] }}</td>
+            <td class="c tebal" style="color: #166534;">{{ $d['positif'] ?: '-' }}</td>
+            <td class="c tebal" style="color: #991b1b;">{{ $d['negatif'] ?: '-' }}</td>
+            <td class="c" style="color: #64748b;">{{ $d['lainnya'] ?: '-' }}</td>
+        </tr>
+    @empty
+        <tr><td colspan="4" class="c" style="color: #94a3b8; font-style: italic; padding: 8pt;">Belum ada catatan karakter pada periode ini.</td></tr>
+    @endforelse
+    </tbody>
+</table>
+
 <!-- DUAL SIGNATURE BLOCK -->
 <div style="page-break-inside: avoid; margin-top: 15pt;">
     <table class="sig-table">

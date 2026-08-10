@@ -154,6 +154,12 @@ class Student extends Model implements AuthenticatableContract
         return $this->hasMany(Attendance::class);
     }
 
+    /** Nilai siswa ini pada seluruh penilaian: harian maupun PTS/PAS. */
+    public function assessmentScores(): HasMany
+    {
+        return $this->hasMany(AssessmentScore::class);
+    }
+
     public function seat(): HasOne
     {
         return $this->hasOne(Seat::class, 'student_id');

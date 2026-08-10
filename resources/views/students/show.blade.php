@@ -408,9 +408,146 @@
         </form>
     </div>
 
+    {{-- =========================================== --}}
+    {{-- 7. NILAI (glass-card)                       --}}
+    {{-- =========================================== --}}
+    <div class="bento-medium glass-card animate-in hover-lift">
+        <div class="mb-4 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <div class="stat-icon stat-icon--indigo">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-sm font-semibold text-slate-900">Nilai</h3>
+            </div>
+            @if ($nilai['rata_rapor'] !== null)
+                <span class="text-xs font-bold text-indigo-700">
+                    Rata-rata rapor {{ $nilai['rata_rapor'] }}
+                </span>
+            @endif
+        </div>
+
+        @if (! $nilai['ada'])
+            <p class="text-xs text-slate-500">Belum ada nilai pada periode ini.</p>
+        @else
+            @if ($nilai['rapor'])
+                <p class="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    Rapor — Semester {{ $semester }}
+                </p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs mb-4">
+                        <thead>
+                            <tr class="text-left text-slate-500">
+                                <th class="py-1.5 font-semibold">Mapel</th>
+                                <th class="py-1.5 font-semibold text-center">PTS</th>
+                                <th class="py-1.5 font-semibold text-center">PAS</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach ($nilai['rapor'] as $b)
+                                <tr>
+                                    <td class="py-1.5 font-medium text-slate-800">{{ $b['mapel'] }}</td>
+                                    {{-- "—" berarti belum dinilai, bukan nol. --}}
+                                    <td class="py-1.5 text-center {{ $b['pts'] !== null && $b['pts'] < 75 ? 'font-bold text-rose-600' : 'text-slate-700' }}">
+                                        {{ $b['pts'] ?? '—' }}
+                                    </td>
+                                    <td class="py-1.5 text-center {{ $b['pas'] !== null && $b['pas'] < 75 ? 'font-bold text-rose-600' : 'text-slate-700' }}">
+                                        {{ $b['pas'] ?? '—' }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
+            @if ($nilai['harian'])
+                {{-- Dipisah dari rapor dengan sengaja: nilai harian jumlahnya
+                     banyak dan bergerak, PTS/PAS sedikit dan menjadi bahan
+                     keputusan. Meleburnya jadi satu rata-rata menghasilkan
+                     angka yang tidak dimaksudkan siapa pun. --}}
+                <p class="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    Nilai harian — {{ $periode['label'] }}
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                    @foreach ($nilai['harian'] as $h)
+                        <span class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px]">
+                            <span class="font-semibold text-slate-700">{{ $h['mapel'] }}</span>
+                            <span class="font-bold {{ $h['rata'] < 75 ? 'text-rose-600' : 'text-slate-900' }}">{{ $h['rata'] }}</span>
+                            <span class="text-slate-400">({{ $h['jumlah'] }}×)</span>
+                        </span>
+                    @endforeach
+                </div>
+            @endif
+        @endif
+    </div>
+
+    {{-- =========================================== --}}
+    {{-- 8. KARAKTER P5 (glass-card)                 --}}
+    {{-- =========================================== --}}
+    <div class="bento-medium glass-card animate-in hover-lift">
+        <div class="mb-4 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <div class="stat-icon stat-icon--emerald">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-sm font-semibold text-slate-900">Karakter P5</h3>
+            </div>
+            @if ($karakter['dimensi'])
+                <span class="text-xs font-semibold">
+                    <span class="text-emerald-600">+{{ $karakter['total']['positif'] }}</span>
+                    <span class="text-slate-300">/</span>
+                    <span class="text-rose-600">−{{ $karakter['total']['negatif'] }}</span>
+                </span>
+            @endif
+        </div>
+
+        @if (! $karakter['dimensi'])
+            <p class="text-xs text-slate-500">Belum ada catatan karakter pada periode ini.</p>
+        @else
+            {{-- Per dimensi, bukan satu angka bersih. Anak dengan sepuluh
+                 catatan positif pada Gotong Royong dan tiga negatif pada
+                 Kemandirian menuntut pembinaan yang sama sekali berbeda dari
+                 anak yang sebaliknya — padahal jumlah bersihnya bisa sama. --}}
+            <div class="space-y-2">
+                @foreach ($karakter['dimensi'] as $d)
+                    <div class="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white/60 px-2.5 py-1.5">
+                        <span class="text-xs font-semibold text-slate-800 truncate">{{ $d['dimensi'] }}</span>
+                        <span class="flex shrink-0 items-center gap-2 text-[11px] font-bold">
+                            @if ($d['positif'] > 0)
+                                <span class="text-emerald-600">+{{ $d['positif'] }}</span>
+                            @endif
+                            @if ($d['negatif'] > 0)
+                                <span class="text-rose-600">−{{ $d['negatif'] }}</span>
+                            @endif
+                            @if ($d['lainnya'] > 0)
+                                <span class="text-slate-400" title="Catatan pengamatan, tidak berpoin">{{ $d['lainnya'] }} obs</span>
+                            @endif
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+
+            @if ($karakter['catatan']->isNotEmpty())
+                <p class="mt-3 mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">Catatan terbaru</p>
+                <ul class="space-y-1">
+                    @foreach ($karakter['catatan']->take(3) as $c)
+                        <li class="text-[11px] text-slate-600">
+                            <span class="text-slate-400">{{ $c->record_date?->translatedFormat('d M') }}</span>
+                            &middot; {{ $c->title }}
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        @endif
+    </div>
+
     @unless ($ajar)
     {{-- =========================================== --}}
-    {{-- 7. BIODATA (glass-card)                    --}}
+    {{-- 9. BIODATA (glass-card)                    --}}
     {{-- =========================================== --}}
     <div class="bento-medium glass-card animate-in hover-lift">
         <div class="mb-4 flex items-center gap-2">
