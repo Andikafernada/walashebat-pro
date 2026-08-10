@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AttendanceSession;
+use App\Models\Scopes\TenantScope;
 use App\Models\Classroom;
 use App\Jobs\SendWhatsAppMessage;
 use App\Models\Schedule;
@@ -97,6 +98,17 @@ class AttendanceSessionService
         string $pin,
         ?string $fromNumber = null,
     ): bool {
+        /*
+         * Sesi ini sah dipegang, jadi tenantnya diketahui: pemiliknya sendiri.
+         *
+         * Dipanggil dari cron tanpa siapa pun yang login, dan relasi di bawah
+         * ($session->classroom, ->owner) membawa TenantScope yang gagal-tertutup
+         * — tanpa baris ini kelasnya terbaca null dan pesan absensi terkirim
+         * tanpa nama kelas, atau gagal sama sekali. Menetapkannya di sini
+         * membuat jalur ini benar baik dari cron maupun dari layar guru.
+         */
+        TenantScope::pakaiTenant($session->user_id);
+
         $session->loadMissing('classroom');
 
         $user = $session->classroom?->owner ?? auth()->user();
@@ -149,6 +161,8 @@ class AttendanceSessionService
      */
     public function dispatchParentRecap(AttendanceSession $session): bool
     {
+        TenantScope::pakaiTenant($session->user_id);
+
         $session->loadMissing(['classroom.owner', 'attendances.student']);
 
         $classroom = $session->classroom;

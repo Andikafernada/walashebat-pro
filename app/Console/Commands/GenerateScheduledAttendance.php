@@ -6,6 +6,7 @@ use App\Models\AttendanceSession;
 use App\Models\Classroom;
 use App\Models\Holiday;
 use App\Models\Schedule;
+use App\Models\Scopes\TenantScope;
 use App\Services\AttendanceSessionService;
 use Illuminate\Console\Command;
 use Illuminate\Database\QueryException;
@@ -39,6 +40,23 @@ class GenerateScheduledAttendance extends Command
     protected $description = 'Buat sesi absensi harian dari jadwal & kirim magic link ke Seksi Absensi';
 
     public function handle(AttendanceSessionService $service): int
+    {
+        /*
+         * Perintah ini memang melintasi seluruh tenant: ia menyisir jadwal
+         * setiap wali kelas untuk hari ini.
+         *
+         * Dinyatakan tegas, bukan dibiarkan bergantung pada "kebetulan tidak
+         * ada yang login". withoutTenant() pada tiap query saja tidak cukup —
+         * ia hanya melepas query terluar, sedangkan with('organizationStructures')
+         * dan Holiday::query() di dalamnya membawa TenantScope sendiri. Tanpa
+         * pembungkus ini keduanya gagal-tertutup: petugas absensi terbaca
+         * kosong sehingga tak ada pesan terkirim, dan hari libur tak pernah
+         * terdeteksi sehingga absensi terbit di hari libur.
+         */
+        return TenantScope::sebagaiSistem(fn () => $this->jalankan($service));
+    }
+
+    private function jalankan(AttendanceSessionService $service): int
     {
         $now = now();
         $lead = max(0, (int) $this->option('lead'));

@@ -28,6 +28,16 @@ class ImporSiswaCocokNamaTest extends TestCase
 
         $user = User::factory()->create();
         $this->class = Classroom::factory()->create(['user_id' => $user->id]);
+
+        /*
+         * StudentsImport dipanggil langsung di sini, tanpa melewati request.
+         * Di produksi ia selalu berjalan di balik rute terautentikasi
+         * (StudentController::import), jadi actingAs() di sini bukan pelonggaran
+         * melainkan menyamakan konteksnya dengan yang sebenarnya — tanpa itu
+         * TenantScope yang gagal-tertutup menyembunyikan siswa dari importernya
+         * sendiri, dan setiap ejaan terbaca sebagai siswa baru.
+         */
+        $this->actingAs($user);
     }
 
     private function impor(array $baris): StudentsImport

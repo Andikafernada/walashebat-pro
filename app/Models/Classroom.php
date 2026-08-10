@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Scopes\TenantScope;
 use App\Support\Phone;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -180,6 +181,37 @@ class Classroom extends Model
         }
 
         return $this->public_token;
+    }
+
+    /**
+     * Pencarian lewat {class:public_token} pada rute publik.
+     *
+     * Dua hal sekaligus, dan keduanya harus di sini — bukan di controller.
+     *
+     * Pertama, pencariannya sendiri harus melewati TenantScope: pengunjungnya
+     * orang tua yang tidak login, dan scope yang gagal-tertutup akan menolak
+     * kelasnya sebelum tokennya sempat diperiksa.
+     *
+     * Kedua, begitu tokennya cocok, tenantnya TIDAK lagi tidak diketahui:
+     * pemegang token sudah membuktikan haknya atas kelas ini, dan pemiliknya
+     * adalah user_id kelas itu. Menetapkannya di sini membuat seluruh query
+     * berikutnya dalam request ini tersaring ke guru yang benar — sesuatu yang
+     * dulu tidak terjadi sama sekali, karena tanpa login scope-nya lepas dan
+     * yang membatasi hanyalah controller yang kebetulan menyaring sendiri.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if ($field !== 'public_token') {
+            return parent::resolveRouteBinding($value, $field);
+        }
+
+        $kelas = static::withoutTenant()->where('public_token', $value)->first();
+
+        if ($kelas) {
+            TenantScope::pakaiTenant($kelas->user_id);
+        }
+
+        return $kelas;
     }
 
     public function students(): HasMany

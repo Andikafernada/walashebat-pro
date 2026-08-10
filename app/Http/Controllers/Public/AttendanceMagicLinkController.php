@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Models\Scopes\TenantScope;
 use App\Models\Attendance;
 use App\Models\AttendanceSession;
 use App\Models\Student;
@@ -266,15 +267,35 @@ class AttendanceMagicLinkController extends Controller
 
     private function resolveSession(string $token): AttendanceSession
     {
-        // Tanpa tenant scope: konteks publik, akses sah lewat token rahasia.
+        /*
+         * Tanpa tenant scope: konteks publik, akses sah lewat token rahasia.
+         *
+         * classroom TIDAK di-eager-load di sini. withoutTenant() hanya melepas
+         * scope pada query terluar, sedangkan with() menjalankan query relasi
+         * tersendiri yang masih membawanya — dan itu berjalan sebelum tenantnya
+         * sempat ditetapkan di bawah, sehingga kelasnya terbaca null dan seluruh
+         * halaman berakhir 404. Dibiarkan lazy, ia dimuat setelah tenant
+         * diketahui dan tersaring dengan benar.
+         */
         $session = AttendanceSession::withoutTenant()
-            ->with('classroom')
             ->where('token', $token)
             ->first();
 
         if (! $session) {
             abort(404);
         }
+
+        /*
+         * Token cocok, jadi tenantnya tidak lagi tidak diketahui.
+         *
+         * withoutTenant() di atas hanya melepas query terluar; setiap relasi
+         * sesudahnya ($session->classroom, ->attendances, daftar siswa) membawa
+         * TenantScope sendiri dan kini gagal-tertutup, sehingga tanpa baris ini
+         * halaman absensi kosong tanpa galat. Menambal tiap relasi satu per satu
+         * berarti belasan titik yang harus diingat — dan yang terlewat gagal
+         * senyap, persis kekeliruan yang sedang diperbaiki.
+         */
+        TenantScope::pakaiTenant($session->user_id);
 
         // Kelas bisa diarsipkan (soft delete) setelah tautan terkirim.
         // Tanpa penjagaan ini, view akan error saat mengakses $session->classroom.

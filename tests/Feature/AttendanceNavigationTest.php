@@ -104,6 +104,10 @@ class AttendanceNavigationTest extends TestCase
     {
         $sesi = $this->buatSesi('submitted');
 
+        // Fixture dibangun di luar request, jadi konteks gurunya ditegakkan
+        // lebih dulu — TenantScope kini menutup query tanpa pemilik.
+        $this->actingAs($this->user);
+
         // setUp membuat 3 siswa. Seluruhnya didata, tapi hanya satu yang hadir.
         $siswa = $this->classroom->students()->orderBy('id')->get();
         $status = ['hadir', 'alfa', 'sakit'];
@@ -197,7 +201,11 @@ class AttendanceNavigationTest extends TestCase
     {
         $session = $this->buatSesi('submitted');
 
-        // Buat attendance dengan status terlambat
+        // Fixture disusun langsung lewat Eloquent, di luar request. Konteks
+        // guru pemiliknya harus ditegakkan, kalau tidak TenantScope menutup
+        // query ini dan Student::first() mengembalikan null.
+        $this->actingAs($this->user);
+
         $student = Student::first();
 
         Attendance::create([
