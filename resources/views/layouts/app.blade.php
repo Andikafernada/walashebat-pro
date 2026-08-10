@@ -52,8 +52,18 @@
             border-top: 1px solid #e2e8f0;
         }
     </style>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {{--
+        Chart.js TIDAK dimuat di sini.
+
+        Dulu setiap halaman menariknya — 200 KB untuk halaman yang tidak punya
+        satu pun grafik, pada ponsel guru dengan kuota terbatas. Lebih buruk
+        lagi, alamatnya tanpa nomor versi, sehingga isinya bisa berganti kapan
+        saja tanpa sepengetahuan kita, dan halaman analitik terlanjur memuat
+        versinya sendiri sehingga berkasnya masuk dua kali.
+
+        Sekarang hanya dua halaman yang memakainya (dashboard dan analitik)
+        yang memuatnya sendiri, dengan versi terpaku dan integrity hash.
+    --}}
 </head>
 <body class="h-full antialiased text-slate-800 selection:bg-indigo-500 selection:text-white" x-data="{ sidebarOpen: false }">
 

@@ -172,11 +172,27 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Kunci per AKUN, bukan per akun+IP.
+     *
+     * Versi lama menyertakan alamat IP, sehingga pembatas ini justru tidak
+     * melakukan hal yang dijanjikan komentarnya sendiri: penyerang yang
+     * berganti IP mendapat lima percobaan baru setiap kali, dan satu akun bisa
+     * digempur tanpa batas. Menghapus IP membuat batasnya melekat pada akun
+     * yang diserang.
+     *
+     * Konsekuensinya diterima sadar: seseorang bisa mengunci akun orang lain
+     * dengan sengaja salah memasukkan kata sandi. Kuncinya hanya 60 detik
+     * (DECAY_SECONDS), jauh lebih ringan daripada membiarkan kata sandi
+     * ditebak sampai ketemu.
+     *
+     * Penyemprotan kata sandi — satu kata sandi dicoba ke BANYAK akun, yang
+     * tidak tersentuh kunci per akun — dibendung terpisah oleh throttle per IP
+     * pada rute POST /login.
+     */
     private function throttleKey(Request $request): string
     {
-        return Str::transliterate(
-            Str::lower($request->input('email')).'|'.$request->ip()
-        );
+        return Str::transliterate(Str::lower((string) $request->input('email')));
     }
 
     /** Normalisasi nomor — sumbernya sama dengan mutator model User. */

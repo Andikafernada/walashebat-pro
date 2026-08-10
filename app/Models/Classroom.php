@@ -275,8 +275,8 @@ class Classroom extends Model
     }
 
     /**
-     * DICADANGKAN — belum dipakai.
-     * Lihat catatan pada ClassroomPolicy: akses saat ini hanya wali kelas.
+     * DICADANGKAN — belum dipakai. Akses saat ini hanya wali kelas pemilik,
+     * ditegakkan TenantScope di lapisan query.
      */
     public function members(): BelongsToMany
     {

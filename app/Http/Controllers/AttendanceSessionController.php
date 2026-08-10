@@ -29,6 +29,26 @@ class AttendanceSessionController extends Controller
     {
         abort_if($attendanceSession->class_id !== $class->id, 404);
 
+        /*
+         * Hanya sesi yang masih terbuka yang boleh dibatalkan.
+         *
+         * Tanpa penjagaan ini, sesi yang sudah TERISI pun bisa dibatalkan — dan
+         * akibatnya jauh lebih besar daripada kelihatannya: seluruh laporan
+         * menyaring `status != 'cancelled'` (rekap kehadiran, analitik, ekspor,
+         * profil siswa), sehingga satu klik keliru melenyapkan absensi sehari
+         * penuh dari setiap rekap. Datanya masih ada di basis data, jadi tidak
+         * ada galat dan tidak ada yang menyadarinya sampai ada yang bertanya
+         * ke mana perginya kehadiran hari itu.
+         *
+         * Aturan ini dulu tertulis di AttendanceSessionPolicy, yang tidak pernah
+         * dipanggil dari mana pun — karena itu dipindahkan ke sini.
+         */
+        if ($attendanceSession->status !== 'open') {
+            return redirect()
+                ->route('classes.attendance.show', [$class, $attendanceSession])
+                ->with('warning', 'Sesi ini sudah tidak terbuka, jadi tidak bisa dibatalkan. Absensi yang sudah masuk tetap tersimpan.');
+        }
+
         $attendanceSession->update([
             'status' => 'cancelled',
             'expires_at' => now(),

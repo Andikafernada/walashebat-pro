@@ -312,6 +312,13 @@
 
 </div>
 
+{{-- Chart.js dimuat di sini, bukan di layout: hanya halaman ini dan
+     analitik yang punya grafik. Versi terpaku + integrity supaya isi
+     yang berubah di CDN ditolak peramban, bukan dijalankan. --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+        integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const ctx = document.getElementById('attendanceChart');

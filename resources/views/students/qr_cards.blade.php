@@ -3,7 +3,9 @@
 @section('title', 'Cetak Kartu QR Presensi Siswa - ' . $class->name)
 
 @section('content')
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"
+        integrity="sha384-lQXOAyZwHXE55JFyrOMB7nY2Wv+m5ZWNtJcHrd1rceRQXAYNLak8ukN5TjBTcIwz"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <div class="space-y-6 pb-12">
     <!-- Header Bar -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between no-print">

@@ -7,11 +7,6 @@ use App\Models\Classroom;
 use App\Models\Student;
 use App\Models\Violation;
 use App\Models\AttendanceSession;
-use App\Policies\AttendanceSessionPolicy;
-use App\Policies\CashBookPolicy;
-use App\Policies\ClassroomPolicy;
-use App\Policies\StudentPolicy;
-use App\Policies\ViolationPolicy;
 use App\Support\Contracts\NotificationChannel;
 use App\Support\Contracts\WhatsAppSessionManager;
 use App\Support\Notifications\LogChannel;
@@ -62,15 +57,22 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         /*
-         * Daftarkan policies untuk authorization.
-         * TenantScope menangani isolasi data di level query,
-         * policies sebagai layer tambahan dan untuk multi-peran di masa depan.
+         * Policy sengaja TIDAK ada lagi.
+         *
+         * Kelimanya terdaftar di sini selama berbulan-bulan tanpa satu pun
+         * pemanggilan: nol authorize(), nol Gate::, nol @can di 38 controller
+         * dan seluruh Blade. Isinya pun hampir seluruhnya
+         * `$model->user_id === $user->id` — persis yang kini ditegakkan
+         * TenantScope di lapisan query, gagal-tertutup dan berpagar test.
+         *
+         * Satu-satunya aturan yang benar-benar menambah — sesi absensi hanya
+         * boleh dibatalkan selagi terbuka — dipindahkan ke
+         * AttendanceSessionController::cancel(), tempat ia bisa berlaku.
+         *
+         * Kode mati yang menyerupai pengaman lebih berbahaya daripada tidak
+         * ada pengaman: ia membuat pembaca berikutnya mengira otorisasi sudah
+         * ditangani.
          */
-        Gate::policy(Classroom::class, ClassroomPolicy::class);
-        Gate::policy(Student::class, StudentPolicy::class);
-        Gate::policy(AttendanceSession::class, AttendanceSessionPolicy::class);
-        Gate::policy(Violation::class, ViolationPolicy::class);
-        Gate::policy(CashBook::class, CashBookPolicy::class);
 
         /*
          * Di balik Cloudflare Tunnel, permintaan tiba di nginx sebagai HTTP

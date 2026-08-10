@@ -45,7 +45,20 @@ Route::get('/', LandingController::class)->name('landing');
 */
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('login', [AuthController::class, 'login']);
+    /*
+     * Batas per IP, pelengkap batas per akun di AuthController.
+     *
+     * Kunci per akun tidak menyentuh penyemprotan kata sandi: satu kata sandi
+     * umum dicoba ke ratusan akun berbeda tidak pernah mengenai batas akun
+     * mana pun. Yang ini menutupnya.
+     *
+     * Sengaja longgar. Satu sekolah berbagi satu IP publik di balik NAT, dan
+     * seluruh wali kelas masuk pada jam yang hampir sama tiap pagi — batas
+     * ketat akan mengunci sekolah itu dari aplikasinya sendiri, kegagalan yang
+     * jauh lebih sering terjadi daripada serangan.
+     */
+    Route::post('login', [AuthController::class, 'login'])
+        ->middleware('throttle:60,1');
     Route::get('register', [AuthController::class, 'showRegister'])->name('register');
     /*
      * Pendaftaran terbuka tanpa batas laju adalah jalan termudah membanjiri
