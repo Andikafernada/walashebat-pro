@@ -55,6 +55,25 @@ interface WhatsAppSessionManager
     public function groupsResult(User $user, bool $paksaSegar = false): array;
 
     /**
+     * Nama grup yang pernah terlihat, untuk ditampilkan TANPA memindai ulang.
+     *
+     * Grup yang sudah dipilih dan disimpan hanya perlu ditampilkan namanya,
+     * bukan dipilih ulang — dan memindai hanya demi sebuah nama membuat setiap
+     * kali halaman dibuka menghubungi WhatsApp, yang dibatasi lajunya dengan
+     * ketat. Peta ini diisi sebagai efek samping groupsResult() yang berhasil,
+     * lalu dibaca murni dari simpanan: implementasinya TIDAK BOLEH menghubungi
+     * gateway, karena justru itu yang ingin dihindari.
+     *
+     * Ini cache tampilan, bukan sumber kebenaran. Yang menentukan grup mana
+     * yang aktif tetap gateway lewat autoreplyStatus(); di sini hanya namanya.
+     * JID yang belum pernah terlihat tidak akan muncul, dan pemanggil harus
+     * tetap bisa menampilkan JID mentahnya sebagai cadangan.
+     *
+     * @return array<string, array{subject: string, peserta: int}> berkunci JID
+     */
+    public function groupLabels(User $user): array;
+
+    /**
      * Pengaturan balasan otomatis milik guru ini.
      *
      * @return array{enabled: bool, groups: array<int, string>, jam: ?string}

@@ -161,6 +161,13 @@ class WhatsAppSessionController extends Controller
                 ? $manager->autoreplyStatus($user)
                 // Nomor belum ditautkan: benar-benar mati, bukan "tidak tahu".
                 : ['enabled' => false, 'groups' => [], 'jam' => null, 'error' => null],
+            /*
+             * Nama grup yang sudah dipilih, dibaca dari simpanan — tanpa
+             * menghubungi WhatsApp. Dengan ini halaman bisa menampilkan
+             * pilihan yang tersimpan begitu dibuka, dan pemindaian grup baru
+             * terjadi ketika guru memang menekan "Ubah pilihan".
+             */
+            'grupLabels' => $user->whatsappConnected() ? $manager->groupLabels($user) : [],
             'gatewayStatus' => [
                 'healthy' => $manager->isHealthy(),
                 'circuit' => method_exists($manager, 'getCircuitStatus')

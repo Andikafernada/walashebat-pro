@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ClassroomRequest;
 use App\Models\Classroom;
+use App\Support\Contracts\WhatsAppSessionManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -91,9 +92,27 @@ class ClassroomController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(WhatsAppSessionManager $manager): View
     {
-        return view('classes.create');
+        return view('classes.create', [
+            'grupLabels' => $this->labelGrup($manager),
+        ]);
+    }
+
+    /**
+     * Nama grup WhatsApp yang sudah pernah terlihat, dibaca dari simpanan.
+     *
+     * Dikirim ke form supaya grup yang sudah dipilih bisa ditampilkan namanya
+     * tanpa memindai ulang; pemindaian baru terjadi saat guru menekan
+     * "Ubah Pilihan". Tidak ada permintaan ke WhatsApp di sini.
+     *
+     * @return array<string, array{subject: string, peserta: int}>
+     */
+    private function labelGrup(WhatsAppSessionManager $manager): array
+    {
+        $user = auth()->user();
+
+        return $user && $user->whatsappConnected() ? $manager->groupLabels($user) : [];
     }
 
     public function store(ClassroomRequest $request): RedirectResponse
@@ -134,9 +153,12 @@ class ClassroomController extends Controller
         ]);
     }
 
-    public function edit(Classroom $class): View
+    public function edit(Classroom $class, WhatsAppSessionManager $manager): View
     {
-        return view('classes.edit', ['classroom' => $class]);
+        return view('classes.edit', [
+            'classroom' => $class,
+            'grupLabels' => $this->labelGrup($manager),
+        ]);
     }
 
     public function update(ClassroomRequest $request, Classroom $class): RedirectResponse

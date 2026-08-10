@@ -94,8 +94,12 @@
     <!-- AUTOREPLY GROUPS SELECTION & EDITING (IF WA CONNECTED) -->
     @if(auth()->user()->whatsappConnected())
         <div class="rounded-2xl border-2 border-indigo-200 bg-white p-6 shadow-md space-y-5"
-             x-data="autoreply({ grupUrl: '{{ route('whatsapp.groups') }}', terpilih: {{ json_encode($autoreply['groups'] ?? []) }} })"
-             x-init="muat()">
+             x-data="autoreply({
+                grupUrl: '{{ route('whatsapp.groups') }}',
+                terpilih: {{ json_encode($autoreply['groups'] ?? []) }},
+                label: {{ json_encode($grupLabels ?? []) }},
+             })"
+             x-init="awal()">
             
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
                 <div>
@@ -109,9 +113,23 @@
                     <span class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                         <span x-text="terpilih.length"></span> Grup Terkoneksi
                     </span>
-                    <button type="button" @click="muat()" class="text-xs text-indigo-600 hover:underline font-bold">
-                        🔄 Refresh Grup
-                    </button>
+                    {{-- Memindai grup itu mahal: WhatsApp membatasi laju
+                         groupFetchAllParticipating dengan ketat. Selama guru
+                         hanya membuka halaman untuk melihat pilihannya, tidak
+                         ada yang perlu dipindai — jadi tombol inilah satu-satunya
+                         jalan masuk ke pemindaian. --}}
+                    <template x-if="mode === 'ringkas'">
+                        <button type="button" @click="bukaPemilih()"
+                                class="text-xs text-indigo-600 hover:underline font-bold">
+                            ✏️ Ubah pilihan grup
+                        </button>
+                    </template>
+                    <template x-if="mode === 'pilih'">
+                        <button type="button" @click="muat(true)" :disabled="memuat"
+                                class="text-xs text-indigo-600 hover:underline font-bold disabled:opacity-50">
+                            🔄 Refresh Grup
+                        </button>
+                    </template>
                 </div>
             </div>
 
@@ -191,6 +209,59 @@
                     </span>
                 </label>
 
+                {{--
+                    RINGKAS — keadaan biasa: grup sudah dipilih dan disimpan.
+
+                    Menampilkan pilihan yang tersimpan dari nama yang sudah
+                    diingat server, tanpa satu pun permintaan ke WhatsApp.
+                    Hidden input di bawah WAJIB ada: tanpa itu formulir ini
+                    terkirim tanpa groups[] sama sekali, dan autoreplySave
+                    membacanya sebagai "tidak ada grup" — menyimpan kata kunci
+                    saja akan menghapus seluruh pilihan grup guru.
+                --}}
+                <template x-if="mode === 'ringkas'">
+                    <div class="space-y-2">
+                        <div class="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
+                            <template x-for="id in terpilih" :key="id">
+                                <div class="flex items-center justify-between gap-3 p-3">
+                                    <input type="hidden" name="groups[]" :value="id">
+
+                                    <div class="min-w-0">
+                                        <span class="block truncate text-xs font-bold text-slate-900" x-text="namaGrup(id)"></span>
+                                        <span class="block text-[10px] text-slate-400" x-text="ketGrup(id)"></span>
+                                    </div>
+
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <button type="button" @click.prevent="periksa(id)" :disabled="memeriksa === id"
+                                                class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50">
+                                            <span x-show="memeriksa !== id">Cek status</span>
+                                            <span x-show="memeriksa === id">Memeriksa…</span>
+                                        </button>
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                            ✓ Terkoneksi (Aktif)
+                                        </span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <p class="text-[10px] text-slate-400">
+                            Pilihan tersimpan, ditampilkan tanpa memindai WhatsApp.
+                            Tekan <b>Ubah pilihan grup</b> di atas bila ingin menambah atau mengganti grup.
+                        </p>
+                    </div>
+                </template>
+
+                {{--
+                    PEMILIH — hanya dirender setelah guru menekan "Ubah pilihan".
+
+                    x-if, BUKAN x-show. Checkbox name="groups[]" yang sekadar
+                    disembunyikan tetap ikut terkirim, sehingga blok ini dan
+                    blok ringkas di atas akan mengirim groups[] ganda.
+                --}}
+                <template x-if="mode === 'pilih'">
+                <div class="space-y-4">
+
                 <div class="flex gap-2">
                     <input type="text" x-model="cari" placeholder="🔍 Cari nama grup WhatsApp..."
                            class="flex-1 h-10 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:outline-none">
@@ -267,6 +338,9 @@
                 <div x-show="!memuat && !galat && tersaring.length === 0" class="py-8 text-center bg-slate-50 rounded-xl text-xs text-slate-500">
                     Tidak ditemukan grup WhatsApp. Pastikan WhatsApp ponsel Anda sudah bergabung di grup.
                 </div>
+
+                </div>
+                </template>
 
                 {{-- Hasil "Cek status": daftar syarat yang bisa ditindaklanjuti guru,
                      bukan sekadar aktif/tidak. --}}
@@ -526,7 +600,7 @@
     function autoreply(cfg) {
         return {
             grup: [],
-            memuat: true,
+            memuat: false,
             galat: '',
             catatan: '',
             dariCache: false,
@@ -534,6 +608,59 @@
             hasilCek: null,
             cari: '',
             terpilih: cfg.terpilih || [],
+
+            // Nama grup yang sudah diingat server, dipakai agar pilihan
+            // tersimpan bisa ditampilkan tanpa memindai. Berkunci JID.
+            label: cfg.label || {},
+
+            /*
+             * 'ringkas' = tampilkan pilihan tersimpan, jangan memindai.
+             * 'pilih'   = daftar grup lengkap untuk dipilih, perlu memindai.
+             *
+             * Guru yang sudah menyimpan pilihannya mulai dari 'ringkas'; yang
+             * belum punya pilihan tidak akan bisa memilih apa pun tanpa daftar,
+             * jadi baginya pemindaian memang tak terhindarkan.
+             */
+            mode: (cfg.terpilih || []).length > 0 ? 'ringkas' : 'pilih',
+            sudahMuat: false,
+
+            awal() {
+                if (this.mode === 'pilih') this.muat();
+            },
+
+            /*
+             * Daftar hasil pindai didahulukan karena paling baru; peta label
+             * dari server menjadi cadangannya saat belum ada pemindaian sama
+             * sekali. Kalau keduanya tidak tahu, JID mentah tetap ditampilkan —
+             * lebih jujur daripada kosong.
+             */
+            infoGrup(id) {
+                return this.grup.find((g) => g.id === id) || this.label[id] || null;
+            },
+
+            namaGrup(id) {
+                const g = this.infoGrup(id);
+                return g ? g.subject : id;
+            },
+
+            ketGrup(id) {
+                const g = this.infoGrup(id);
+                return g
+                    ? g.peserta + ' Anggota'
+                    : 'Nama grup belum tersimpan — tekan “Ubah pilihan grup” untuk memuatnya';
+            },
+
+            /*
+             * Satu-satunya jalan dari 'ringkas' ke pemindaian, dan hanya sekali
+             * per kunjungan: setelah daftarnya ada, menutup lalu membuka lagi
+             * tidak menghubungi WhatsApp untuk kedua kalinya. Tombol
+             * "Refresh Grup" tetap tersedia bila guru memang menambah grup baru.
+             */
+            async bukaPemilih() {
+                this.mode = 'pilih';
+                if (! this.sudahMuat) await this.muat();
+            },
+
             get tersaring() {
                 const kata = this.cari.trim().toLowerCase();
                 if (!kata) return this.grup;
@@ -561,7 +688,7 @@
                     });
                     const data = await res.json();
 
-                    const nama = (this.grup.find((g) => g.id === idGrup) || {}).subject || idGrup;
+                    const nama = this.namaGrup(idGrup);
 
                     if (!data.ok) {
                         this.hasilCek = { grup: nama, siap: false, pesan: data.pesan || 'Pemeriksaan gagal.', syarat: null };
@@ -605,6 +732,7 @@
                     this.catatan = data.warning || '';
                     this.dariCache = data.cached === true;
                     this.grup = (data.groups || []).sort((a, b) => a.peserta - b.peserta);
+                    this.sudahMuat = true;
                 } catch (e) {
                     console.error('Gagal memuat grup:', e);
                     this.galat = 'Tidak bisa menghubungi server. Periksa koneksi lalu coba lagi.';

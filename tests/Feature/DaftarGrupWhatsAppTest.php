@@ -240,4 +240,112 @@ class DaftarGrupWhatsAppTest extends TestCase
             ->assertJson(['connected' => true, 'ok' => true])
             ->assertJsonCount(2, 'groups');
     }
+
+    // -- Nama grup diingat, supaya pilihan tersimpan tak perlu dipindai ----
+    //
+    // Grup yang sudah dipilih dan disimpan hanya perlu ditampilkan namanya.
+    // Selama nama itu tidak tersimpan di mana pun, satu-satunya cara
+    // mengetahuinya adalah memindai seluruh daftar grup — sehingga setiap kali
+    // halaman dibuka WhatsApp ikut dihubungi, padahal tidak ada yang berubah.
+
+    public function test_nama_grup_diingat_setelah_pemindaian_berhasil(): void
+    {
+        $guru = $this->guru();
+        Http::fake(fn () => Http::response(['groups' => $this->grupPalsu()], 200));
+
+        $m = $this->manager();
+        $m->groupsResult($guru);
+
+        $label = $m->groupLabels($guru);
+
+        $this->assertSame(
+            ['subject' => 'Wali Murid 12 PPLG', 'peserta' => 13],
+            $label['120363111@g.us'] ?? null,
+            'Nama grup harus bisa ditemukan lewat JID-nya tanpa memindai ulang'
+        );
+    }
+
+    public function test_groupLabels_tidak_pernah_menghubungi_gateway(): void
+    {
+        $guru = $this->guru();
+        Http::fake(fn () => Http::response(['groups' => $this->grupPalsu()], 200));
+
+        $m = $this->manager();
+        $m->groupsResult($guru);
+
+        $sebelum = count(Http::recorded());
+        $m->groupLabels($guru);
+        $m->groupLabels($guru);
+
+        $this->assertCount(
+            $sebelum,
+            Http::recorded(),
+            'groupLabels() dibaca murni dari simpanan; menghubungi gateway di sini '
+            .'justru mengembalikan pemindaian yang ingin dihindari'
+        );
+    }
+
+    public function test_nama_grup_lama_tidak_hilang_saat_pemindaian_berikutnya_tidak_memuatnya(): void
+    {
+        $guru = $this->guru();
+        $saklar = new \stdClass;
+        $saklar->sebagian = false;
+
+        /*
+         * Pengambilan kedua hanya melaporkan satu grup — hal biasa saat
+         * WhatsApp memangkas hasil atau guru sementara keluar dari satu grup.
+         * Kalau peta nama ditimpa, grup yang MASIH dipilih kehilangan namanya
+         * dan tampil sebagai JID mentah di layar guru.
+         */
+        Http::fake(fn () => Http::response([
+            'groups' => $saklar->sebagian
+                ? [['id' => '628123-1@g.us', 'subject' => 'ORANG TUA/WALI XII TKJE', 'peserta' => 31]]
+                : $this->grupPalsu(),
+        ], 200));
+
+        $m = $this->manager();
+        $m->groupsResult($guru);
+
+        $saklar->sebagian = true;
+        $m->groupsResult($guru, true);
+
+        $label = $m->groupLabels($guru);
+
+        $this->assertSame('Wali Murid 12 PPLG', $label['120363111@g.us']['subject'] ?? null,
+            'Nama grup yang tidak terbawa pengambilan terakhir tetap harus diingat');
+        $this->assertSame(31, $label['628123-1@g.us']['peserta'] ?? null,
+            'Grup yang ikut terbawa harus tersegarkan, bukan sekadar dipertahankan');
+    }
+
+    public function test_halaman_membawa_nama_grup_tersimpan_ke_peramban(): void
+    {
+        $guru = $this->guru();
+
+        Http::fake(function ($request) {
+            $isi = $request->data();
+
+            return match ($isi['action'] ?? '') {
+                'autoreply-status' => Http::response([
+                    'enabled' => true,
+                    'groups' => ['120363111@g.us'],
+                    'jam' => '06:00-15:00',
+                ], 200),
+                default => Http::response(['groups' => $this->grupPalsu()], 200),
+            };
+        });
+
+        // Pemindaian yang pernah terjadi sebelumnya — inilah yang mengisi peta nama.
+        $this->manager()->groupsResult($guru);
+
+        /*
+         * Halaman harus mengirim nama grupnya sendiri ke peramban. Tanpa itu
+         * satu-satunya cara menampilkan pilihan tersimpan adalah memindai dari
+         * sisi peramban begitu halaman terbuka.
+         */
+        $this->actingAs($guru)
+            ->get(route('whatsapp.index'))
+            ->assertOk()
+            ->assertSee('Wali Murid 12 PPLG', false)
+            ->assertSee('120363111@g.us', false);
+    }
 }

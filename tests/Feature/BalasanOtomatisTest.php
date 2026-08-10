@@ -44,6 +44,9 @@ class BalasanOtomatisTest extends TestCase
             ['enabled' => false, 'groups' => [], 'jam' => '06:00-15:00']
         )->byDefault();
         $mock->shouldReceive('isHealthy')->andReturn(true)->byDefault();
+        // Nama grup yang diingat untuk ditampilkan tanpa memindai. Kosong
+        // berarti "belum pernah memindai", yang wajar bagi guru baru.
+        $mock->shouldReceive('groupLabels')->andReturn([])->byDefault();
         $mock->shouldReceive('getCircuitStatus')->andReturn([
             'name' => 'test',
             'state' => 'closed',
@@ -244,6 +247,7 @@ class BalasanOtomatisTest extends TestCase
             'error' => 'Gateway sedang tidak tersedia.',
         ]);
         $mock->shouldReceive('isHealthy')->andReturn(false);
+        $mock->shouldReceive('groupLabels')->andReturn([]);
         $mock->shouldReceive('getCircuitStatus')->andReturn([
             'name' => 'test', 'state' => 'open', 'failures' => 3,
             'threshold' => 3, 'time_until_retry' => 45,

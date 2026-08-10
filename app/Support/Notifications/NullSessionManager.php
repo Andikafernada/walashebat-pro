@@ -31,6 +31,11 @@ class NullSessionManager implements WhatsAppSessionManager
         return ['ok' => true, 'groups' => [], 'cached' => false, 'error' => null];
     }
 
+    public function groupLabels(User $user): array
+    {
+        return [];
+    }
+
     public function autoreplyStatus(User $user): array
     {
         return [

@@ -32,6 +32,17 @@ class N8nSessionManager implements WhatsAppSessionManager
      */
     private const GRUP_TTL = 300;
 
+    /**
+     * Berapa lama NAMA grup diingat, terlepas dari kesegaran daftarnya.
+     *
+     * Dipakai untuk menampilkan grup yang sudah dipilih dan disimpan tanpa
+     * memindai ulang. Nama grup nyaris tidak pernah berubah, dan bila pun
+     * berubah, akibat terburuknya hanyalah label yang usang sampai guru
+     * membuka pemilih grup lagi — jauh lebih ringan daripada menghubungi
+     * WhatsApp setiap kali halaman dibuka. 30 hari.
+     */
+    private const NAMA_GRUP_TTL = 2592000;
+
     private CircuitBreaker $circuit;
 
     private int $timeout;
@@ -128,8 +139,52 @@ class N8nSessionManager implements WhatsAppSessionManager
         // Hanya hasil yang berhasil yang disimpan; kegagalan jangan sampai
         // ikut membeku selama TTL.
         Cache::put($kunci, $data['groups'], self::GRUP_TTL);
+        $this->ingatNamaGrup($user, $data['groups']);
 
         return ['ok' => true, 'groups' => $data['groups'], 'cached' => false, 'error' => null];
+    }
+
+    public function groupLabels(User $user): array
+    {
+        $peta = Cache::get('wa:grupnama:'.$this->sessionId($user));
+
+        return is_array($peta) ? $peta : [];
+    }
+
+    /**
+     * Simpan nama grup yang barusan terlihat, untuk ditampilkan tanpa memindai.
+     *
+     * Digabung, bukan ditimpa. Sekali pindai hanya melaporkan grup yang masih
+     * diikuti guru saat itu; menimpanya akan melenyapkan nama grup yang sedang
+     * dipakai tetapi kebetulan tidak terbawa pada pengambilan ini, dan
+     * pilihan yang tersimpan berubah menjadi deretan JID mentah di layar.
+     *
+     * TTL-nya jauh lebih panjang dari GRUP_TTL karena tugasnya berbeda:
+     * GRUP_TTL menjaga daftar pilihan tetap segar, peta ini hanya perlu
+     * mengingat nama sesuatu yang sudah dipilih.
+     *
+     * @param  array<int, array{id?: string, subject?: string, peserta?: int}>  $grup
+     */
+    private function ingatNamaGrup(User $user, array $grup): void
+    {
+        $kunci = 'wa:grupnama:'.$this->sessionId($user);
+        $peta = Cache::get($kunci);
+        $peta = is_array($peta) ? $peta : [];
+
+        foreach ($grup as $g) {
+            $id = $g['id'] ?? null;
+
+            if (! is_string($id) || $id === '') {
+                continue;
+            }
+
+            $peta[$id] = [
+                'subject' => (string) ($g['subject'] ?? $id),
+                'peserta' => (int) ($g['peserta'] ?? 0),
+            ];
+        }
+
+        Cache::put($kunci, $peta, self::NAMA_GRUP_TTL);
     }
 
     public function autoreplyStatus(User $user): array
