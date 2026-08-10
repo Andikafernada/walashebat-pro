@@ -26,8 +26,18 @@
             </p>
         </div>
 
-        <div class="flex items-center gap-2">
-            <a href="{{ route('classes.attendance.manual.create', $classroom) }}" 
+        <div class="flex flex-wrap items-center gap-2">
+            {{--
+                Rekap Kehadiran ditautkan dari sini, bukan dari tab navigasi
+                yang sudah berisi 12 butir. Halamannya sudah lengkap tetapi
+                selama ini tidak punya satu pun tautan, dan orang mencarinya
+                justru di sini — bersama riwayat absensi.
+            --}}
+            <a href="{{ route('classes.reports.attendance', $classroom) }}"
+               class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-all">
+                📋 Rekap Kehadiran
+            </a>
+            <a href="{{ route('classes.attendance.manual.create', $classroom) }}"
                class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-700 active:scale-95 transition-all">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 {{-- Di kelas ajar ini bukan jalur cadangan untuk menambal tanggal

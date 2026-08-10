@@ -201,6 +201,15 @@
                     <span>👑</span><span>Langganan PRO</span>
                 </a>
                 {{--
+                    Halaman analitik sudah lengkap dan berfungsi, tetapi selama
+                    ini tidak punya SATU PUN tautan dari mana pun — rutenya ada,
+                    controllernya ada, viewnya 363 baris, dan tidak ada yang
+                    bisa mencapainya kecuali mengetik URL-nya sendiri.
+                --}}
+                <a href="{{ route('analytics.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('analytics.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <span>📊</span><span>Analitik</span>
+                </a>
+                {{--
                     isAdmin() membaca kolom `role` — penanda yang SAMA dipakai
                     middleware role:admin dan ClassroomPolicy.
 
@@ -223,7 +232,13 @@
 
         <!-- User Profile Bottom Drawer -->
         <div class="p-4 border-t border-slate-800 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-3 min-w-0">
+            {{--
+                Kartu ini sudah menampilkan nama dan email, jadi ke sinilah
+                orang mencari pengaturan akunnya — tetapi selama ini tidak bisa
+                diklik, dan halaman Profil tidak punya tautan dari mana pun.
+            --}}
+            <a href="{{ route('profile.edit') }}" title="Ubah profil & kata sandi"
+               class="flex items-center gap-3 min-w-0 rounded-xl px-1 py-1 -mx-1 transition-colors hover:bg-slate-800 {{ request()->routeIs('profile.*') ? 'bg-slate-800' : '' }}">
                 <div class="h-9 w-9 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shrink-0">
                     {{ substr(auth()->user()->name, 0, 1) }}
                 </div>
@@ -231,7 +246,7 @@
                     <span class="font-bold text-white block truncate">{{ auth()->user()->name }}</span>
                     <span class="text-[10px] text-slate-400 block truncate">{{ auth()->user()->email }}</span>
                 </div>
-            </div>
+            </a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" title="Keluar Akun" class="text-slate-400 hover:text-rose-400 p-1 font-bold">
