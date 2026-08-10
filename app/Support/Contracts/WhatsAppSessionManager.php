@@ -18,17 +18,33 @@ use App\Models\User;
  */
 interface WhatsAppSessionManager
 {
+    /** Pindai QR dari layar — butuh perangkat kedua. */
+    public const METODE_QR = 'qr';
+
+    /** Ketik kode 8 karakter di WhatsApp — bisa dilakukan di ponsel yang sama. */
+    public const METODE_KODE = 'kode';
+
     /**
-     * Mulai penautan. Mengembalikan data QR untuk dipindai guru.
+     * Mulai penautan.
      *
-     * @return array{session_id: string, qr: ?string, status: string}
+     * Dua metode, karena QR mensyaratkan sesuatu yang tidak selalu ada: layar
+     * kedua. Guru yang mendaftar langsung dari ponselnya tidak bisa memindai
+     * layar ponsel itu dengan ponsel yang sama, dan tanpa jalan lain ia
+     * berhenti di situ. METODE_KODE memakai penautan lewat nomor telepon:
+     * gateway menerbitkan 8 karakter yang diketik guru di WhatsApp →
+     * Perangkat Tertaut → Tautkan dengan nomor telepon.
+     *
+     * Hanya salah satu dari 'qr' atau 'pairing_code' yang terisi.
+     *
+     * @param  self::METODE_*  $metode
+     * @return array{session_id: string, qr: ?string, pairing_code: ?string, metode: string, status: string}
      */
-    public function startPairing(User $user): array;
+    public function startPairing(User $user, string $metode = self::METODE_QR): array;
 
     /**
      * Status terkini dari gateway: disconnected | pairing | connected.
      *
-     * @return array{status: string, qr: ?string, error: ?string}
+     * @return array{status: string, qr: ?string, pairing_code: ?string, error: ?string}
      */
     public function status(User $user): array;
 

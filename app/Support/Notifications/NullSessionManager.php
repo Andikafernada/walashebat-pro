@@ -11,14 +11,20 @@ use App\Support\Contracts\WhatsAppSessionManager;
  */
 class NullSessionManager implements WhatsAppSessionManager
 {
-    public function startPairing(User $user): array
+    public function startPairing(User $user, string $metode = self::METODE_QR): array
     {
-        return ['session_id' => 'dev-'.$user->id, 'qr' => null, 'status' => 'connected'];
+        return [
+            'session_id' => 'dev-'.$user->id,
+            'qr' => null,
+            'pairing_code' => null,
+            'metode' => $metode,
+            'status' => 'connected',
+        ];
     }
 
     public function status(User $user): array
     {
-        return ['status' => 'connected', 'qr' => null, 'error' => null];
+        return ['status' => 'connected', 'qr' => null, 'pairing_code' => null, 'error' => null];
     }
 
     public function groups(User $user): array

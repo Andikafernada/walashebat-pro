@@ -74,13 +74,19 @@ class N8nSessionManager implements WhatsAppSessionManager
         return $this->circuit->getStatus();
     }
 
-    public function startPairing(User $user): array
+    public function startPairing(User $user, string $metode = self::METODE_QR): array
     {
-        $data = $this->call('pair', $user);
+        // Apa pun selain 'kode' diperlakukan sebagai QR — sama seperti gateway,
+        // supaya nilai tak dikenal tidak diam-diam mematikan penautan.
+        $metode = $metode === self::METODE_KODE ? self::METODE_KODE : self::METODE_QR;
+
+        $data = $this->call('pair', $user, ['metode' => $metode]);
 
         return [
             'session_id' => $data['session_id'] ?? $this->sessionId($user),
             'qr' => $data['qr'] ?? null,
+            'pairing_code' => $data['pairing_code'] ?? null,
+            'metode' => $data['metode'] ?? $metode,
             'status' => $data['status'] ?? 'pairing',
         ];
     }
@@ -92,6 +98,7 @@ class N8nSessionManager implements WhatsAppSessionManager
         return [
             'status' => $data['status'] ?? 'disconnected',
             'qr' => $data['qr'] ?? null,
+            'pairing_code' => $data['pairing_code'] ?? null,
             'error' => $data['error'] ?? null,
         ];
     }

@@ -42,14 +42,43 @@
             <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-3">
                 <div>
                     <p class="font-bold text-sm text-amber-950">⚠️ Nomor WhatsApp Belum Tersambung</p>
-                    <p class="text-slate-600 mt-0.5">Klik tombol <strong>"Tautkan Nomor WhatsApp"</strong> di bawah untuk menerbitkan Kode QR resmi.</p>
+                    <p class="text-slate-600 mt-0.5">Pilih cara menautkan yang sesuai dengan perangkat yang sedang Anda pakai.</p>
                 </div>
-                <form method="POST" action="{{ route('whatsapp.pair') }}">
-                    @csrf
-                    <button type="submit" class="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95 flex items-center gap-2">
-                        <span>📱 Tautkan Nomor WhatsApp (Terbitkan QR Code)</span>
-                    </button>
-                </form>
+
+                {{--
+                    Dua jalan, karena QR menuntut sesuatu yang tidak selalu ada:
+                    layar kedua. Guru yang membuka halaman ini DARI ponselnya
+                    tidak mungkin memindai layar ponsel itu dengan ponsel yang
+                    sama — sebelumnya ia berhenti di jalan buntu. Pilihan
+                    diserahkan kepada guru, bukan ditebak dari user agent:
+                    salah tebak mengunci dia pada satu-satunya cara yang justru
+                    tidak bisa ia pakai.
+                --}}
+                <div class="grid gap-2.5 sm:grid-cols-2">
+                    <form method="POST" action="{{ route('whatsapp.pair') }}" class="contents">
+                        @csrf
+                        <input type="hidden" name="metode" value="kode">
+                        <button type="submit"
+                                class="h-auto py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95 text-left">
+                            <span class="block text-sm">📱 Saya memakai HP ini</span>
+                            <span class="block font-medium text-emerald-50/90 mt-0.5 leading-snug">
+                                Dapatkan kode 8 karakter untuk diketik di WhatsApp. Tanpa memindai apa pun.
+                            </span>
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ route('whatsapp.pair') }}" class="contents">
+                        @csrf
+                        <input type="hidden" name="metode" value="qr">
+                        <button type="submit"
+                                class="h-auto py-3 px-4 rounded-xl border-2 border-emerald-600 bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs transition-all active:scale-95 text-left">
+                            <span class="block text-sm">💻 Saya memakai laptop/komputer</span>
+                            <span class="block font-medium text-slate-500 mt-0.5 leading-snug">
+                                Terbitkan Kode QR untuk dipindai dengan WhatsApp di HP Anda.
+                            </span>
+                        </button>
+                    </form>
+                </div>
             </div>
         @else
             <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
@@ -63,6 +92,43 @@
                 </form>
             </div>
         @endif
+    </div>
+
+    {{-- KARTU KODE PENAUTAN — jalur "saya memakai HP ini" --}}
+    <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
+         x-show="status !== 'connected' && kodePairing" x-cloak>
+        <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+            <span>Kode Penautan Berhasil Diterbitkan</span>
+        </div>
+
+        <h3 class="text-xl font-black text-slate-900">Ketik Kode Ini di WhatsApp Anda</h3>
+
+        {{-- Dipecah per karakter: kode ini diketik ulang oleh guru sambil
+             berpindah aplikasi, dan deretan 8 huruf-angka tanpa jeda paling
+             mudah salah baca. --}}
+        <div class="flex justify-center gap-1.5 sm:gap-2 py-1 flex-wrap">
+            <template x-for="(huruf, i) in String(kodePairing).split('')" :key="i">
+                <span class="inline-flex h-12 w-9 sm:h-14 sm:w-11 items-center justify-center rounded-xl border-2 border-slate-900 bg-slate-50 text-xl sm:text-2xl font-black tracking-widest text-slate-900 shadow-sm"
+                      x-text="huruf"></span>
+            </template>
+        </div>
+
+        <div class="mx-auto max-w-md rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-left text-xs text-slate-700 space-y-1.5">
+            <p class="font-bold text-slate-900">Langkahnya:</p>
+            <p>1. Buka <strong>WhatsApp</strong> di HP ini.</p>
+            <p>2. Ketuk <strong>Titik Tiga (⋮)</strong> &rarr; <strong>Perangkat Tertaut</strong>.</p>
+            <p>3. Ketuk <strong>Tautkan Perangkat</strong>, lalu pilih <strong>Tautkan dengan nomor telepon</strong>.</p>
+            <p>4. Masukkan kode di atas.</p>
+        </div>
+
+        <p class="text-xs font-bold text-indigo-600 animate-pulse">
+            ⏳ Menunggu kode dimasukkan… Halaman akan otomatis terhubung.
+        </p>
+
+        <p class="text-[11px] text-slate-400">
+            Kode berlaku sebentar. Bila kedaluwarsa, tekan &ldquo;Saya memakai HP ini&rdquo; sekali lagi untuk kode baru.
+        </p>
     </div>
 
     <!-- DYNAMIC REAL-TIME QR CODE DISPLAY CARD -->
@@ -512,6 +578,7 @@
         return {
             status: cfg.connected ? 'connected' : 'disconnected',
             qr: @json(session('wa_qr')),
+            kodePairing: @json(session('wa_pairing_code')),
             timer: null,
             lastQrRendered: null,
             init() {
@@ -531,7 +598,11 @@
             },
             label() {
                 if (this.status === 'connected') return 'Tersambung ✓';
-                if (this.status === 'pairing') return 'Menunggu Pemindaian QR';
+                // Menyebut "pemindaian QR" pada jalur kode akan menyuruh guru
+                // melakukan hal yang justru tidak bisa ia lakukan.
+                if (this.status === 'pairing') {
+                    return this.kodePairing ? 'Menunggu Kode Dimasukkan' : 'Menunggu Pemindaian QR';
+                }
                 return 'Belum Tersambung';
             },
             renderQr(qrStr) {
@@ -581,6 +652,15 @@
                         if (data.qr) {
                             this.qr = data.qr;
                             this.renderQr(data.qr);
+                        }
+                        /*
+                         * Kode pairing terbit beberapa detik setelah /pair
+                         * menjawab (Baileys harus berjabat tangan dulu). Tanpa
+                         * dipungut di sini, guru yang menekan tombol tepat
+                         * sebelum kodenya siap hanya melihat halaman diam.
+                         */
+                        if (data.pairing_code) {
+                            this.kodePairing = data.pairing_code;
                         }
                         // Hanya tercapai bila halaman dibuka dalam keadaan belum
                         // tersambung, jadi ini benar-benar peralihan: QR baru

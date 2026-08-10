@@ -332,8 +332,18 @@ class WhatsAppSessionController extends Controller
                 .'Mohon tunggu ' . ceil($circuitStatus['time_until_retry'] / 60) . ' menit, lalu coba lagi.');
         }
 
+        /*
+         * Guru yang mendaftar dari ponsel tidak bisa memindai layar ponselnya
+         * sendiri. Baginya satu-satunya jalan adalah kode pairing, jadi
+         * pilihannya datang dari formulir — bukan ditebak dari user agent,
+         * yang salah tebak justru mengunci guru di jalan buntu.
+         */
+        $metode = $request->input('metode') === WhatsAppSessionManager::METODE_KODE
+            ? WhatsAppSessionManager::METODE_KODE
+            : WhatsAppSessionManager::METODE_QR;
+
         try {
-            $result = $manager->startPairing($user);
+            $result = $manager->startPairing($user, $metode);
 
             $user->update([
                 'wa_session_id' => $result['session_id'],
@@ -343,6 +353,18 @@ class WhatsAppSessionController extends Controller
 
             if ($result['status'] === 'connected') {
                 return back()->with('success', 'Nomor WhatsApp tersambung.');
+            }
+
+            if ($metode === WhatsAppSessionManager::METODE_KODE) {
+                if (blank($result['pairing_code'])) {
+                    return back()->with('warning',
+                        'Gateway belum bisa menerbitkan kode penautan. Biasanya karena WhatsApp '
+                        .'sedang menolak koneksi setelah terlalu sering menyambung ulang. '
+                        .'Tunggu beberapa menit, lalu coba lagi.');
+                }
+
+                return back()->with('wa_pairing_code', $result['pairing_code'])
+                    ->with('success', 'Masukkan kode berikut di WhatsApp ponsel Anda.');
             }
 
             // QR bisa TIDAK terbit meski gateway menjawab - mis. saat WhatsApp
@@ -379,6 +401,9 @@ class WhatsAppSessionController extends Controller
         return response()->json([
             'status' => $result['status'],
             'qr' => $result['qr'],
+            // Kode bisa terbit sesaat SETELAH /pair menjawab; tanpa ikut di
+            // sini, guru yang menunggu tidak pernah melihatnya muncul.
+            'pairing_code' => $result['pairing_code'] ?? null,
             'error' => $result['error'],
             'gateway_healthy' => $manager->isHealthy(),
             'gateway_circuit' => method_exists($manager, 'getCircuitStatus')
