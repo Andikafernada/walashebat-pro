@@ -21,14 +21,34 @@
         @csrf
         @if ($assessment) @method('PATCH') @endif
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 grid gap-4 sm:grid-cols-3">
-            <div class="sm:col-span-2">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Capaian Pembelajaran *</label>
-                <input type="text" name="capaian_pembelajaran" required
-                       value="{{ old('capaian_pembelajaran', $assessment->capaian_pembelajaran ?? '') }}"
-                       placeholder="cth: Memahami sistem bilangan biner dan konversinya"
-                       class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
-                @error('capaian_pembelajaran')
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 grid gap-4 sm:grid-cols-3"
+             x-data="{ jenis: '{{ old('jenis', $jenisAwal) }}' }">
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Jenis Penilaian *</label>
+                <select name="jenis" x-model="jenis"
+                        class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                    @foreach (\App\Models\Assessment::jenisTersedia() as $nilai => $label)
+                        <option value="{{ $nilai }}" @selected(old('jenis', $jenisAwal) === $nilai)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('jenis')
+                    <p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Semester *</label>
+                {{-- Semester DISIMPAN, bukan disimpulkan dari tanggal: nilai
+                     akhir semester 1 lazim baru dimasukkan pada Januari, yang
+                     menurut kalender sudah semester 2. --}}
+                <select name="semester"
+                        class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                    @foreach ([1, 2] as $s)
+                        <option value="{{ $s }}" @selected((int) old('semester', $semesterAwal) === $s)>Semester {{ $s }}</option>
+                    @endforeach
+                </select>
+                @error('semester')
                     <p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -38,24 +58,63 @@
                 <input type="date" name="assessment_date" required
                        value="{{ old('assessment_date', optional($assessment?->assessment_date)->toDateString() ?? date('Y-m-d')) }}"
                        class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                @error('assessment_date')
+                    <p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>
+                @enderror
             </div>
 
-            @if (count($mapelDiampu) > 0)
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Mata Pelajaran</label>
-                    @if (count($mapelDiampu) > 1)
-                        <select name="mapel" class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
-                            @foreach ($mapelDiampu as $m)
-                                <option value="{{ $m }}" @selected(old('mapel', $assessment->mapel ?? '') === $m)>{{ $m }}</option>
-                            @endforeach
-                        </select>
-                    @else
-                        <input type="text" name="mapel" readonly
-                               value="{{ old('mapel', $assessment->mapel ?? $mapelDiampu[0]) }}"
-                               class="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-600">
-                    @endif
-                </div>
-            @endif
+            {{-- Capaian Pembelajaran hanya bermakna pada nilai harian. PTS dan
+                 PAS menilai satu semester penuh, bukan satu capaian — memaksa
+                 isian ini di sana membuat wali kelas mengarang teks yang tidak
+                 berarti apa-apa hanya supaya formulirnya mau tersimpan. --}}
+            <div class="sm:col-span-2" x-show="jenis === 'harian'" x-cloak>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Capaian Pembelajaran *</label>
+                <input type="text" name="capaian_pembelajaran"
+                       value="{{ old('capaian_pembelajaran', $assessment->capaian_pembelajaran ?? '') }}"
+                       placeholder="cth: Memahami sistem bilangan biner dan konversinya"
+                       class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                @error('capaian_pembelajaran')
+                    <p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Mata Pelajaran
+                    @if (count($mapelDiampu) === 0) <span class="text-rose-600">*</span> @endif
+                </label>
+
+                @if (count($mapelDiampu) > 1)
+                    <select name="mapel" class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        @foreach ($mapelDiampu as $m)
+                            <option value="{{ $m }}" @selected(old('mapel', $assessment->mapel ?? '') === $m)>{{ $m }}</option>
+                        @endforeach
+                    </select>
+                @elseif (count($mapelDiampu) === 1)
+                    <input type="text" name="mapel" readonly
+                           value="{{ old('mapel', $assessment->mapel ?? $mapelDiampu[0]) }}"
+                           class="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-600">
+                @else
+                    {{-- Kelas perwalian tidak punya daftar mapel: wali kelas
+                         merekap nilai dari banyak mapel yang diajar guru lain,
+                         jadi kolomnya harus bisa diisi bebas. Tanpa ini seluruh
+                         nilai PTS/PAS-nya menumpuk pada satu kolom tanpa nama
+                         di rekap. --}}
+                    <input type="text" name="mapel" list="daftar-mapel"
+                           value="{{ old('mapel', $assessment->mapel ?? '') }}"
+                           placeholder="cth: Matematika"
+                           class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                    <datalist id="daftar-mapel">
+                        @foreach ($mapelPernahDipakai ?? [] as $m)
+                            <option value="{{ $m }}"></option>
+                        @endforeach
+                    </datalist>
+                @endif
+
+                @error('mapel')
+                    <p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
         @if ($students->isEmpty())

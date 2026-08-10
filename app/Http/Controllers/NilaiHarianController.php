@@ -8,6 +8,7 @@ use App\Support\PeriodeLaporan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -29,12 +30,17 @@ class NilaiHarianController extends Controller
         $mapelDiampu = $class->mapelDiampu();
         $mapelDipilih = $this->mapelDipilih($request, $mapelDiampu);
 
+        $jenisDipilih = in_array($request->query('jenis'), array_keys(Assessment::jenisTersedia()), true)
+            ? $request->query('jenis')
+            : null;
+
         $penilaian = $class->assessments()
             ->whereBetween('assessment_date', [
                 $periode['awal']->copy()->startOfDay(),
                 $periode['akhir']->copy()->endOfDay(),
             ])
             ->when(filled($mapelDipilih), fn ($q) => $q->where('mapel', $mapelDipilih))
+            ->when(filled($jenisDipilih), fn ($q) => $q->where('jenis', $jenisDipilih))
             ->with('scores')
             ->orderByDesc('assessment_date')
             ->orderByDesc('id')
@@ -46,6 +52,84 @@ class NilaiHarianController extends Controller
             'penilaian' => $penilaian,
             'mapelDiampu' => $mapelDiampu,
             'mapelDipilih' => $mapelDipilih,
+            'jenisDipilih' => $jenisDipilih,
+        ]);
+    }
+
+    /**
+     * Leger nilai satu semester: baris siswa, kolom mapel.
+     *
+     * Inilah bentuk yang dipakai wali kelas saat menyusun rapor — bukan daftar
+     * penilaian satu per satu, melainkan satu tabel yang bisa dibaca sekali
+     * lihat untuk melihat siapa yang belum punya nilai di mapel mana.
+     */
+    public function rekap(Request $request, Classroom $class): View
+    {
+        $data = $request->validate([
+            'semester' => ['nullable', 'integer', 'in:1,2'],
+            'jenis' => ['nullable', Rule::in([Assessment::JENIS_PTS, Assessment::JENIS_PAS])],
+        ]);
+
+        $semester = (int) ($data['semester'] ?? $this->semesterBerjalan());
+        $jenis = $data['jenis'] ?? Assessment::JENIS_PTS;
+
+        $penilaian = $class->assessments()
+            ->where('jenis', $jenis)
+            ->where('semester', $semester)
+            ->with('scores')
+            ->orderBy('mapel')
+            ->get();
+
+        $students = $class->students()->where('is_active', true)->orderBy('name')->get();
+
+        /*
+         * Mapel diambil dari penilaian yang benar-benar ada, bukan dari
+         * mapelDiampu() kelas: pada kelas perwalian daftar itu kosong, dan
+         * wali kelas justru mencatat nilai dari banyak mapel yang diajar
+         * orang lain. Null menjadi '-' supaya penilaian tanpa mapel tetap
+         * punya kolom, bukan menghilang tanpa jejak.
+         */
+        $mapel = $penilaian->map(fn ($p) => $p->mapel ?: '-')->unique()->sort()->values();
+
+        /*
+         * [student_id][mapel] => ['nilai' => rata-rata, 'jumlah' => berapa
+         * penilaian menyumbang]. "jumlah" ikut dibawa karena rata-rata diam
+         * dari dua penilaian menyembunyikan kekeliruan yang lazim: satu mapel
+         * tidak sengaja dinilai dua kali untuk semester dan jenis yang sama.
+         */
+        $matriks = [];
+        foreach ($penilaian as $p) {
+            $kolom = $p->mapel ?: '-';
+
+            foreach ($p->scores as $skor) {
+                if ($skor->nilai === null) {
+                    continue;
+                }
+
+                $matriks[$skor->student_id][$kolom][] = $skor->nilai;
+            }
+        }
+
+        $rekap = [];
+        foreach ($students as $s) {
+            foreach ($mapel as $m) {
+                $angka = $matriks[$s->id][$m] ?? [];
+
+                $rekap[$s->id][$m] = $angka === [] ? null : [
+                    'nilai' => round(array_sum($angka) / count($angka), 1),
+                    'jumlah' => count($angka),
+                ];
+            }
+        }
+
+        return view('nilai.rekap', [
+            'classroom' => $class,
+            'students' => $students,
+            'mapel' => $mapel,
+            'rekap' => $rekap,
+            'semester' => $semester,
+            'jenis' => $jenis,
+            'adaPenilaian' => $penilaian->isNotEmpty(),
         ]);
     }
 
@@ -57,7 +141,48 @@ class NilaiHarianController extends Controller
             'students' => $class->students()->where('is_active', true)->orderBy('name')->get(),
             'nilaiTersimpan' => [],
             'mapelDiampu' => $class->mapelDiampu(),
+            'mapelPernahDipakai' => $this->mapelPernahDipakai($class),
+            // Ditawarkan dari tautan "isi nilai" pada halaman rekap, supaya
+            // guru tidak perlu memilih ulang jenis dan semester yang sama.
+            'jenisAwal' => in_array($request->query('jenis'), array_keys(Assessment::jenisTersedia()), true)
+                ? $request->query('jenis')
+                : Assessment::JENIS_HARIAN,
+            'semesterAwal' => in_array((int) $request->query('semester'), [1, 2], true)
+                ? (int) $request->query('semester')
+                : $this->semesterBerjalan(),
         ]);
+    }
+
+    /**
+     * Mapel yang pernah dipakai di kelas ini, untuk saran isian.
+     *
+     * Wali kelas mengetik nama mapel sendiri, dan "Matematika" pada satu
+     * penilaian tetapi "MTK" pada penilaian berikutnya akan terbaca sebagai
+     * dua mapel berbeda di leger nilai. Daftar ini membuat ejaan yang sudah
+     * dipakai gampang dipilih ulang.
+     *
+     * @return array<int, string>
+     */
+    private function mapelPernahDipakai(Classroom $class): array
+    {
+        return $class->assessments()
+            ->whereNotNull('mapel')
+            ->distinct()
+            ->orderBy('mapel')
+            ->pluck('mapel')
+            ->all();
+    }
+
+    /**
+     * Semester yang sedang berjalan menurut kalender.
+     *
+     * Ambangnya sama dengan PeriodeLaporan (semester 1 Juli–Desember) supaya
+     * rekap nilai dan rekap kehadiran tidak pernah menunjuk rentang yang
+     * berbeda untuk sebutan semester yang sama.
+     */
+    private function semesterBerjalan(): int
+    {
+        return now()->month >= 7 ? 1 : 2;
     }
 
     public function store(Request $request, Classroom $class): RedirectResponse
@@ -67,8 +192,10 @@ class NilaiHarianController extends Controller
         $assessment = DB::transaction(function () use ($class, $data) {
             $assessment = $class->assessments()->create([
                 'user_id' => $class->user_id,
+                'jenis' => $data['jenis'],
+                'semester' => (int) $data['semester'],
                 'mapel' => $data['mapel'] ?? null,
-                'capaian_pembelajaran' => $data['capaian_pembelajaran'],
+                'capaian_pembelajaran' => $data['capaian_pembelajaran'] ?? null,
                 'assessment_date' => $data['assessment_date'],
             ]);
 
@@ -92,6 +219,9 @@ class NilaiHarianController extends Controller
             'students' => $class->students()->where('is_active', true)->orderBy('name')->get(),
             'nilaiTersimpan' => $assessment->scores->keyBy('student_id'),
             'mapelDiampu' => $class->mapelDiampu(),
+            'mapelPernahDipakai' => $this->mapelPernahDipakai($class),
+            'jenisAwal' => $assessment->jenis,
+            'semesterAwal' => $assessment->semester ?? $this->semesterBerjalan(),
         ]);
     }
 
@@ -103,8 +233,10 @@ class NilaiHarianController extends Controller
 
         DB::transaction(function () use ($assessment, $class, $data) {
             $assessment->update([
+                'jenis' => $data['jenis'],
+                'semester' => (int) $data['semester'],
                 'mapel' => $data['mapel'] ?? null,
-                'capaian_pembelajaran' => $data['capaian_pembelajaran'],
+                'capaian_pembelajaran' => $data['capaian_pembelajaran'] ?? null,
                 'assessment_date' => $data['assessment_date'],
             ]);
 
@@ -129,9 +261,33 @@ class NilaiHarianController extends Controller
     private function validasi(Request $request, Classroom $class): array
     {
         return $request->validate([
-            'capaian_pembelajaran' => ['required', 'string', 'max:255'],
+            'jenis' => ['required', Rule::in(array_keys(Assessment::jenisTersedia()))],
+            'semester' => ['required', 'integer', 'in:1,2'],
+            /*
+             * Capaian Pembelajaran hanya bermakna pada nilai harian. PTS dan
+             * PAS menilai satu semester penuh sekaligus, bukan satu capaian —
+             * mewajibkannya di sana memaksa wali kelas mengarang isian yang
+             * tidak berarti apa-apa hanya supaya formulirnya mau tersimpan.
+             */
+            'capaian_pembelajaran' => [
+                Rule::requiredIf(fn () => $request->input('jenis') === Assessment::JENIS_HARIAN),
+                'nullable', 'string', 'max:255',
+            ],
             'assessment_date' => ['required', 'date'],
-            'mapel' => ['nullable', 'string', 'max:100'],
+            /*
+             * Wajib pada PTS/PAS. Leger nilai disusun per mapel; penilaian
+             * rapor tanpa nama mapel menumpuk pada satu kolom "-" dan rekapnya
+             * kehilangan seluruh gunanya. Pada nilai harian tetap boleh kosong,
+             * karena kelas perwalian memang tidak selalu punya mapel.
+             */
+            'mapel' => [
+                Rule::requiredIf(fn () => in_array(
+                    $request->input('jenis'),
+                    [Assessment::JENIS_PTS, Assessment::JENIS_PAS],
+                    true,
+                )),
+                'nullable', 'string', 'max:100',
+            ],
             'nilai' => ['sometimes', 'array'],
             /*
              * `nullable` DIPERTAHANKAN dengan sengaja: kolom yang dibiarkan

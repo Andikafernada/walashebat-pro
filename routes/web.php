@@ -237,8 +237,14 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
         Route::get('analisis-kehadiran', [ReportController::class, 'analisisKehadiran'])->name('reports.analisis');
         Route::get('jurnal-mengajar', [JurnalMengajarController::class, 'index'])->name('jurnal.index');
 
-        // Nilai harian per Capaian Pembelajaran.
+        // Nilai harian per Capaian Pembelajaran, plus PTS/PAS per semester.
         Route::get('nilai', [NilaiHarianController::class, 'index'])->name('nilai.index');
+        /*
+         * Harus DI ATAS nilai/{assessment}: "rekap" adalah URI statis dan akan
+         * tertangkap sebagai parameter {assessment} bila didaftarkan setelahnya,
+         * lalu berakhir 404 karena tidak ada penilaian ber-id "rekap".
+         */
+        Route::get('nilai/rekap', [NilaiHarianController::class, 'rekap'])->name('nilai.rekap');
         Route::get('nilai/baru', [NilaiHarianController::class, 'create'])->name('nilai.create');
         Route::post('nilai', [NilaiHarianController::class, 'store'])->name('nilai.store');
         Route::get('nilai/{assessment}', [NilaiHarianController::class, 'edit'])->name('nilai.edit');

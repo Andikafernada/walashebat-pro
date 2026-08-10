@@ -59,6 +59,8 @@ class NilaiHarianTest extends TestCase
         $budi = $this->siswa('Budi');
 
         $this->post(route('classes.nilai.store', $this->kelas), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'Memahami sistem bilangan biner',
             'assessment_date' => today()->toDateString(),
             'mapel' => 'Matematika',
@@ -81,6 +83,8 @@ class NilaiHarianTest extends TestCase
         $sakit = $this->siswa('Sakit Saat Ulangan');
 
         $this->post(route('classes.nilai.store', $this->kelas), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP 1',
             'assessment_date' => today()->toDateString(),
             'nilai' => [$andi->id => 80, $sakit->id => ''],
@@ -103,6 +107,8 @@ class NilaiHarianTest extends TestCase
         $sakit = $this->siswa('Sakit');
 
         $this->post(route('classes.nilai.store', $this->kelas), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP 1',
             'assessment_date' => today()->toDateString(),
             'nilai' => [$andi->id => 90, $budi->id => 80, $sakit->id => ''],
@@ -122,6 +128,8 @@ class NilaiHarianTest extends TestCase
         $budi = $this->siswa('Budi');
 
         $this->post(route('classes.nilai.store', $this->kelas), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP 1',
             'assessment_date' => today()->toDateString(),
             'nilai' => [$andi->id => 100, $budi->id => 0],
@@ -140,6 +148,8 @@ class NilaiHarianTest extends TestCase
         $andi = $this->siswa('Andi');
 
         $this->post(route('classes.nilai.store', $this->kelas), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP 1',
             'assessment_date' => today()->toDateString(),
             'nilai' => [$andi->id => 150],
@@ -151,6 +161,8 @@ class NilaiHarianTest extends TestCase
     public function test_capaian_pembelajaran_wajib_diisi(): void
     {
         $this->post(route('classes.nilai.store', $this->kelas), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'assessment_date' => today()->toDateString(),
         ])->assertSessionHasErrors('capaian_pembelajaran');
     }
@@ -168,6 +180,8 @@ class NilaiHarianTest extends TestCase
         ]);
 
         $this->post(route('classes.nilai.store', $this->kelas), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP 1',
             'assessment_date' => today()->toDateString(),
             'nilai' => [$andi->id => 90, $siswaLain->id => 100],
@@ -184,6 +198,8 @@ class NilaiHarianTest extends TestCase
         $kelasLain = Classroom::factory()->create(['user_id' => $this->user->id]);
         $penilaianLain = $kelasLain->assessments()->create([
             'user_id' => $this->user->id,
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP milik kelas lain',
             'assessment_date' => today(),
         ]);
@@ -198,6 +214,8 @@ class NilaiHarianTest extends TestCase
         $andi = $this->siswa('Andi');
 
         $this->post(route('classes.nilai.store', $this->kelas), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP 1',
             'assessment_date' => today()->toDateString(),
             'nilai' => [$andi->id => 60],
@@ -206,6 +224,8 @@ class NilaiHarianTest extends TestCase
         $penilaian = Assessment::withoutTenant()->firstOrFail();
 
         $this->patch(route('classes.nilai.update', [$this->kelas, $penilaian]), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP 1 revisi',
             'assessment_date' => today()->toDateString(),
             'nilai' => [$andi->id => 85],
@@ -221,6 +241,8 @@ class NilaiHarianTest extends TestCase
         $andi = $this->siswa('Andi');
 
         $this->post(route('classes.nilai.store', $this->kelas), [
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP 1',
             'assessment_date' => today()->toDateString(),
             'nilai' => [$andi->id => 60],
@@ -240,10 +262,14 @@ class NilaiHarianTest extends TestCase
     {
         $this->kelas->assessments()->create([
             'user_id' => $this->user->id, 'mapel' => 'Matematika',
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP Matematika', 'assessment_date' => today(),
         ]);
         $this->kelas->assessments()->create([
             'user_id' => $this->user->id, 'mapel' => 'Informatika',
+            'jenis' => 'harian',
+            'semester' => 1,
             'capaian_pembelajaran' => 'CP Informatika', 'assessment_date' => today(),
         ]);
 

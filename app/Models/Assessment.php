@@ -18,13 +18,62 @@ class Assessment extends Model
 {
     use BelongsToTenant, HasFactory;
 
+    /** Nilai sehari-hari per Capaian Pembelajaran — ranah guru mapel. */
+    public const JENIS_HARIAN = 'harian';
+
+    /** Penilaian Tengah Semester (PTS/STS). */
+    public const JENIS_PTS = 'pts';
+
+    /** Penilaian Akhir Semester (PAS/SAS). */
+    public const JENIS_PAS = 'pas';
+
+    /** @return array<string, string> jenis => label yang dibaca guru */
+    public static function jenisTersedia(): array
+    {
+        return [
+            self::JENIS_HARIAN => 'Nilai Harian',
+            self::JENIS_PTS => 'Tengah Semester (PTS)',
+            self::JENIS_PAS => 'Akhir Semester (PAS)',
+        ];
+    }
+
     protected $fillable = [
-        'user_id', 'class_id', 'mapel', 'capaian_pembelajaran', 'assessment_date',
+        'user_id', 'class_id', 'jenis', 'semester', 'mapel',
+        'capaian_pembelajaran', 'assessment_date',
+    ];
+
+    protected $attributes = [
+        'jenis' => self::JENIS_HARIAN,
     ];
 
     protected function casts(): array
     {
-        return ['assessment_date' => 'date'];
+        return [
+            'assessment_date' => 'date',
+            'semester' => 'integer',
+        ];
+    }
+
+    /** Penilaian rapor: yang direkap wali kelas, bukan nilai sehari-hari. */
+    public function scopeRapor($query)
+    {
+        return $query->whereIn('jenis', [self::JENIS_PTS, self::JENIS_PAS]);
+    }
+
+    public function scopeSemester($query, int $semester)
+    {
+        return $query->where('semester', $semester);
+    }
+
+    public function labelJenis(): string
+    {
+        return self::jenisTersedia()[$this->jenis] ?? $this->jenis;
+    }
+
+    /** Nilai harian butuh Capaian Pembelajaran; PTS dan PAS tidak. */
+    public function harian(): bool
+    {
+        return $this->jenis === self::JENIS_HARIAN;
     }
 
     public function classroom(): BelongsTo
