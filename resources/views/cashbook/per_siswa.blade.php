@@ -63,8 +63,14 @@
         meski uangnya masuk. Di sinilah wali kelas sudah melihat siapa yang
         belum, jadi di sinilah pula ia harus bisa mencentangnya.
     --}}
+    {{--
+        `mengirim` menutup tombol begitu formulir dikirim. Di sinyal lambat,
+        tombol yang masih hidup akan ditekan dua kali — dan setoran 40 anak
+        tercatat dua kali. Ini penjagaan untuk kekeliruan, bukan untuk request
+        yang disusun sendiri; yang terakhir butuh unique index di basis data.
+    --}}
     <form method="POST" action="{{ route('classes.cashbook.setoran-massal', $classroom) }}"
-          x-data="{ terpilih: [] }">
+          x-data="{ terpilih: [], mengirim: false }" @submit="mengirim = true">
         @csrf
 
         <div class="rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 p-4 mb-4 space-y-3">
@@ -102,9 +108,10 @@
                     </button>
                 </div>
 
-                <button type="submit" :disabled="terpilih.length === 0"
+                <button type="submit" :disabled="mengirim || terpilih.length === 0"
                         class="h-9 rounded-xl bg-emerald-600 px-5 text-xs font-bold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-                    💾 Catat setoran <span x-text="terpilih.length"></span> siswa
+                    <span x-show="!mengirim">💾 Catat setoran <span x-text="terpilih.length"></span> siswa</span>
+                    <span x-show="mengirim" x-cloak>Menyimpan…</span>
                 </button>
             </div>
 
