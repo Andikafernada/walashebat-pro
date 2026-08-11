@@ -141,6 +141,49 @@ class KasPerSiswaTest extends TestCase
         $this->get(route('classes.cashbook.per-siswa', $kelasLain))->assertNotFound();
     }
 
+    public function test_setoran_massal_mencatat_semua_yang_dicentang(): void
+    {
+        $andi = $this->siswa('Andi');
+        $budi = $this->siswa('Budi');
+        $this->siswa('Cici');
+
+        $this->post(route('classes.cashbook.setoran-massal', $this->kelas), [
+            'transaction_date' => today()->toDateString(),
+            'amount' => 20000,
+            'description' => 'Kas Agustus',
+            'students' => [$andi->id, $budi->id],
+        ])->assertRedirect();
+
+        $this->assertSame(2, CashBook::count());
+        // Saldo berjalan ikut dihitung ulang, bukan tertinggal nol.
+        $this->assertSame(40000, (int) CashBook::orderBy('id')->get()->last()->balance_after);
+        $this->assertStringContainsString('Cici', $this->halaman());
+    }
+
+    public function test_setoran_massal_menolak_siswa_kelas_lain(): void
+    {
+        /*
+         * Daftar id datang dari formulir. Tanpa penjagaan ini, request yang
+         * disusun sendiri bisa menyisipkan setoran atas nama anak kelas lain.
+         */
+        $lain = User::factory()->create();
+        $kelasLain = Classroom::factory()->create(['user_id' => $lain->id]);
+        $siswaLain = Student::factory()->create([
+            'user_id' => $lain->id,
+            'class_id' => $kelasLain->id,
+            'is_active' => true,
+        ]);
+
+        $this->post(route('classes.cashbook.setoran-massal', $this->kelas), [
+            'transaction_date' => today()->toDateString(),
+            'amount' => 20000,
+            'description' => 'Kas Agustus',
+            'students' => [$siswaLain->id],
+        ])->assertSessionHasErrors('students.0');
+
+        $this->assertSame(0, CashBook::count());
+    }
+
     public function test_halaman_buku_kas_menautkan_rekap_ini(): void
     {
         $this->get(route('classes.cashbook.index', $this->kelas))

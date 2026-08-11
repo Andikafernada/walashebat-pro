@@ -236,6 +236,7 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
         // Harus DI ATAS cashbook/{cashbook} kalau kelak ada rute berparameter
         // dengan metode yang sama: "per-siswa" adalah URI statis.
         Route::get('cashbook/per-siswa', [CashBookController::class, 'perSiswa'])->name('cashbook.per-siswa');
+        Route::post('cashbook/setoran-massal', [CashBookController::class, 'setoranMassal'])->name('cashbook.setoran-massal');
         Route::post('cashbook', [CashBookController::class, 'store'])->name('cashbook.store');
         Route::delete('cashbook/{cashbook}', [CashBookController::class, 'destroy'])->name('cashbook.destroy');
 

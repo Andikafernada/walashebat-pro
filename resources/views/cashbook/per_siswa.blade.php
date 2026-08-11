@@ -53,10 +53,69 @@
             <p class="text-sm font-bold text-slate-700">Belum ada siswa aktif di kelas ini</p>
         </div>
     @else
+    {{--
+        Halaman ini SEKALIGUS tempat mengisinya.
+
+        Formulir kas satuan menuntut lima isian untuk satu anak; menagih kas
+        bulanan di kelas 40 siswa berarti mengulanginya 40 kali. Beban sebesar
+        itu tidak berakhir sebagai pekerjaan yang dikerjakan dengan patuh — ia
+        berakhir sebagai kolom "Siswa" yang dilewati, lalu halaman ini kosong
+        meski uangnya masuk. Di sinilah wali kelas sudah melihat siapa yang
+        belum, jadi di sinilah pula ia harus bisa mencentangnya.
+    --}}
+    <form method="POST" action="{{ route('classes.cashbook.setoran-massal', $classroom) }}"
+          x-data="{ terpilih: [] }">
+        @csrf
+
+        <div class="rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 p-4 mb-4 space-y-3">
+            <div class="grid gap-3 sm:grid-cols-3">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Nominal per siswa *</label>
+                    <input type="number" name="amount" min="1" required value="{{ old('amount') }}" placeholder="20000"
+                           class="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-emerald-500 focus:outline-none">
+                    @error('amount')<p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Keterangan *</label>
+                    <input type="text" name="description" required maxlength="191"
+                           value="{{ old('description', 'Kas '.now()->translatedFormat('F Y')) }}"
+                           class="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-emerald-500 focus:outline-none">
+                    @error('description')<p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Tanggal *</label>
+                    <input type="date" name="transaction_date" required value="{{ old('transaction_date', date('Y-m-d')) }}"
+                           class="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-emerald-500 focus:outline-none">
+                    @error('transaction_date')<p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>@enderror
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" @click="terpilih = @js($baris->where('jumlah', 0)->pluck('siswa.id')->values())"
+                            class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50">
+                        Centang semua yang belum ({{ $belum }})
+                    </button>
+                    <button type="button" @click="terpilih = []"
+                            class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-500 hover:bg-slate-50">
+                        Bersihkan
+                    </button>
+                </div>
+
+                <button type="submit" :disabled="terpilih.length === 0"
+                        class="h-9 rounded-xl bg-emerald-600 px-5 text-xs font-bold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                    💾 Catat setoran <span x-text="terpilih.length"></span> siswa
+                </button>
+            </div>
+
+            @error('students')<p class="text-[11px] font-semibold text-rose-600">{{ $message }}</p>@enderror
+        </div>
+
         <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
             <table class="w-full text-left text-xs">
                 <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
                     <tr>
+                        <th class="px-3 py-2.5 font-bold w-10"></th>
                         <th class="px-3 py-2.5 font-bold">Nama Siswa</th>
                         <th class="px-3 py-2.5 font-bold text-center">Status</th>
                         <th class="px-3 py-2.5 font-bold text-right">Jumlah</th>
@@ -67,6 +126,11 @@
                 <tbody class="divide-y divide-slate-100">
                     @foreach ($baris as $b)
                         <tr class="{{ $b['jumlah'] === 0 ? 'bg-rose-50/40' : '' }} hover:bg-slate-50/60">
+                            <td class="px-3 py-2.5">
+                                <input type="checkbox" name="students[]" value="{{ $b['siswa']->id }}"
+                                       x-model.number="terpilih"
+                                       class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                            </td>
                             <td class="px-3 py-2.5 font-semibold text-slate-800">
                                 {{ $b['siswa']->name }}
                                 <span class="block text-[10px] font-normal text-slate-400">{{ $b['siswa']->nis }}</span>
@@ -92,10 +156,13 @@
                 </tbody>
             </table>
         </div>
+    </form>
 
-        <p class="text-[11px] text-slate-400">
+        <p class="mt-3 text-[11px] text-slate-400">
             &ldquo;Belum&rdquo; berarti tidak ada setoran atas namanya pada periode ini.
             Pengeluaran tidak ikut dihitung, sekalipun bertanda siswa.
+            Setoran yang nominalnya berbeda-beda tetap lewat formulir satuan di
+            <a href="{{ route('classes.cashbook.index', $classroom) }}" class="font-semibold text-slate-500 underline">Buku Kas</a>.
         </p>
     @endif
 

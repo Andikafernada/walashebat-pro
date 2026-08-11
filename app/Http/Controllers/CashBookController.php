@@ -144,6 +144,69 @@ class CashBookController extends Controller
         return back()->with('success', 'Transaksi kas dicatat.');
     }
 
+
+    /**
+     * Catat setoran banyak siswa sekaligus.
+     *
+     * Formulir kas satuan menuntut lima isian untuk SATU anak. Menagih kas
+     * bulanan di kelas 40 siswa berarti mengulanginya 40 kali — dan di lapangan
+     * wali kelas menagih sambil berdiri di depan kelas, mencentang nama satu
+     * per satu. Beban sebesar itu tidak berakhir sebagai pekerjaan yang
+     * dikerjakan dengan patuh; ia berakhir sebagai kolom "Siswa" yang dilewati,
+     * dan seluruh setoran tercatat tanpa nama. Fitur kas per siswa lalu kosong
+     * meski uangnya masuk.
+     *
+     * Nominalnya satu untuk semua yang dicentang, karena begitulah kas bulanan
+     * bekerja. Setoran yang besarnya berbeda tetap lewat formulir satuan di
+     * halaman Buku Kas.
+     */
+    public function setoranMassal(Request $request, Classroom $class): RedirectResponse
+    {
+        $data = $request->validate([
+            'transaction_date' => ['required', 'date'],
+            'amount' => ['required', 'integer', 'min:1'],
+            'description' => ['required', 'string', 'max:191'],
+            'students' => ['required', 'array', 'min:1'],
+            /*
+             * Daftar id datang dari formulir dan tidak boleh dipercaya begitu
+             * saja: tanpa penjagaan ini, setoran bisa disisipkan atas nama
+             * siswa kelas lain lewat request yang disusun sendiri.
+             */
+            'students.*' => [
+                Rule::exists('students', 'id')->where('class_id', $class->id),
+            ],
+        ], [
+            'students.required' => 'Centang dulu siswa yang menyetor.',
+        ]);
+
+        DB::transaction(function () use ($class, $data) {
+            foreach ($data['students'] as $studentId) {
+                $class->cashBooks()->create([
+                    'user_id' => $class->user_id,
+                    'student_id' => $studentId,
+                    'transaction_date' => $data['transaction_date'],
+                    'type' => 'in',
+                    'amount' => $data['amount'],
+                    'description' => $data['description'],
+                    'balance_after' => 0,
+                ]);
+            }
+
+            // Sekali di akhir, bukan per baris: saldo berjalan dihitung ulang
+            // untuk seluruh kelas, jadi memanggilnya di dalam perulangan hanya
+            // mengerjakan hal yang sama berkali-kali.
+            $this->hitungUlangSaldo($class);
+        });
+
+        $jumlah = count($data['students']);
+
+        return back()->with('success', sprintf(
+            'Setoran %d siswa tercatat, masing-masing Rp %s.',
+            $jumlah,
+            number_format((int) $data['amount'], 0, ',', '.'),
+        ));
+    }
+
     public function destroy(Classroom $class, CashBook $cashbook): RedirectResponse
     {
         abort_unless($cashbook->class_id === $class->id, 403);
