@@ -94,7 +94,10 @@
                         @endphp
                         <tr class="{{ $g->is_active ? '' : 'bg-slate-50/60' }} hover:bg-slate-50">
                             <td class="px-4 py-3">
-                                <span class="font-semibold text-slate-800">{{ $g->name }}</span>
+                                {{-- Tautannya di nama, bukan seluruh baris: baris yang bisa
+                                     diklik menyembunyikan tujuannya dari status bar peramban
+                                     dan tidak bisa dijangkau lewat Tab. --}}
+                                <a href="{{ route('admin.teachers.show', $g) }}" class="font-semibold text-indigo-700 hover:underline">{{ $g->name }}</a>
                                 @unless ($g->is_active)
                                     <span class="ml-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">nonaktif</span>
                                 @endunless

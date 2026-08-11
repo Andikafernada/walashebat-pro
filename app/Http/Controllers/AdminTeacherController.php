@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AttendanceSession;
+use App\Models\Classroom;
+use App\Models\PaymentProof;
 use App\Models\Scopes\TenantScope;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -56,6 +59,50 @@ class AdminTeacherController extends Controller
             'cari' => $cari,
             'segmen' => $segmen,
         ]);
+    }
+
+    /**
+     * Satu guru, dilihat dari sisi operator.
+     *
+     * Halaman ini menjawab keluhan yang benar-benar masuk lewat WhatsApp:
+     * "absensi saya tidak terkirim", "saya sudah transfer", "kok masih diminta
+     * bayar". Ketiganya butuh riwayat, bukan angka — jadi yang dikumpulkan di
+     * sini adalah jejak: sesi absensi terakhir beserta sebab kegagalan
+     * pengirimannya, bukti bayar beserta putusannya, dan keadaan gateway.
+     *
+     * Tetap tanpa tombol tindakan. Menyetujui pembayaran sudah punya tempatnya
+     * di halaman langganan; menyalinnya ke sini berarti dua tempat yang bisa
+     * berselisih tentang hal yang sama.
+     */
+    public function show(User $guru): View
+    {
+        /*
+         * Route model binding menjalankan query-nya SEBELUM controller ini
+         * dipanggil, jadi ia tidak ikut terbungkus lintasSeluruhTenant() di
+         * bawah. Karena itu keanggotaannya diperiksa di sini: tanpa ini,
+         * operator bisa membuka /admin/guru/{id} milik akun admin lain dan
+         * halaman ini menampilkannya sebagai pelanggan.
+         */
+        abort_unless($guru->role === User::ROLE_TEACHER, 404);
+
+        return view('admin.teachers.show', TenantScope::lintasSeluruhTenant(fn () => [
+            'guru' => $guru,
+            'kelas' => Classroom::where('user_id', $guru->id)
+                ->withCount(['students' => fn ($q) => $q->where('is_active', true)])
+                ->orderByDesc('is_active')
+                ->orderBy('name')
+                ->get(),
+            // Cukup untuk menjawab "kapan terakhir terkirim, dan kenapa gagal".
+            'sesiTerakhir' => AttendanceSession::with('classroom:id,name')
+                ->where('user_id', $guru->id)
+                ->latest('session_date')
+                ->latest('id')
+                ->limit(10)
+                ->get(),
+            'pembayaran' => PaymentProof::where('user_id', $guru->id)
+                ->latest('created_at')
+                ->get(),
+        ]));
     }
 
     private function daftar(string $cari, ?string $segmen): LengthAwarePaginator

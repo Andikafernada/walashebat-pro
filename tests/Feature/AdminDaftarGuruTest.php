@@ -119,6 +119,67 @@ class AdminDaftarGuruTest extends TestCase
             ->assertDontSee('Operator Kedua');
     }
 
+    public function test_detail_menampilkan_jejak_yang_dipakai_menjawab_keluhan(): void
+    {
+        /*
+         * "Absensi saya tidak terkirim" hanya bisa dijawab dengan melihat
+         * sebab kegagalannya — dan sebab itu selama ini tersimpan di basis
+         * data tanpa satu pun layar yang menampilkannya.
+         */
+        $guru = $this->guru(['name' => 'Bu Sinta']);
+        $kelas = Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'Kelas 5A', 'is_active' => true]);
+
+        \App\Models\AttendanceSession::create([
+            'user_id' => $guru->id,
+            'class_id' => $kelas->id,
+            'session_date' => today(),
+            'sequence' => 1,
+            'token' => 'tok'.uniqid(),
+            'pin_hash' => bcrypt('123456'),
+            'expires_at' => now()->addDay(),
+            'status' => 'pending',
+            'delivery_status' => 'failed',
+            'delivery_error' => 'Sesi WhatsApp tidak tersambung',
+        ]);
+
+        $this->actingAs($this->operator())
+            ->get(route('admin.teachers.show', $guru))
+            ->assertOk()
+            ->assertSee('Bu Sinta')
+            ->assertSee('Kelas 5A')
+            ->assertSee('Sesi WhatsApp tidak tersambung');
+    }
+
+    public function test_detail_akun_operator_tidak_bisa_dibuka(): void
+    {
+        // Akun admin bukan pelanggan; menampilkannya sebagai pelanggan hanya
+        // akan membuat operator menghitung dirinya sendiri.
+        $lain = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($this->operator())
+            ->get(route('admin.teachers.show', $lain))
+            ->assertNotFound();
+    }
+
+    public function test_guru_biasa_tidak_bisa_membuka_detail_guru_lain(): void
+    {
+        $korban = $this->guru(['name' => 'Bu Sinta']);
+
+        $this->actingAs($this->guru())
+            ->get(route('admin.teachers.show', $korban))
+            ->assertForbidden();
+    }
+
+    public function test_daftar_menautkan_detail(): void
+    {
+        $guru = $this->guru(['name' => 'Bu Sinta']);
+
+        $this->actingAs($this->operator())
+            ->get(route('admin.teachers.index'))
+            ->assertOk()
+            ->assertSee(route('admin.teachers.show', $guru));
+    }
+
     public function test_panel_operator_menautkan_daftar_ini(): void
     {
         $this->actingAs($this->operator())
