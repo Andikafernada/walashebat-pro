@@ -36,6 +36,55 @@
         </div>
     </div>
 
+    {{--
+        PAPAN TUGAS HARI INI.
+
+        Ditaruh paling atas, sebelum kartu angka mana pun. Kartu angka menjawab
+        "bagaimana keadaannya"; pertanyaan yang sebenarnya dibawa wali kelas
+        saat membuka aplikasi jauh lebih sempit — "saya harus apa sekarang?" —
+        dan sebelumnya ia harus membaca enam kartu, satu grafik, lalu
+        menyimpulkan sendiri. Guru yang tidak terbiasa berhenti di langkah
+        menyimpulkan.
+
+        Saat tidak ada tugas, papannya TIDAK hilang. Ketiadaan tugas adalah
+        kabar baik yang ingin dilihat, dan papan yang lenyap tanpa jejak
+        membuat guru bertanya-tanya apakah ia melewatkan sesuatu.
+    --}}
+    <section aria-labelledby="judul-tugas" class="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+        <div class="flex items-baseline justify-between gap-3 mb-4">
+            <h2 id="judul-tugas" class="text-base font-extrabold tracking-tight text-slate-900">Yang perlu Anda kerjakan hari ini</h2>
+            <span class="text-[11px] font-semibold text-slate-400">{{ now()->translatedFormat('l, d F') }}</span>
+        </div>
+
+        @forelse ($tugasHariIni as $t)
+            @php
+                // Kelas ditulis utuh, bukan dirakit dari potongan: Tailwind
+                // memindai berkas ini sebagai teks dan tidak menjalankan PHP-nya.
+                $gaya = [
+                    'bahaya' => ['border-rose-200 bg-rose-50/60', 'text-rose-700', 'bg-rose-600 hover:bg-rose-700'],
+                    'penting' => ['border-amber-200 bg-amber-50/60', 'text-amber-800', 'bg-amber-600 hover:bg-amber-700'],
+                    'tenang' => ['border-slate-200 bg-slate-50/60', 'text-slate-600', 'bg-slate-700 hover:bg-slate-800'],
+                ][$t['nada']];
+            @endphp
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border {{ $gaya[0] }} p-4 mb-2.5 last:mb-0">
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-bold text-slate-900">{{ $t['judul'] }}</p>
+                    @if ($t['rinci'])
+                        <p class="mt-0.5 text-xs {{ $gaya[1] }}">{{ $t['rinci'] }}</p>
+                    @endif
+                </div>
+                <a href="{{ $t['tautan'] }}" class="shrink-0 h-10 px-5 inline-flex items-center justify-center rounded-xl {{ $gaya[2] }} text-xs font-bold text-white transition-colors active:scale-95">
+                    {{ $t['aksi'] }}
+                </a>
+            </div>
+        @empty
+            <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 text-center">
+                <p class="text-sm font-bold text-emerald-800">Tidak ada yang tertunda.</p>
+                <p class="mt-1 text-xs text-emerald-700">Absensi hari ini sudah beres dan tidak ada siswa yang menunggu dibina.</p>
+            </div>
+        @endforelse
+    </section>
+
     {{-- Saringan jenis kelas. Bentuk dan warnanya sengaja sama persis dengan
          saringan di Daftar Kelas: guru yang sudah mengenalinya di sana tidak
          perlu mempelajarinya lagi di sini. Baru muncul bila guru memang
@@ -238,8 +287,9 @@
     <!-- MAIN TWO-COLUMN SECTIONS -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
+        {{-- id dipakai papan tugas di atas untuk melompat ke sini. --}}
         <!-- SECTION LEFT: SISWA PERLU PERHATIAN (EWS) -->
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
+        <div id="perlu-perhatian" class="scroll-mt-24 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
                     <span class="text-rose-500">⚠️</span> Siswa Perlu Perhatian (EWS)

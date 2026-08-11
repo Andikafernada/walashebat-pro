@@ -95,29 +95,150 @@ class DashboardController extends Controller
             ];
         }
 
+        $statusKelas = $this->statusKelasHariIni($kelas);
+        $perluPerhatian = $this->perluPerhatian($idPerwalian);
+        $gagalKirim = AttendanceSession::with('classroom:id,name')
+            ->whereIn('class_id', $classIds)
+            ->where('delivery_status', 'failed')
+            ->whereDate('session_date', today())
+            ->get();
+        $waPerluPerhatian = Classroom::whereIn('id', $classIds)->where('auto_attendance', true)->exists()
+            && ! auth()->user()->whatsappConnected();
+
         return view('dashboard', [
             'chartTrend' => $chartTrend,
             'stats' => $this->angkaHariIni($kelas, $idPerwalian),
-            'statusKelas' => $this->statusKelasHariIni($kelas),
+            'statusKelas' => $statusKelas,
+            // Disusun dari koleksi yang SUDAH diambil di atas — papan tugas ini
+            // tidak menambah satu query pun.
+            'tugasHariIni' => $this->tugasHariIni($statusKelas, $gagalKirim, $waPerluPerhatian, $perluPerhatian),
             // Pelanggaran dan EWS adalah buku pembinaan wali kelas, jadi keduanya
             // dihitung dari kelas perwalian saja dan disembunyikan di mode ajar.
-            'perluPerhatian' => $this->perluPerhatian($idPerwalian),
+            'perluPerhatian' => $perluPerhatian,
             'pelanggaranTerbaru' => Violation::with(['student:id,name', 'type:id,name', 'classroom:id,name'])
                 ->whereIn('class_id', $idPerwalian)
                 ->latest('occurred_on')->latest('id')->take(5)->get(),
-            'failedDeliveries' => AttendanceSession::with('classroom:id,name')
-                ->whereIn('class_id', $classIds)
-                ->where('delivery_status', 'failed')
-                ->whereDate('session_date', today())
-                ->get(),
-            'waNeedsAttention' => Classroom::whereIn('id', $classIds)->where('auto_attendance', true)->exists()
-                && ! auth()->user()->whatsappConnected(),
+            'failedDeliveries' => $gagalKirim,
+            'waNeedsAttention' => $waPerluPerhatian,
             'jenisDipilih' => $jenis,
             'jumlahPerwalian' => (int) ($jumlahPerJenis[Classroom::JENIS_PERWALIAN] ?? 0),
             'jumlahAjar' => (int) ($jumlahPerJenis[Classroom::JENIS_AJAR] ?? 0),
             // Penentu tunggal apakah kartu khas perwalian dirender sama sekali.
             'adaPerwalian' => $idPerwalian->isNotEmpty(),
         ]);
+    }
+
+    /**
+     * Papan tugas: apa yang harus dikerjakan pagi ini.
+     *
+     * Dashboard menjawab "bagaimana keadaannya" lewat kartu angka dan grafik.
+     * Pertanyaan yang sebenarnya dibawa wali kelas saat membuka aplikasi jauh
+     * lebih sempit: "saya harus apa sekarang?" — dan untuk menjawabnya ia
+     * harus membaca enam kartu, satu grafik, lalu menyimpulkan sendiri. Guru
+     * yang tidak terbiasa dengan aplikasi berhenti di langkah menyimpulkan.
+     *
+     * Karena itu setiap butir di sini adalah KALIMAT KERJA dengan angka nyata
+     * dan tepat satu tautan tujuan. Yang tidak menuntut tindakan tidak masuk:
+     * papan yang memuat kabar baik akan dibaca sebagai hiasan, dan begitu ia
+     * jadi hiasan, kabar buruk di dalamnya ikut tidak terbaca.
+     *
+     * Urutannya menurut akibat bila diabaikan: absensi yang hilang hari ini
+     * tidak bisa diulang, sedangkan siswa yang perlu dibina masih bisa ditemui
+     * besok.
+     *
+     * Seluruhnya disusun dari koleksi yang sudah diambil index() — tidak ada
+     * satu query pun yang ditambahkan demi papan ini.
+     *
+     * @param  Collection<int, array<string, mixed>>  $statusKelas
+     * @param  Collection<int, AttendanceSession>  $gagalKirim
+     * @param  Collection<int, array<string, mixed>>  $perluPerhatian
+     * @return list<array<string, mixed>>
+     */
+    private function tugasHariIni(
+        Collection $statusKelas,
+        Collection $gagalKirim,
+        bool $waPerluPerhatian,
+        Collection $perluPerhatian,
+    ): array {
+        $tugas = [];
+
+        /*
+         * WhatsApp putus didahulukan dari apa pun. Selama sesinya mati, tautan
+         * presensi tidak akan berangkat ke kelas mana pun — jadi menyuruh guru
+         * "kirim tautan" lebih dulu hanya akan berakhir dengan tombol yang
+         * ditekan dan tidak terjadi apa-apa.
+         */
+        if ($waPerluPerhatian) {
+            $tugas[] = [
+                'nada' => 'bahaya',
+                'judul' => 'WhatsApp terputus, absensi otomatis tidak akan terkirim',
+                'rinci' => 'Kelas Anda menyalakan absensi otomatis, tetapi sesi WhatsApp sedang tidak tersambung.',
+                'aksi' => 'Sambungkan ulang',
+                'tautan' => route('whatsapp.index'),
+            ];
+        }
+
+        if ($gagalKirim->isNotEmpty()) {
+            $tugas[] = [
+                'nada' => 'bahaya',
+                'judul' => $gagalKirim->count().' tautan presensi gagal terkirim hari ini',
+                'rinci' => $gagalKirim->map(fn ($s) => $s->classroom?->name)->filter()->join(', '),
+                'aksi' => 'Periksa gateway',
+                'tautan' => route('whatsapp.index'),
+            ];
+        }
+
+        // Sesi hangus lebih mendesak daripada yang belum dibuat: tautannya
+        // sudah beredar di grup, dan petugas yang mengkliknya menemui halaman
+        // mati tanpa tahu harus melapor ke siapa.
+        $hangus = $statusKelas->where('keadaan', 'hangus');
+
+        if ($hangus->isNotEmpty()) {
+            $tugas[] = [
+                'nada' => 'bahaya',
+                'judul' => $hangus->count().' sesi absensi hangus sebelum dikirim',
+                'rinci' => $hangus->pluck('kelas.name')->join(', ').' — terbitkan tautan baru.',
+                'aksi' => 'Terbitkan ulang',
+                'tautan' => route('classes.attendance.index', $hangus->first()['kelas']),
+            ];
+        }
+
+        $belum = $statusKelas->where('keadaan', 'belum');
+
+        if ($belum->isNotEmpty()) {
+            $tugas[] = [
+                'nada' => 'penting',
+                'judul' => $belum->count().' kelas belum diabsen hari ini',
+                'rinci' => $belum->pluck('kelas.name')->join(', '),
+                'aksi' => 'Mulai absensi',
+                'tautan' => route('classes.attendance.index', $belum->first()['kelas']),
+            ];
+        }
+
+        $menunggu = $statusKelas->where('keadaan', 'menunggu');
+
+        if ($menunggu->isNotEmpty()) {
+            $tugas[] = [
+                'nada' => 'tenang',
+                'judul' => $menunggu->count().' tautan presensi sudah dikirim, menunggu diisi',
+                'rinci' => $menunggu->pluck('kelas.name')->join(', ').' — belum perlu tindakan.',
+                'aksi' => 'Lihat status',
+                'tautan' => route('classes.attendance.index', $menunggu->first()['kelas']),
+            ];
+        }
+
+        if ($perluPerhatian->isNotEmpty()) {
+            $tugas[] = [
+                'nada' => 'penting',
+                'judul' => $perluPerhatian->count().' siswa perlu dibina',
+                'rinci' => $perluPerhatian->take(3)->pluck('siswa.name')->join(', ')
+                    .($perluPerhatian->count() > 3 ? ', dan lainnya' : ''),
+                'aksi' => 'Lihat siapa',
+                'tautan' => '#perlu-perhatian',
+            ];
+        }
+
+        return $tugas;
     }
 
     /**
