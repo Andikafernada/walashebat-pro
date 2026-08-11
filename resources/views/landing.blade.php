@@ -61,6 +61,22 @@
             ],
         ],
     ];
+
+    /*
+     * Baris contoh untuk daftar hadir di hero.
+     *
+     * Nama-nama ini karangan, dan harus tetap begitu: satu-satunya data nyata
+     * di server ini adalah data produksi, dan menaruh nama siswa sungguhan di
+     * halaman publik adalah kebocoran, bukan pemasaran.
+     */
+    $contohHadir = [
+        ['01', 'Ahmad Fauzi', 'H'],
+        ['02', 'Bunga Lestari', 'H'],
+        ['03', 'Citra Dewi', 'I'],
+        ['04', 'Dimas Prakoso', 'H'],
+        ['05', 'Eka Ramadhani', 'H'],
+        ['06', 'Fitri Handayani', 'A'],
+    ];
 @endphp
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
@@ -72,7 +88,7 @@
     <title>{{ $judul }}</title>
     <meta name="description" content="{{ $ringkas }}">
     <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#020617">
+    <meta name="theme-color" content="#F6F5F1">
     <link rel="canonical" href="{{ $beranda }}">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="manifest" href="/manifest.webmanifest">
@@ -101,49 +117,121 @@
 
     <script type="application/ld+json">{!! json_encode($skema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 
+    {{--
+        Tiga keluarga huruf untuk tiga peran, bukan satu keluarga yang
+        diperbesar dan ditebalkan: Archivo membawa judul dengan tulang tebal
+        khas kop formulir, Newsreader membuat isinya terbaca seperti dokumen
+        cetak, dan IBM Plex Mono memegang segala yang berperilaku seperti data
+        — label kolom, nomor, PIN, jam. Bobotnya sengaja sedikit; setiap bobot
+        tambahan adalah berkas yang harus diunduh HP kelas menengah.
+    --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .hero-glow {
-            background: radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.25) 0%, rgba(16, 185, 129, 0.1) 35%, transparent 70%);
+        :root {
+            --kertas:      #F6F5F1;  /* kertas HVS di bawah lampu kelas */
+            --kertas-tua:  #EDEBE3;  /* baris selang-seling di tabel */
+            --garis:       #D6D3C9;  /* garis tabel dan pembatas seksi */
+            --tinta:       #1B2A6B;  /* ballpoint biru: warna utama */
+            --tinta-muda:  #55608A;
+            --abu:         #6B6F76;  /* teks penjelas */
+            --pena-merah:  #C03027;  /* HANYA untuk tanda: alfa, belum, koreksi */
+            --hijau:       #1F7A4D;  /* HANYA untuk centang hadir */
+            --putih:       #FFFFFF;
         }
-        .glass-dark {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+
+        body { background: var(--kertas); color: #22252B; }
+
+        .judul { font-family: 'Archivo', system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; }
+        .isi   { font-family: 'Newsreader', Georgia, serif; }
+        .data  { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+        /* Label kecil bergaya kop formulir: "NAMA SISWA", "KELAS", "TANGGAL". */
+        .label-formulir {
+            font-family: 'IBM Plex Mono', ui-monospace, monospace;
+            font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--abu);
         }
-        /* Panah FAQ berputar saat terbuka; segitiga bawaan peramban dimatikan. */
-        details > summary { list-style: none; }
+
+        /*
+            Garis-garis buku tulis di belakang hero. Dipasang HANYA di hero:
+            sekali dipakai ia jadi ciri, dipakai di setiap seksi ia jadi bising
+            dan teks di atasnya sulit dibaca.
+        */
+        .kertas-bergaris {
+            background-image: repeating-linear-gradient(
+                to bottom,
+                transparent 0, transparent 31px,
+                var(--garis) 31px, var(--garis) 32px
+            );
+        }
+
+        /* Lembar: kartu di sini berperilaku seperti kertas, bukan seperti kaca. */
+        .lembar {
+            background: var(--putih);
+            border: 1px solid var(--garis);
+            border-radius: 4px;
+        }
+
+        /* Garis bawah judul, seperti coretan penegas dengan pena merah. */
+        .garis-tegas {
+            background-image: linear-gradient(var(--pena-merah), var(--pena-merah));
+            background-size: 100% 3px;
+            background-position: 0 92%;
+            background-repeat: no-repeat;
+        }
+
+        /*
+            Tanda tangan halaman: daftar hadir yang mencentang dirinya sendiri.
+            Satu per satu, secepat orang benar-benar mencentang di layar HP.
+        */
+        @keyframes tercentang {
+            from { opacity: 0; transform: translateY(3px); }
+            to   { opacity: 1; transform: none; }
+        }
+        .tanda { opacity: 0; animation: tercentang .3s ease-out forwards; }
+
+        /* Gerak bukan hiasan wajib. Yang mematikannya tetap melihat hasil akhir. */
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .tanda { opacity: 1; animation: none; }
+        }
+
+        details > summary { list-style: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
         details[open] .faq-panah { transform: rotate(180deg); }
+
+        /* Fokus keyboard harus terlihat di atas kertas terang. */
+        a:focus-visible, summary:focus-visible, button:focus-visible {
+            outline: 2px solid var(--tinta);
+            outline-offset: 3px;
+        }
+
         /* Sasaran #anchor tidak boleh tersembunyi di balik navbar melayang. */
         section[id] { scroll-margin-top: 6rem; }
         /* Di HP navbar dua tingkat (logo + deretan pil), jadi lebih tinggi. */
         @media (max-width: 767px) { section[id] { scroll-margin-top: 9rem; } }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white min-h-screen">
+<body class="min-h-screen antialiased">
 
-    <a href="#fitur" class="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:rounded-xl focus:bg-emerald-500 focus:text-white focus:font-bold">
+    <a href="#fitur" class="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-[color:var(--tinta)] focus:text-white focus:font-bold">
         Lewati ke konten
     </a>
 
     <!-- NAVBAR -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3 group">
-                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-indigo-600 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-all">
-                    <span class="text-xl" aria-hidden="true">🎓</span>
-                </div>
-                <div>
-                    <span class="text-lg font-black tracking-tight text-white block leading-none">WALI KELAS <span class="text-emerald-400">HEBAT</span></span>
-                    <span class="text-[10px] font-semibold tracking-wider uppercase text-slate-400">walas.my.id</span>
-                </div>
+    <header class="fixed top-0 left-0 right-0 z-50 bg-[color:var(--kertas)] border-b border-[color:var(--garis)]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <a href="/" class="flex items-center gap-3">
+                <span class="flex h-9 w-9 items-center justify-center border border-[color:var(--tinta)] text-[color:var(--tinta)] judul text-sm" aria-hidden="true">WK</span>
+                <span class="leading-none">
+                    <span class="judul text-base text-[color:var(--tinta)] block">WALI KELAS HEBAT</span>
+                    <span class="label-formulir">walas.my.id</span>
+                </span>
             </a>
 
             {{--
@@ -154,19 +242,17 @@
                 "situsnya rusak" — lalu pergi. LandingTest menjaga agar setiap
                 tautan di sini benar-benar punya tujuan.
             --}}
-            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300" aria-label="Navigasi utama">
-                <a href="#fitur" class="hover:text-emerald-400 transition-colors">Fitur</a>
-                <a href="#wa" class="hover:text-emerald-400 transition-colors">Integrasi WhatsApp</a>
-                <a href="#p5" class="hover:text-emerald-400 transition-colors">Refleksi P5</a>
-                <a href="#harga" class="hover:text-emerald-400 transition-colors">Harga</a>
-                <a href="#faq" class="hover:text-emerald-400 transition-colors">FAQ</a>
+            <nav class="hidden md:flex items-center gap-7 label-formulir" aria-label="Navigasi utama">
+                <a href="#fitur" class="hover:text-[color:var(--tinta)]">Fitur</a>
+                <a href="#wa" class="hover:text-[color:var(--tinta)]">WhatsApp</a>
+                <a href="#p5" class="hover:text-[color:var(--tinta)]">Refleksi P5</a>
+                <a href="#harga" class="hover:text-[color:var(--tinta)]">Harga</a>
+                <a href="#faq" class="hover:text-[color:var(--tinta)]">FAQ</a>
             </nav>
 
             <div class="flex items-center gap-3">
-                <a href="{{ route('login') }}" class="h-11 px-5 hidden sm:inline-flex items-center text-sm font-bold text-slate-300 hover:text-white transition-colors">
-                    Masuk
-                </a>
-                <a href="{{ route('register') }}" class="h-11 px-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 hover:opacity-95 text-white font-bold text-sm transition-all shadow-lg shadow-indigo-500/25">
+                <a href="{{ route('login') }}" class="hidden sm:inline-flex label-formulir hover:text-[color:var(--tinta)]">Masuk</a>
+                <a href="{{ route('register') }}" class="h-10 px-4 inline-flex items-center bg-[color:var(--tinta)] text-white judul text-sm">
                     Coba Gratis
                 </a>
             </div>
@@ -182,140 +268,151 @@
             jangkar di satu halaman. Yang ini tidak memakai JavaScript sama
             sekali, jadi tidak ada yang bisa rusak diam-diam.
         --}}
-        <nav class="md:hidden border-t border-slate-800/80 overflow-x-auto" aria-label="Navigasi bagian halaman">
-            <div class="flex gap-2 px-4 py-2 w-max text-xs font-bold text-slate-300">
-                <a href="#fitur" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">Fitur</a>
-                <a href="#wa" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">Integrasi WhatsApp</a>
-                <a href="#p5" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">Refleksi P5</a>
-                <a href="#harga" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">Harga</a>
-                <a href="#faq" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">FAQ</a>
-                <a href="{{ route('login') }}" class="rounded-full border border-emerald-800/60 text-emerald-400 px-3 py-1.5 whitespace-nowrap">Masuk</a>
+        <nav class="md:hidden border-t border-[color:var(--garis)] overflow-x-auto" aria-label="Navigasi bagian halaman">
+            <div class="flex gap-4 px-4 py-2.5 w-max label-formulir">
+                <a href="#fitur" class="whitespace-nowrap">Fitur</a>
+                <a href="#wa" class="whitespace-nowrap">WhatsApp</a>
+                <a href="#p5" class="whitespace-nowrap">Refleksi P5</a>
+                <a href="#harga" class="whitespace-nowrap">Harga</a>
+                <a href="#faq" class="whitespace-nowrap">FAQ</a>
+                <a href="{{ route('login') }}" class="whitespace-nowrap text-[color:var(--tinta)]">Masuk</a>
             </div>
         </nav>
     </header>
 
     <!-- HERO -->
     {{-- pt lebih besar di HP: navbar di sana dua tingkat, bukan satu. --}}
-    <section class="relative pt-44 md:pt-36 pb-24 overflow-hidden hero-glow">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+    <section class="relative pt-36 md:pt-28 pb-16 kertas-bergaris">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
 
-            {{--
-                Lencana ini dulu berbunyi "Aplikasi ... No. 1 di Indonesia".
-                Klaim itu tidak bisa dibuktikan, dan pembaca yang skeptis justru
-                jadi kurang percaya pada sisa halaman. Diganti janji yang
-                memang ditepati kodenya: masa gratis penuh tanpa kartu kredit.
-            --}}
-            <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-dark text-xs font-bold text-emerald-400 mb-8 border border-emerald-500/30 shadow-inner">
-                <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping" aria-hidden="true"></span>
-                <span>Gratis {{ $bulanGratis }} bulan penuh — tanpa kartu kredit</span>
+            <div class="pt-4">
+                {{--
+                    Lencana ini dulu berbunyi "Aplikasi ... No. 1 di Indonesia".
+                    Klaim itu tidak bisa dibuktikan, dan pembaca yang skeptis justru
+                    jadi kurang percaya pada sisa halaman. Diganti janji yang
+                    memang ditepati kodenya: masa gratis penuh tanpa kartu kredit.
+                --}}
+                <p class="label-formulir text-[color:var(--tinta)]">
+                    Gratis {{ $bulanGratis }} bulan penuh — tanpa kartu kredit
+                </p>
+
+                <h1 class="judul text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.08] text-[color:var(--tinta)] mt-5">
+                    Administrasi wali kelas selesai <span class="garis-tegas">sebelum bel istirahat</span>.
+                </h1>
+
+                {{--
+                    Paragraf ini pernah memuat **Wali Kelas Hebat** dengan bintang
+                    Markdown. Blade bukan Markdown: bintangnya tercetak apa adanya
+                    di layar, dan itu terpampang di kalimat pembuka halaman muka.
+                --}}
+                <p class="isi text-lg sm:text-xl text-[color:var(--abu)] leading-relaxed mt-6 max-w-xl">
+                    Tinggalkan rekap manual yang melelahkan. <strong class="text-[#22252B] font-medium">Wali Kelas Hebat</strong>
+                    menghadirkan presensi 1 klik lewat WhatsApp, form biodata mandiri siswa, peringatan dini
+                    untuk siswa yang mulai sering absen, dan refleksi P5 Kurikulum Merdeka — semuanya dari satu dasbor.
+                </p>
+
+                <div class="mt-8 flex flex-col sm:flex-row sm:items-center gap-4">
+                    <a href="{{ route('register') }}" class="h-12 px-6 inline-flex items-center justify-center gap-2 bg-[color:var(--tinta)] text-white judul text-sm hover:bg-[#16225A] transition-colors">
+                        Mulai buat kelas
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                    <a href="#wa" class="h-12 px-6 inline-flex items-center justify-center border border-[color:var(--garis)] bg-[color:var(--putih)] judul text-sm text-[color:var(--tinta)] hover:border-[color:var(--tinta)] transition-colors">
+                        Lihat cara kerjanya
+                    </a>
+                </div>
+
+                <p class="isi text-sm text-[color:var(--abu)] mt-6">
+                    Untuk wali kelas SD, SMP, SMA, dan SMK. Siswa tidak perlu memasang aplikasi apa pun.
+                </p>
             </div>
 
-            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.15] max-w-5xl mx-auto">
-                Administrasi wali kelas selesai <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">sebelum bel istirahat</span>.
-            </h1>
-
             {{--
-                Paragraf ini pernah memuat **Wali Kelas Hebat** dengan bintang
-                Markdown. Blade bukan Markdown: bintangnya tercetak apa adanya
-                di layar, dan itu terpampang di kalimat pembuka halaman muka.
+                Tanda tangan halaman ini: bukan gambar dasbor, melainkan benda
+                kerjanya sendiri. Wali kelas mengenali daftar hadir sebelum ia
+                sempat membaca satu kalimat pun — dan yang dijanjikan halaman ini
+                memang persis itu: daftar yang terisi tanpa ia mengetik.
             --}}
-            <p class="mt-6 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto font-normal leading-relaxed">
-                Tinggalkan rekap manual yang melelahkan. <strong class="font-bold text-slate-200">Wali Kelas Hebat</strong>
-                menghadirkan presensi 1 klik lewat WhatsApp, form biodata mandiri siswa, peringatan dini
-                untuk siswa yang mulai sering absen, dan refleksi P5 Kurikulum Merdeka — semuanya dari satu dasbor.
-            </p>
+            <div class="lembar overflow-hidden shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+                <div class="flex items-baseline justify-between gap-3 px-4 sm:px-5 py-3 border-b border-[color:var(--garis)] bg-[color:var(--kertas-tua)]">
+                    <span class="label-formulir text-[color:var(--tinta)]">Daftar Hadir</span>
+                    <span class="data text-[11px] text-[color:var(--abu)]">Kelas 5A &middot; 11 Agu</span>
+                </div>
 
-            <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="{{ route('register') }}" class="w-full sm:w-auto h-14 px-8 inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 hover:scale-105 text-white font-extrabold text-base transition-all shadow-xl shadow-emerald-500/20">
-                    <span>Mulai Buat Kelas Gratis</span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                </a>
-                <a href="#wa" class="w-full sm:w-auto h-14 px-8 inline-flex items-center justify-center gap-2 rounded-2xl glass-dark hover:bg-white/10 text-slate-300 font-bold text-base transition-all">
-                    <span>Lihat cara kerjanya</span>
-                </a>
-            </div>
+                <table class="w-full data text-[13px]">
+                    <caption class="sr-only">Contoh daftar hadir kelas yang terisi lewat tautan presensi</caption>
+                    <thead>
+                        <tr class="text-[color:var(--abu)] border-b border-[color:var(--garis)]">
+                            <th scope="col" class="text-left font-semibold px-4 sm:px-5 py-2 w-10">No</th>
+                            <th scope="col" class="text-left font-semibold py-2">Nama</th>
+                            <th scope="col" class="font-semibold py-2 w-8">H</th>
+                            <th scope="col" class="font-semibold py-2 w-8">I</th>
+                            <th scope="col" class="font-semibold py-2 w-8">S</th>
+                            <th scope="col" class="font-semibold py-2 w-8 pr-4 sm:pr-5">A</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($contohHadir as $i => [$no, $nama, $status])
+                            <tr class="{{ $i % 2 ? 'bg-[color:var(--kertas)]' : '' }}">
+                                <td class="px-4 sm:px-5 py-2.5 text-[color:var(--abu)]">{{ $no }}</td>
+                                <td class="py-2.5 whitespace-nowrap">{{ $nama }}</td>
+                                @foreach (['H', 'I', 'S', 'A'] as $kolom)
+                                    <td class="py-2.5 text-center {{ $kolom === 'A' ? 'pr-4 sm:pr-5' : '' }}">
+                                        @if ($status === $kolom)
+                                            <span class="tanda inline-block font-semibold {{ $kolom === 'A' ? 'text-[color:var(--pena-merah)]' : ($kolom === 'H' ? 'text-[color:var(--hijau)]' : 'text-[color:var(--tinta)]') }}"
+                                                  style="animation-delay: {{ 250 + $i * 180 }}ms">
+                                                {{ $kolom === 'H' ? '✓' : $kolom }}
+                                            </span>
+                                        @else
+                                            <span class="text-[color:var(--garis)]" aria-hidden="true">·</span>
+                                        @endif
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
 
-            <p class="mt-6 text-sm text-slate-500">
-                Untuk wali kelas SD, SMP, SMA, dan SMK. Siswa tidak perlu memasang aplikasi apa pun.
-            </p>
-
-            <!-- PRATINJAU DASBOR -->
-            <div class="mt-16 relative max-w-5xl mx-auto rounded-3xl p-3 bg-gradient-to-b from-slate-800/80 to-slate-900/40 border border-slate-700/60 shadow-2xl shadow-emerald-500/10">
-                <div class="rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 text-left p-6 sm:p-8 space-y-6">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-4 gap-3">
-                        <div class="flex items-center gap-3">
-                            <span class="h-3 w-3 rounded-full bg-rose-500"></span>
-                            <span class="h-3 w-3 rounded-full bg-amber-500"></span>
-                            <span class="h-3 w-3 rounded-full bg-emerald-500"></span>
-                            <span class="text-xs font-mono text-slate-500 ml-2 hidden sm:inline">walas.my.id/dashboard</span>
-                        </div>
-                        <span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800/50 px-3 py-1 rounded-full whitespace-nowrap">WA Gateway Online</span>
-                    </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {{--
-                            Dulu tertulis "98,5%" di samping "36 siswa" — dan 98,5%
-                            dari 36 adalah 35,46 anak. Angka yang mustahil di halaman
-                            yang seluruh isinya berjanji jujur soal harga dan data
-                            justru merusak yang dijaga mati-matian di tempat lain.
-                        --}}
-                        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
-                            <span class="text-xs font-semibold text-slate-400">Hadir Hari Ini</span>
-                            <p class="text-2xl font-black text-white mt-1">34 <span class="text-base font-bold text-slate-500">/ 36</span></p>
-                        </div>
-                        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
-                            <span class="text-xs font-semibold text-slate-400">Siswa Binaan</span>
-                            <p class="text-2xl font-black text-emerald-400 mt-1">36</p>
-                        </div>
-                        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
-                            <span class="text-xs font-semibold text-slate-400">Refleksi Karakter</span>
-                            <p class="text-2xl font-black text-indigo-400 mt-1">12 Jurnal</p>
-                        </div>
-                        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
-                            <span class="text-xs font-semibold text-slate-400">Laporan</span>
-                            <p class="text-2xl font-black text-amber-400 mt-1">PDF / Excel</p>
-                        </div>
-                    </div>
-
-                    <p class="text-[11px] text-slate-600">Ilustrasi tampilan dasbor. Angka di atas contoh, bukan data pengguna sungguhan.</p>
+                <div class="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-t border-[color:var(--garis)] bg-[color:var(--kertas-tua)]">
+                    <span class="data text-[11px] text-[color:var(--hijau)]">terkirim 06:47 &larr; WhatsApp</span>
+                    <span class="data text-[11px] text-[color:var(--abu)]">34 / 36 hadir</span>
                 </div>
             </div>
-
         </div>
+
+        <p class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 data text-[11px] text-[color:var(--abu)]">
+            Ilustrasi. Nama-nama di atas karangan, bukan data siswa sungguhan.
+        </p>
     </section>
 
     <!-- FITUR -->
-    <section id="fitur" class="py-24 bg-slate-900/60 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase">Solusi administrasi kelas</span>
-                <h2 class="text-3xl sm:text-5xl font-black text-white mt-3">Enam pekerjaan yang tidak lagi manual</h2>
-                <p class="text-slate-400 mt-4 text-base">Dirancang untuk memangkas waktu administrasi wali kelas dari berjam-jam menjadi hitungan menit.</p>
+    <section id="fitur" class="py-20 border-t border-[color:var(--garis)]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-2xl">
+                <span class="label-formulir">Solusi administrasi kelas</span>
+                <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3">Enam pekerjaan yang tidak lagi manual</h2>
+                <p class="isi text-lg text-[color:var(--abu)] mt-4">Dirancang untuk memangkas waktu administrasi wali kelas dari berjam-jam menjadi hitungan menit.</p>
             </div>
 
             {{--
-                Warnanya ditulis sebagai kelas UTUH, bukan dirakit dari potongan
-                seperti "bg-{$warna}-500/10". Tailwind memindai berkas ini
-                sebagai teks biasa dan tidak menjalankan PHP-nya, jadi kelas
-                hasil rakitan tidak pernah ia temukan — kelasnya ikut terbuang
-                saat build dan kartunya tampil tanpa warna sama sekali, padahal
-                kodenya terlihat benar.
+                Tanpa ikon. Kartu ini dulu dibuka emoji (💬 📝 🛡️), dan di tata
+                rupa yang meniru formulir cetak, emoji adalah satu-satunya benda
+                yang tidak mungkin ada di atas kertas. Yang menggantikannya bukan
+                ikon lain, melainkan tidak ada apa-apa: judul yang tegas lebih
+                cepat dibaca daripada gambar kecil yang harus ditafsirkan.
             --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[color:var(--garis)] border border-[color:var(--garis)] mt-12">
                 @foreach ([
-                    ['💬', 'hover:border-emerald-500/50', 'bg-emerald-500/10 border-emerald-500/20', 'Presensi WhatsApp Magic Link & PIN', 'Terbitkan tautan absensi sekali pakai dan PIN harian 6 digit yang dikirim otomatis ke Seksi Absensi atau grup kelas Anda.'],
-                    ['📝', 'hover:border-indigo-500/50', 'bg-indigo-500/10 border-indigo-500/20', 'Form Biodata Mandiri Siswa', 'Siswa mengisi data pribadi, orang tua, pekerjaan, KIP/PKH, hobi, dan cita-cita sendiri lewat tautan publik beralamat acak — tanpa login.'],
-                    ['🛡️', 'hover:border-amber-500/50', 'bg-amber-500/10 border-amber-500/20', 'Peringatan Dini Siswa Berisiko (EWS)', 'Sistem menandai siswa yang mulai berisiko — alfa berulang atau poin disiplin menipis — selagi masih bisa ditangani, bukan setelah kepala sekolah bertanya.'],
-                    ['🎨', 'hover:border-cyan-500/50', 'bg-cyan-500/10 border-cyan-500/20', 'Refleksi Karakter P5 Merdeka', 'Jurnal perkembangan enam dimensi Profil Pelajar Pancasila, lengkap dengan analisis persentase dan lencana penghargaan siswa.'],
-                    ['💰', 'hover:border-purple-500/50', 'bg-purple-500/10 border-purple-500/20', 'Buku Kas & Rekap Setoran Siswa', 'Lihat siapa yang sudah setor dan siapa yang belum dalam satu daftar, centang yang membayar hari ini sekaligus, lalu cetak saldo yang bisa dipertanggungjawabkan.'],
-                    ['📊', 'hover:border-emerald-500/50', 'bg-emerald-500/10 border-emerald-500/20', 'Cetak Laporan PDF 1 Klik', 'Rekap bulanan, leger absensi, portofolio siswa, dan laporan wali kelas siap dicetak dan ditandatangani kepala sekolah.'],
-                ] as [$ikon, $garis, $kotak, $nama, $isi])
-                    <div class="glass-dark p-8 rounded-3xl border border-slate-800 {{ $garis }} transition-all hover:-translate-y-1 space-y-4 group">
-                        <div class="h-14 w-14 rounded-2xl border {{ $kotak }} flex items-center justify-center text-3xl group-hover:scale-110 transition-transform" aria-hidden="true">
-                            {{ $ikon }}
-                        </div>
-                        <h3 class="text-xl font-bold text-white">{{ $nama }}</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed">{{ $isi }}</p>
+                    ['Presensi WhatsApp Magic Link & PIN', 'Terbitkan tautan absensi sekali pakai dan PIN harian 6 digit yang dikirim otomatis ke Seksi Absensi atau grup kelas Anda.'],
+                    ['Form Biodata Mandiri Siswa', 'Siswa mengisi data pribadi, orang tua, pekerjaan, KIP/PKH, hobi, dan cita-cita sendiri lewat tautan publik beralamat acak — tanpa login.'],
+                    ['Peringatan Dini Siswa Berisiko (EWS)', 'Sistem menandai siswa yang mulai berisiko — alfa berulang atau poin disiplin menipis — selagi masih bisa ditangani, bukan setelah kepala sekolah bertanya.'],
+                    ['Refleksi Karakter P5 Merdeka', 'Jurnal perkembangan enam dimensi Profil Pelajar Pancasila, lengkap dengan analisis persentase dan lencana penghargaan siswa.'],
+                    ['Buku Kas & Rekap Setoran Siswa', 'Lihat siapa yang sudah setor dan siapa yang belum dalam satu daftar, centang yang membayar hari ini sekaligus, lalu cetak saldo yang bisa dipertanggungjawabkan.'],
+                    ['Cetak Laporan PDF 1 Klik', 'Rekap bulanan, leger absensi, portofolio siswa, dan laporan wali kelas siap dicetak dan ditandatangani kepala sekolah.'],
+                ] as $i => [$nama, $isi])
+                    <div class="bg-[color:var(--putih)] p-7 space-y-3">
+                        <span class="data text-[11px] text-[color:var(--abu)]">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                        <h3 class="judul text-lg text-[color:var(--tinta)] leading-snug">{{ $nama }}</h3>
+                        <p class="isi text-[color:var(--abu)] leading-relaxed">{{ $isi }}</p>
                     </div>
                 @endforeach
             </div>
@@ -323,18 +420,23 @@
     </section>
 
     <!-- INTEGRASI WHATSAPP -->
-    <section id="wa" class="py-24 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-16 items-center">
+    <section id="wa" class="py-20 border-t border-[color:var(--garis)]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-14 items-start">
                 <div>
-                    <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase">Integrasi WhatsApp</span>
-                    <h2 class="text-3xl sm:text-5xl font-black text-white mt-3 leading-tight">Absensi masuk tanpa Anda mengetik apa pun</h2>
-                    <p class="text-slate-400 mt-5 leading-relaxed">
+                    <span class="label-formulir">Integrasi WhatsApp</span>
+                    <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3 leading-tight">Absensi masuk tanpa Anda mengetik apa pun</h2>
+                    <p class="isi text-lg text-[color:var(--abu)] mt-5 leading-relaxed">
                         Rekap kehadiran biasanya berhenti di satu orang: wali kelas yang harus menyalin ulang laporan dari grup.
                         Di sini pekerjaan itu berpindah ke tautan sekali pakai yang dikirim sendiri oleh sistem setiap pagi.
                     </p>
 
-                    <ol class="mt-8 space-y-6">
+                    {{--
+                        Bernomor karena urutannya memang informasi: langkah 3
+                        mustahil sebelum langkah 1. Di seksi lain penomoran
+                        serupa hanya akan jadi hiasan, jadi tidak dipakai.
+                    --}}
+                    <ol class="mt-9 space-y-7">
                         @foreach ([
                             ['Sistem menerbitkan tautan harian', 'Setiap pagi, satu tautan absensi sekali pakai dan PIN 6 digit dibuat otomatis untuk tiap kelas.'],
                             ['Dikirim ke grup atau Seksi Absensi', 'Pesan berangkat sendiri lewat gateway WhatsApp Anda pada jam yang Anda tentukan.'],
@@ -342,10 +444,10 @@
                             ['Rekap langsung masuk dasbor', 'Begitu dikirim, tautannya tertutup dan hasilnya tampil di dasbor — siap dicetak kapan pun.'],
                         ] as $i => [$langkah, $rinci])
                             <li class="flex gap-5">
-                                <span class="flex-none h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center font-black text-emerald-400">{{ $i + 1 }}</span>
-                                <div>
-                                    <h3 class="font-bold text-white">{{ $langkah }}</h3>
-                                    <p class="text-slate-400 text-sm mt-1 leading-relaxed">{{ $rinci }}</p>
+                                <span class="flex-none data text-sm font-semibold text-[color:var(--tinta)] pt-0.5">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                                <div class="border-l border-[color:var(--garis)] pl-5">
+                                    <h3 class="judul text-base text-[color:var(--tinta)]">{{ $langkah }}</h3>
+                                    <p class="isi text-[color:var(--abu)] mt-1.5 leading-relaxed">{{ $rinci }}</p>
                                 </div>
                             </li>
                         @endforeach
@@ -353,71 +455,67 @@
                 </div>
 
                 <!-- Ilustrasi percakapan WhatsApp -->
-                <div class="glass-dark rounded-3xl border border-slate-800 p-6 sm:p-8 space-y-4">
-                    <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
-                        <div class="h-10 w-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center" aria-hidden="true">👥</div>
-                        <div>
-                            <p class="font-bold text-white text-sm">Grup Kelas 5A</p>
-                            <p class="text-[11px] text-slate-500">36 anggota</p>
-                        </div>
+                <div class="lembar p-5 sm:p-6 space-y-4">
+                    <div class="flex items-center justify-between gap-3 border-b border-[color:var(--garis)] pb-4">
+                        <span class="judul text-sm text-[color:var(--tinta)]">Grup Kelas 5A</span>
+                        <span class="data text-[11px] text-[color:var(--abu)]">36 anggota</span>
                     </div>
 
-                    <div class="bg-emerald-950/50 border border-emerald-800/40 rounded-2xl rounded-tl-sm p-4 text-sm text-slate-200 leading-relaxed">
-                        <p class="font-bold text-emerald-400 mb-1.5">Wali Kelas Hebat</p>
+                    <div class="border-l-2 border-[color:var(--hijau)] bg-[color:var(--kertas)] p-4 isi leading-relaxed">
+                        <p class="label-formulir text-[color:var(--hijau)] mb-2">Wali Kelas Hebat</p>
                         <p>Assalamualaikum. Berikut tautan presensi Kelas 5A untuk hari ini.</p>
-                        <p class="mt-2 font-mono text-xs text-emerald-300 break-all">walas.my.id/a/8f3c1d…</p>
-                        <p class="mt-2">PIN hari ini: <strong class="font-black tracking-widest">482619</strong></p>
-                        <p class="mt-2 text-slate-400 text-xs">Tautan tertutup otomatis setelah presensi dikirim.</p>
+                        <p class="mt-2 data text-xs text-[color:var(--tinta)] break-all">walas.my.id/a/8f3c1d…</p>
+                        <p class="mt-2">PIN hari ini: <strong class="data font-semibold tracking-widest">482619</strong></p>
+                        <p class="mt-2 text-sm text-[color:var(--abu)]">Tautan tertutup otomatis setelah presensi dikirim.</p>
                     </div>
 
-                    <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl rounded-tr-sm p-4 text-sm text-slate-300 ml-8">
-                        <p class="font-bold text-indigo-300 mb-1.5">Seksi Absensi</p>
-                        <p>Sudah dikirim, Bu. Hadir 34, izin 1, sakit 1. 🙏</p>
+                    <div class="border-l-2 border-[color:var(--garis)] bg-[color:var(--kertas)] p-4 ml-6 isi">
+                        <p class="label-formulir mb-2">Seksi Absensi</p>
+                        <p>Sudah dikirim, Bu. Hadir 34, izin 1, sakit 1.</p>
                     </div>
 
-                    <p class="text-[11px] text-slate-600 pt-2">Ilustrasi. Nomor dan PIN di atas bukan data sungguhan.</p>
+                    <p class="data text-[11px] text-[color:var(--abu)] pt-1">Ilustrasi. Nomor dan PIN di atas bukan data sungguhan.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- REFLEKSI P5 -->
-    <section id="p5" class="py-24 bg-slate-900/60 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <span class="text-xs font-bold tracking-widest text-cyan-400 uppercase">Kurikulum Merdeka</span>
-                <h2 class="text-3xl sm:text-5xl font-black text-white mt-3">Refleksi karakter P5 yang benar-benar terisi</h2>
-                <p class="text-slate-400 mt-4 leading-relaxed">
+    <section id="p5" class="py-20 border-t border-[color:var(--garis)]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-2xl">
+                <span class="label-formulir">Kurikulum Merdeka</span>
+                <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3">Refleksi karakter P5 yang benar-benar terisi</h2>
+                <p class="isi text-lg text-[color:var(--abu)] mt-4 leading-relaxed">
                     Penilaian karakter sering berhenti sebagai kolom kosong yang diisi buru-buru menjelang rapor.
                     Di sini siswa menulis refleksinya sendiri sepanjang semester, dan wali kelas tinggal membaca perkembangannya.
                 </p>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-[color:var(--garis)] border border-[color:var(--garis)] mt-12">
                 @foreach ([
-                    ['🕌', 'Beriman & Bertakwa'],
-                    ['🌏', 'Berkebinekaan Global'],
-                    ['🤝', 'Bergotong Royong'],
-                    ['🧭', 'Mandiri'],
-                    ['💡', 'Bernalar Kritis'],
-                    ['🎨', 'Kreatif'],
-                ] as [$ikon, $dimensi])
-                    <div class="glass-dark rounded-2xl border border-slate-800 p-5 text-center hover:border-cyan-500/40 transition-colors">
-                        <div class="text-3xl mb-2" aria-hidden="true">{{ $ikon }}</div>
-                        <h3 class="text-xs font-bold text-slate-200 leading-snug">{{ $dimensi }}</h3>
+                    'Beriman & Bertakwa',
+                    'Berkebinekaan Global',
+                    'Bergotong Royong',
+                    'Mandiri',
+                    'Bernalar Kritis',
+                    'Kreatif',
+                ] as $dimensi)
+                    <div class="bg-[color:var(--putih)] px-4 py-6 text-center">
+                        <h3 class="judul text-sm text-[color:var(--tinta)] leading-snug">{{ $dimensi }}</h3>
                     </div>
                 @endforeach
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8">
+            <div class="grid md:grid-cols-3 gap-8 mt-12">
                 @foreach ([
                     ['Siswa mengisi sendiri', 'Lewat portal siswa, anak menuliskan apa yang sudah baik, apa yang perlu diperbaiki, dan rencana tindak lanjutnya.'],
                     ['Wali kelas memberi umpan balik', 'Setiap refleksi bisa dibalas. Catatan itu tersimpan sebagai jejak pembinaan sepanjang semester.'],
                     ['Portofolio siap dicetak', 'Perkembangan per dimensi terangkum dalam grafik dan portofolio PDF — bahan siap pakai saat pembagian rapor.'],
                 ] as [$judulKartu, $isiKartu])
-                    <div class="glass-dark p-8 rounded-3xl border border-slate-800 space-y-3">
-                        <h3 class="text-lg font-bold text-white">{{ $judulKartu }}</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed">{{ $isiKartu }}</p>
+                    <div class="border-t-2 border-[color:var(--tinta)] pt-5">
+                        <h3 class="judul text-base text-[color:var(--tinta)]">{{ $judulKartu }}</h3>
+                        <p class="isi text-[color:var(--abu)] mt-2 leading-relaxed">{{ $isiKartu }}</p>
                     </div>
                 @endforeach
             </div>
@@ -425,23 +523,23 @@
     </section>
 
     <!-- HARGA -->
-    <section id="harga" class="py-24 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <span class="text-xs font-bold tracking-widest text-amber-400 uppercase">Harga</span>
-                <h2 class="text-3xl sm:text-5xl font-black text-white mt-3">Gratis {{ $bulanGratis }} bulan, lalu {{ $rupiah }} sebulan</h2>
-                <p class="text-slate-400 mt-4 leading-relaxed">
+    <section id="harga" class="py-20 border-t border-[color:var(--garis)]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-2xl">
+                <span class="label-formulir">Harga</span>
+                <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3">Gratis {{ $bulanGratis }} bulan, lalu {{ $rupiah }} sebulan</h2>
+                <p class="isi text-lg text-[color:var(--abu)] mt-4 leading-relaxed">
                     Tidak ada kartu kredit, tidak ada penagihan otomatis, dan tidak ada kejutan di akhir masa gratis.
                 </p>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-8 mt-12 max-w-4xl">
 
-                <div class="glass-dark p-8 rounded-3xl border border-slate-800 flex flex-col">
-                    <h3 class="text-sm font-bold tracking-widest uppercase text-slate-400">Masa Gratis</h3>
-                    <p class="mt-4"><span class="text-5xl font-black text-white">Rp 0</span></p>
-                    <p class="text-sm text-slate-400 mt-2">{{ $bulanGratis }} bulan penuh sejak akun dibuat.</p>
-                    <ul class="mt-6 space-y-3 text-sm text-slate-300 flex-1">
+                <div class="lembar p-7 flex flex-col">
+                    <h3 class="label-formulir">Masa Gratis</h3>
+                    <p class="judul text-5xl text-[color:var(--tinta)] mt-4">Rp 0</p>
+                    <p class="isi text-[color:var(--abu)] mt-2">{{ $bulanGratis }} bulan penuh sejak akun dibuat.</p>
+                    <ul class="mt-6 space-y-2.5 isi flex-1">
                         @foreach ([
                             'Seluruh fitur terbuka tanpa batas kelas',
                             'Presensi WhatsApp otomatis aktif',
@@ -450,25 +548,27 @@
                             'Tanpa kartu kredit',
                         ] as $butir)
                             <li class="flex gap-3">
-                                <span class="text-emerald-400 font-black" aria-hidden="true">✓</span>
+                                <span class="data text-[color:var(--hijau)]" aria-hidden="true">✓</span>
                                 <span>{{ $butir }}</span>
                             </li>
                         @endforeach
                     </ul>
-                    <a href="{{ route('register') }}" class="mt-8 h-12 inline-flex items-center justify-center rounded-xl border border-slate-700 hover:border-emerald-500/60 hover:text-white text-slate-300 font-bold text-sm transition-colors">
-                        Daftar Gratis
+                    <a href="{{ route('register') }}" class="mt-8 h-12 inline-flex items-center justify-center border border-[color:var(--tinta)] judul text-sm text-[color:var(--tinta)] hover:bg-[color:var(--kertas)] transition-colors">
+                        Daftar gratis
                     </a>
                 </div>
 
-                <div class="relative p-8 rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-emerald-950/40 to-slate-900/60 flex flex-col shadow-xl shadow-emerald-500/10">
-                    <span class="absolute -top-3 left-8 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 text-[11px] font-black tracking-wide uppercase">Setelah masa gratis</span>
-                    <h3 class="text-sm font-bold tracking-widest uppercase text-emerald-400">PRO</h3>
+                <div class="lembar p-7 flex flex-col border-[color:var(--tinta)] border-2">
+                    <div class="flex items-baseline justify-between gap-3">
+                        <h3 class="label-formulir text-[color:var(--tinta)]">PRO</h3>
+                        <span class="data text-[11px] text-[color:var(--abu)]">setelah masa gratis</span>
+                    </div>
                     <p class="mt-4">
-                        <span class="text-5xl font-black text-white">{{ $rupiah }}</span>
-                        <span class="text-slate-400 font-semibold"> / bulan</span>
+                        <span class="judul text-5xl text-[color:var(--tinta)]">{{ $rupiah }}</span>
+                        <span class="isi text-[color:var(--abu)]"> / bulan</span>
                     </p>
-                    <p class="text-sm text-slate-400 mt-2">Transfer DANA, diverifikasi manual oleh operator.</p>
-                    <ul class="mt-6 space-y-3 text-sm text-slate-300 flex-1">
+                    <p class="isi text-[color:var(--abu)] mt-2">Transfer DANA, diverifikasi manual oleh operator.</p>
+                    <ul class="mt-6 space-y-2.5 isi flex-1">
                         @foreach ([
                             'Membuka kembali otomasi WhatsApp',
                             'Pengiriman tautan presensi terjadwal',
@@ -476,13 +576,13 @@
                             'Perpanjang kapan saja, berhenti kapan saja',
                         ] as $butir)
                             <li class="flex gap-3">
-                                <span class="text-emerald-400 font-black" aria-hidden="true">✓</span>
+                                <span class="data text-[color:var(--hijau)]" aria-hidden="true">✓</span>
                                 <span>{{ $butir }}</span>
                             </li>
                         @endforeach
                     </ul>
-                    <a href="{{ route('register') }}" class="mt-8 h-12 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-500/25">
-                        Mulai dari Masa Gratis
+                    <a href="{{ route('register') }}" class="mt-8 h-12 inline-flex items-center justify-center bg-[color:var(--tinta)] text-white judul text-sm hover:bg-[#16225A] transition-colors">
+                        Mulai dari masa gratis
                     </a>
                 </div>
             </div>
@@ -494,9 +594,9 @@
                 menagih pembayaran akan merugikan pihak yang paling tidak
                 bersalah — wali kelas yang belum sempat memperpanjang.
             --}}
-            <div class="mt-12 max-w-3xl mx-auto glass-dark rounded-3xl border border-slate-800 p-8 text-center">
-                <h3 class="text-lg font-bold text-white">Masa gratis habis tidak berarti aplikasi terkunci</h3>
-                <p class="text-slate-400 text-sm mt-3 leading-relaxed">
+            <div class="mt-10 max-w-4xl border-l-2 border-[color:var(--pena-merah)] pl-6 py-1">
+                <h3 class="judul text-lg text-[color:var(--tinta)]">Masa gratis habis tidak berarti aplikasi terkunci</h3>
+                <p class="isi text-[color:var(--abu)] mt-2 leading-relaxed max-w-2xl">
                     Absensi, biodata siswa, buku kas, dan seluruh laporan tetap bisa dibuka, diubah, dan dicetak selamanya.
                     Yang berhenti hanya pengiriman WhatsApp otomatis. Data sekolah tidak kami jadikan alat tagih.
                 </p>
@@ -505,48 +605,57 @@
     </section>
 
     <!-- FAQ -->
-    <section id="faq" class="py-24 bg-slate-900/60 border-t border-slate-800">
+    <section id="faq" class="py-20 border-t border-[color:var(--garis)]">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-14">
-                <span class="text-xs font-bold tracking-widest text-indigo-400 uppercase">Tanya Jawab</span>
-                <h2 class="text-3xl sm:text-5xl font-black text-white mt-3">Pertanyaan yang sering masuk</h2>
-            </div>
+            <span class="label-formulir">Tanya Jawab</span>
+            <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3 mb-10">Pertanyaan yang sering masuk</h2>
 
-            <div class="space-y-4">
+            {{--
+                "T" dan "J" alih-alih ikon: itu penanda tanya-jawab yang sudah
+                dipakai di lembar-lembar sekolah jauh sebelum ada situs web,
+                jadi ia menjelaskan dirinya sendiri tanpa perlu dipelajari.
+            --}}
+            <div class="border-t border-[color:var(--garis)]">
                 @foreach ($faq as $tanya)
-                    <details class="group glass-dark rounded-2xl border border-slate-800 overflow-hidden">
-                        <summary class="flex items-center justify-between gap-4 cursor-pointer p-6 font-bold text-white hover:text-emerald-400 transition-colors">
-                            <h3 class="text-base">{{ $tanya['q'] }}</h3>
-                            <svg class="faq-panah flex-none w-5 h-5 text-slate-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <details class="group border-b border-[color:var(--garis)]">
+                        <summary class="flex items-start justify-between gap-4 py-5">
+                            <div class="flex gap-4">
+                                <span class="data text-sm font-semibold text-[color:var(--pena-merah)] pt-0.5" aria-hidden="true">T</span>
+                                <h3 class="judul text-base text-[color:var(--tinta)]">{{ $tanya['q'] }}</h3>
+                            </div>
+                            <svg class="faq-panah flex-none w-4 h-4 mt-1 text-[color:var(--abu)] transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </summary>
-                        <p class="px-6 pb-6 -mt-1 text-slate-400 text-sm leading-relaxed">{{ $tanya['a'] }}</p>
+                        <div class="flex gap-4 pb-6 -mt-1 isi text-[color:var(--abu)] leading-relaxed">
+                            <span class="data text-sm font-semibold text-[color:var(--hijau)]" aria-hidden="true">J</span>
+                            <p>{{ $tanya['a'] }}</p>
+                        </div>
                     </details>
                 @endforeach
             </div>
 
-            <div class="mt-14 text-center">
-                <h2 class="text-2xl sm:text-3xl font-black text-white">Siap memangkas pekerjaan administrasi Anda?</h2>
-                <p class="text-slate-400 mt-3">Buat kelas pertama Anda hari ini. Gratis {{ $bulanGratis }} bulan penuh.</p>
-                <a href="{{ route('register') }}" class="mt-7 h-14 px-8 inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 hover:scale-105 text-white font-extrabold text-base transition-all shadow-xl shadow-emerald-500/20">
-                    <span>Mulai Buat Kelas Gratis</span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <div class="mt-14 border-t-2 border-[color:var(--tinta)] pt-8">
+                <h2 class="judul text-2xl sm:text-3xl text-[color:var(--tinta)]">Siap memangkas pekerjaan administrasi Anda?</h2>
+                <p class="isi text-lg text-[color:var(--abu)] mt-3">Buat kelas pertama Anda hari ini. Gratis {{ $bulanGratis }} bulan penuh.</p>
+                <a href="{{ route('register') }}" class="mt-7 h-12 px-6 inline-flex items-center justify-center gap-2 bg-[color:var(--tinta)] text-white judul text-sm hover:bg-[#16225A] transition-colors">
+                    Mulai buat kelas
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </a>
             </div>
         </div>
     </section>
 
     <!-- FOOTER -->
-    <footer class="py-12 bg-slate-950 border-t border-slate-900 text-slate-500 text-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <p>&copy; {{ date('Y') }} <strong class="text-slate-300">Wali Kelas Hebat</strong> (walas.my.id). Hak cipta dilindungi.</p>
-            <nav class="flex flex-wrap justify-center gap-6 font-medium text-slate-400" aria-label="Navigasi footer">
-                <a href="#fitur" class="hover:text-emerald-400">Fitur</a>
-                <a href="#harga" class="hover:text-emerald-400">Harga</a>
-                <a href="#faq" class="hover:text-emerald-400">FAQ</a>
-                <a href="{{ route('login') }}" class="hover:text-emerald-400">Masuk</a>
-                <a href="{{ route('register') }}" class="hover:text-emerald-400">Daftar</a>
+    <footer class="py-10 border-t border-[color:var(--garis)]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <p class="data text-[11px] text-[color:var(--abu)]">&copy; {{ date('Y') }} Wali Kelas Hebat &middot; walas.my.id</p>
+            <nav class="flex flex-wrap justify-center gap-6 label-formulir" aria-label="Navigasi footer">
+                <a href="#fitur" class="hover:text-[color:var(--tinta)]">Fitur</a>
+                <a href="#harga" class="hover:text-[color:var(--tinta)]">Harga</a>
+                <a href="#faq" class="hover:text-[color:var(--tinta)]">FAQ</a>
+                <a href="{{ route('login') }}" class="hover:text-[color:var(--tinta)]">Masuk</a>
+                <a href="{{ route('register') }}" class="hover:text-[color:var(--tinta)]">Daftar</a>
             </nav>
         </div>
     </footer>
