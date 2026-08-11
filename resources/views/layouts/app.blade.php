@@ -41,6 +41,9 @@
             padding: 12px 12px 4px 12px;
         }
 
+        /* Segitiga bawaan Safari tidak ikut mati oleh list-style-type: none. */
+        summary.nav-category::-webkit-details-marker { display: none; }
+
         .mobile-bottom-nav {
             position: fixed;
             bottom: 0;
@@ -110,31 +113,29 @@
                     ->first(fn ($k) => $k instanceof \App\Models\Classroom);
             @endphp
 
-            <!-- CATEGORY 1: BERANDA -->
-            <div>
-                <div class="nav-category">BERANDA</div>
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                    <span>🎛️</span>
-                    <span>Dashboard Kelas</span>
-                </a>
-            </div>
+            {{--
+                Sidebar ini dulu merangkap DUA pekerjaan dalam satu daftar datar:
+                navigasi aplikasi dan navigasi satu kelas. Sembilan belas tautan
+                di bawah enam judul kategori — salah satunya berisi tepat satu
+                item — membuat "Absensi", yang dibuka tiap hari, tampak sederajat
+                dengan "Denah Tempat Duduk", yang diisi sekali lalu ditinggal.
 
-            <!-- CATEGORY 2: AKADEMIK -->
+                Sekarang tiga kelompok saja, disusun menurut seberapa sering
+                halamannya benar-benar dibuka (dihitung dari log akses, bukan
+                dikira-kira): yang harian terlihat, yang diatur sekali per
+                semester dilipat, yang milik akun berdiri sendiri di bawah.
+            --}}
+
+            <!-- KELOMPOK 1: KELAS YANG SEDANG DIBUKA -->
             <div class="space-y-1">
-                <div class="nav-category">AKADEMIK</div>
+                <div class="nav-category">{{ $kelasAktif ? 'Kelas '.$kelasAktif->name : 'Beranda' }}</div>
+
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                    <span>🎛️</span><span>Dashboard Kelas</span>
+                </a>
+
                 @if($kelasAktif)
                     @php $c = $kelasAktif; @endphp
-                    {{-- Jadwal disusun per rombongan belajar oleh wali kelas, bukan
-                         per mapel. Guru mapel yang menyuntingnya menimpa jadwal
-                         seluruh kelas — termasuk jam mengajar guru lain. --}}
-                    @if (! $c->kelasAjar())
-                        <a href="{{ route('classes.schedules.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.schedules.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
-                            <span>📅</span><span>Jadwal Pelajaran</span>
-                        </a>
-                    @endif
-                    <a href="{{ route('holidays.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('holidays.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
-                        <span>🗓️</span><span>Kalender Sekolah</span>
-                    </a>
                     <a href="{{ route('classes.students.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.students.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
                         <span>👥</span><span>Data Siswa</span>
                     </a>
@@ -144,12 +145,14 @@
                     <a href="{{ route('classes.character-portfolio.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.character-portfolio.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
                         <span>🌟</span><span>Portofolio Karakter P5</span>
                     </a>
-                    {{-- Buku poin dipegang SATU orang: wali kelasnya. Bila tiap guru
-                         mapel ikut mencatat, satu kejadian tercatat berkali-kali dan
-                         sanksi siswa dihitung dari angka yang salah. --}}
+                    {{-- Buku kas dan laporan administrasi adalah dokumen wali
+                         kelas; pada kelas ajar wali kelasnya orang lain. --}}
                     @if (! $c->kelasAjar())
-                        <a href="{{ route('classes.violations.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.violations.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
-                            <span>📖</span><span>Pelanggaran &amp; Poin</span>
+                        <a href="{{ route('classes.cashbook.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.cashbook.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
+                            <span>👛</span><span>Buku Kas Kelas</span>
+                        </a>
+                        <a href="{{ route('classes.reports.full', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.reports.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
+                            <span>🖨️</span><span>Laporan PDF 7 Bab</span>
                         </a>
                     @endif
                 @else
@@ -159,41 +162,68 @@
                 @endif
             </div>
 
-            <!-- CATEGORY 3: KEBUTUHAN SISWA & LAPORAN -->
-            <div class="space-y-1">
-                <div class="nav-category">KEBUTUHAN SISWA</div>
-                {{-- Laporan administrasi adalah dokumen wali kelas; pada kelas
-                     ajar wali kelasnya orang lain. --}}
-                @if($kelasAktif && ! $kelasAktif->kelasAjar())
-                    @php $c = $kelasAktif; @endphp
-                    <a href="{{ route('classes.reports.full', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.reports.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
-                        <span>🖨️</span><span>Laporan PDF 7 Bab</span>
-                    </a>
-                @endif
-            </div>
+            {{--
+                KELOMPOK 2: yang diisi sekali per semester lalu ditinggal.
 
-            <!-- CATEGORY 4: PRODUKTIVITAS KELAS -->
-            <div class="space-y-1">
-                <div class="nav-category">PRODUKTIVITAS KELAS</div>
-                {{-- Buku kas, denah, dan struktur organisasi dikelola wali
-                     kelas. Guru mapel tidak ikut mengurusnya. --}}
-                @if($kelasAktif && ! $kelasAktif->kelasAjar())
-                    @php $c = $kelasAktif; @endphp
-                    <a href="{{ route('classes.cashbook.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.cashbook.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
-                        <span>👛</span><span>Buku Kas Kelas</span>
-                    </a>
-                    <a href="{{ route('classes.seating.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.seating.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
-                        <span>📐</span><span>Denah Tempat Duduk</span>
-                    </a>
-                    <a href="{{ route('classes.organization.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.organization.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
-                        <span>🏢</span><span>Struktur Organisasi</span>
-                    </a>
-                @endif
-            </div>
+                <details> bawaan peramban, bukan Alpine: tidak ada state yang
+                harus dijaga, tidak ada yang bisa rusak saat JavaScript gagal
+                dimuat, dan tautannya tetap ada di DOM sehingga pencarian teks
+                peramban (Ctrl+F) masih menemukannya walau lipatan tertutup.
 
-            <!-- CATEGORY 5: AKUN & DUKUNGAN -->
+                Dibuka sendiri saat halamannya sedang aktif — kalau tidak,
+                pengguna yang sedang berada di Denah Tempat Duduk melihat
+                lipatan tertutup dan tidak menemukan penanda di mana ia berada.
+            --}}
+            {{--
+                Seluruh isi lipatan ini milik wali kelas saja. Pada kelas ajar
+                keempatnya tersembunyi — dan lipatan yang isinya kosong lebih
+                buruk daripada tidak ada lipatan: ia mengaku menyimpan sesuatu,
+                lalu tidak menyimpan apa-apa. Jadi syaratnya dipasang di luar.
+            --}}
+            @if($kelasAktif && ! $kelasAktif->kelasAjar())
+                @php
+                    $c = $kelasAktif;
+                    $diPengaturan = request()->routeIs('classes.schedules.*', 'classes.violations.*', 'classes.seating.*', 'classes.organization.*');
+                @endphp
+                <details class="group" @if($diPengaturan) open @endif>
+                    <summary class="nav-category flex items-center justify-between cursor-pointer list-none hover:text-slate-300">
+                        <span>Pengaturan Kelas</span>
+                        <span class="transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div class="space-y-1 mt-1">
+                        {{-- Jadwal disusun per rombongan belajar oleh wali kelas, bukan
+                             per mapel. Guru mapel yang menyuntingnya menimpa jadwal
+                             seluruh kelas — termasuk jam mengajar guru lain. --}}
+                        <a href="{{ route('classes.schedules.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.schedules.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
+                            <span>📅</span><span>Jadwal Pelajaran</span>
+                        </a>
+                        {{-- Buku poin dipegang SATU orang: wali kelasnya. Bila tiap guru
+                             mapel ikut mencatat, satu kejadian tercatat berkali-kali dan
+                             sanksi siswa dihitung dari angka yang salah. --}}
+                        <a href="{{ route('classes.violations.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.violations.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
+                            <span>📖</span><span>Pelanggaran &amp; Poin</span>
+                        </a>
+                        <a href="{{ route('classes.seating.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.seating.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
+                            <span>📐</span><span>Denah Tempat Duduk</span>
+                        </a>
+                        <a href="{{ route('classes.organization.index', $c) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('classes.organization.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
+                            <span>🏢</span><span>Struktur Organisasi</span>
+                        </a>
+                    </div>
+                </details>
+            @endif
+
+            <!-- KELOMPOK 3: MILIK AKUN, BUKAN MILIK KELAS -->
             <div class="space-y-1">
-                <div class="nav-category">AKUN &amp; DUKUNGAN</div>
+                <div class="nav-category">Akun &amp; Sistem</div>
+                {{--
+                    Kalender sekolah dulu bersarang di dalam blok kelas aktif,
+                    padahal rutenya global: wali kelas yang belum memilih kelas
+                    tidak punya jalan ke sana sama sekali. Tempatnya di sini.
+                --}}
+                <a href="{{ route('holidays.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('holidays.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <span>🗓️</span><span>Kalender Sekolah</span>
+                </a>
                 <a href="{{ route('whatsapp.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('whatsapp.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800' }}">
                     <span>📲</span><span>Integrasi WhatsApp</span>
                 </a>
