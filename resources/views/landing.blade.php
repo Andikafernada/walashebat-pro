@@ -2,7 +2,11 @@
     // Dijaga di bawah ~65 karakter: lebih dari itu dipotong Google di hasil
     // pencarian, dan yang terpotong justru ekor yang membawa kata kuncinya.
     $judul = 'Wali Kelas Hebat — Absensi WhatsApp & Administrasi Kelas';
-    $ringkas = 'Presensi WhatsApp 1 klik, form biodata mandiri siswa, refleksi karakter P5 Kurikulum Merdeka, deteksi dini EWS, dan laporan PDF siap tanda tangan. Gratis '.$bulanGratis.' bulan, tanpa kartu kredit.';
+    // "EWS" sengaja tidak dipakai di kalimat jualan. Itu istilah orang dalam
+    // sistem informasi sekolah; wali kelas yang mencari solusi mengetik
+    // "siswa sering bolos", bukan akronimnya. Akronim tetap disebut sekali di
+    // kartu fitur, untuk pembaca yang memang mencarinya.
+    $ringkas = 'Presensi WhatsApp 1 klik, form biodata mandiri siswa, refleksi karakter P5 Kurikulum Merdeka, peringatan dini siswa berisiko, dan laporan PDF siap tanda tangan. Gratis '.$bulanGratis.' bulan, tanpa kartu kredit.';
     $beranda = 'https://walas.my.id/';
     $gambar = 'https://walas.my.id/og-image.png?v=2';
     $rupiah = 'Rp '.number_format($hargaPro, 0, ',', '.');
@@ -34,8 +38,8 @@
                     'Presensi WhatsApp Magic Link dan PIN harian',
                     'Form biodata mandiri siswa tanpa login',
                     'Refleksi karakter P5 Kurikulum Merdeka',
-                    'Deteksi dini EWS dan poin kedisiplinan',
-                    'Buku kas kelas',
+                    'Peringatan dini siswa berisiko (EWS) dan poin kedisiplinan',
+                    'Buku kas kelas dengan rekap setoran per siswa',
                     'Laporan PDF dan Excel siap cetak',
                 ],
                 'offers' => [
@@ -119,6 +123,8 @@
         details[open] .faq-panah { transform: rotate(180deg); }
         /* Sasaran #anchor tidak boleh tersembunyi di balik navbar melayang. */
         section[id] { scroll-margin-top: 6rem; }
+        /* Di HP navbar dua tingkat (logo + deretan pil), jadi lebih tinggi. */
+        @media (max-width: 767px) { section[id] { scroll-margin-top: 9rem; } }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white min-h-screen">
@@ -165,10 +171,32 @@
                 </a>
             </div>
         </div>
+
+        {{--
+            Di bawah md, nav di atas tersembunyi — dan sampai sekarang itu berarti
+            pengunjung HP tidak punya jalan ke Harga atau FAQ selain menggulir
+            seluruh halaman. Padahal hampir semua wali kelas membukanya dari HP.
+
+            Deretan pil yang bisa digeser, bukan menu hamburger: hamburger butuh
+            state, panel, jebakan fokus, dan tombol tutup — untuk lima tautan
+            jangkar di satu halaman. Yang ini tidak memakai JavaScript sama
+            sekali, jadi tidak ada yang bisa rusak diam-diam.
+        --}}
+        <nav class="md:hidden border-t border-slate-800/80 overflow-x-auto" aria-label="Navigasi bagian halaman">
+            <div class="flex gap-2 px-4 py-2 w-max text-xs font-bold text-slate-300">
+                <a href="#fitur" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">Fitur</a>
+                <a href="#wa" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">Integrasi WhatsApp</a>
+                <a href="#p5" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">Refleksi P5</a>
+                <a href="#harga" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">Harga</a>
+                <a href="#faq" class="rounded-full border border-slate-800 px-3 py-1.5 whitespace-nowrap">FAQ</a>
+                <a href="{{ route('login') }}" class="rounded-full border border-emerald-800/60 text-emerald-400 px-3 py-1.5 whitespace-nowrap">Masuk</a>
+            </div>
+        </nav>
     </header>
 
     <!-- HERO -->
-    <section class="relative pt-36 pb-24 overflow-hidden hero-glow">
+    {{-- pt lebih besar di HP: navbar di sana dua tingkat, bukan satu. --}}
+    <section class="relative pt-44 md:pt-36 pb-24 overflow-hidden hero-glow">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
 
             {{--
@@ -193,8 +221,8 @@
             --}}
             <p class="mt-6 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto font-normal leading-relaxed">
                 Tinggalkan rekap manual yang melelahkan. <strong class="font-bold text-slate-200">Wali Kelas Hebat</strong>
-                menghadirkan presensi 1 klik lewat WhatsApp, form biodata mandiri siswa, deteksi dini EWS,
-                dan refleksi P5 Kurikulum Merdeka — semuanya dari satu dasbor.
+                menghadirkan presensi 1 klik lewat WhatsApp, form biodata mandiri siswa, peringatan dini
+                untuk siswa yang mulai sering absen, dan refleksi P5 Kurikulum Merdeka — semuanya dari satu dasbor.
             </p>
 
             <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -225,9 +253,15 @@
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {{--
+                            Dulu tertulis "98,5%" di samping "36 siswa" — dan 98,5%
+                            dari 36 adalah 35,46 anak. Angka yang mustahil di halaman
+                            yang seluruh isinya berjanji jujur soal harga dan data
+                            justru merusak yang dijaga mati-matian di tempat lain.
+                        --}}
                         <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
-                            <span class="text-xs font-semibold text-slate-400">Presensi Hari Ini</span>
-                            <p class="text-2xl font-black text-white mt-1">98,5%</p>
+                            <span class="text-xs font-semibold text-slate-400">Hadir Hari Ini</span>
+                            <p class="text-2xl font-black text-white mt-1">34 <span class="text-base font-bold text-slate-500">/ 36</span></p>
                         </div>
                         <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
                             <span class="text-xs font-semibold text-slate-400">Siswa Binaan</span>
@@ -271,9 +305,9 @@
                 @foreach ([
                     ['💬', 'hover:border-emerald-500/50', 'bg-emerald-500/10 border-emerald-500/20', 'Presensi WhatsApp Magic Link & PIN', 'Terbitkan tautan absensi sekali pakai dan PIN harian 6 digit yang dikirim otomatis ke Seksi Absensi atau grup kelas Anda.'],
                     ['📝', 'hover:border-indigo-500/50', 'bg-indigo-500/10 border-indigo-500/20', 'Form Biodata Mandiri Siswa', 'Siswa mengisi data pribadi, orang tua, pekerjaan, KIP/PKH, hobi, dan cita-cita sendiri lewat tautan publik beralamat acak — tanpa login.'],
-                    ['🛡️', 'hover:border-amber-500/50', 'bg-amber-500/10 border-amber-500/20', 'Deteksi Dini EWS & Poin Disiplin', 'Sistem peringatan dini menandai siswa yang mulai berisiko — alfa berulang atau poin disiplin menipis — selagi masih bisa ditangani.'],
+                    ['🛡️', 'hover:border-amber-500/50', 'bg-amber-500/10 border-amber-500/20', 'Peringatan Dini Siswa Berisiko (EWS)', 'Sistem menandai siswa yang mulai berisiko — alfa berulang atau poin disiplin menipis — selagi masih bisa ditangani, bukan setelah kepala sekolah bertanya.'],
                     ['🎨', 'hover:border-cyan-500/50', 'bg-cyan-500/10 border-cyan-500/20', 'Refleksi Karakter P5 Merdeka', 'Jurnal perkembangan enam dimensi Profil Pelajar Pancasila, lengkap dengan analisis persentase dan lencana penghargaan siswa.'],
-                    ['💰', 'hover:border-purple-500/50', 'bg-purple-500/10 border-purple-500/20', 'Buku Kas & Keuangan Kelas', 'Catat pemasukan kas mingguan berikut nama penyetornya, catat pengeluaran, dan cetak rincian saldo yang bisa dipertanggungjawabkan.'],
+                    ['💰', 'hover:border-purple-500/50', 'bg-purple-500/10 border-purple-500/20', 'Buku Kas & Rekap Setoran Siswa', 'Lihat siapa yang sudah setor dan siapa yang belum dalam satu daftar, centang yang membayar hari ini sekaligus, lalu cetak saldo yang bisa dipertanggungjawabkan.'],
                     ['📊', 'hover:border-emerald-500/50', 'bg-emerald-500/10 border-emerald-500/20', 'Cetak Laporan PDF 1 Klik', 'Rekap bulanan, leger absensi, portofolio siswa, dan laporan wali kelas siap dicetak dan ditandatangani kepala sekolah.'],
                 ] as [$ikon, $garis, $kotak, $nama, $isi])
                     <div class="glass-dark p-8 rounded-3xl border border-slate-800 {{ $garis }} transition-all hover:-translate-y-1 space-y-4 group">
@@ -411,7 +445,7 @@
                         @foreach ([
                             'Seluruh fitur terbuka tanpa batas kelas',
                             'Presensi WhatsApp otomatis aktif',
-                            'Biodata mandiri, EWS, buku kas, refleksi P5',
+                            'Biodata mandiri, peringatan dini, buku kas, refleksi P5',
                             'Cetak laporan PDF dan Excel',
                             'Tanpa kartu kredit',
                         ] as $butir)
