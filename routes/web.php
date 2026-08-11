@@ -349,6 +349,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Admin Only Approval Routes - MUST have role:admin
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('guru', [App\Http\Controllers\AdminTeacherController::class, 'index'])->name('teachers.index');
         Route::get('subscriptions', [App\Http\Controllers\AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::post('subscriptions/{proof}/approve', [App\Http\Controllers\AdminSubscriptionController::class, 'approve'])->name('subscriptions.approve');
         Route::post('subscriptions/{proof}/reject', [App\Http\Controllers\AdminSubscriptionController::class, 'reject'])->name('subscriptions.reject');

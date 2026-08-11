@@ -252,6 +252,9 @@
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('admin.dashboard') ? 'bg-purple-600 text-white shadow-md' : 'text-purple-400 hover:bg-slate-800' }}">
                         <span>🛰️</span><span>Panel Operator</span>
                     </a>
+                    <a href="{{ route('admin.teachers.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('admin.teachers.*') ? 'bg-purple-600 text-white shadow-md' : 'text-purple-400 hover:bg-slate-800' }}">
+                        <span>📇</span><span>Daftar Guru</span>
+                    </a>
                     <a href="{{ route('admin.subscriptions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all {{ request()->routeIs('admin.subscriptions.*') ? 'bg-purple-600 text-white shadow-md' : 'text-purple-400 hover:bg-slate-800' }}">
                         <span>💳</span><span>Persetujuan PRO</span>
                     </a>

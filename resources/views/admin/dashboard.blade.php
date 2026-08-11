@@ -26,13 +26,18 @@
 
     <!-- Ringkasan -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+        {{--
+            Kartu ini menjawab BERAPA. Pertanyaan yang selalu menyusul adalah
+            SIAPA — dan sampai sekarang tidak ada jalan ke sana dari mana pun.
+        --}}
+        <a href="{{ route('admin.teachers.index') }}" class="block rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-colors hover:border-indigo-300">
             <p class="text-xs font-semibold text-slate-500">Wali Kelas Terdaftar</p>
             <p class="mt-1 text-3xl font-bold text-slate-900">{{ number_format($ringkas['guru_aktif']) }}</p>
             <p class="mt-1 text-[11px] font-semibold {{ $ringkas['guru_baru_30h'] > 0 ? 'text-emerald-600' : 'text-slate-400' }}">
                 +{{ $ringkas['guru_baru_30h'] }} dalam 30 hari
             </p>
-        </div>
+            <p class="mt-2 text-[11px] font-bold text-indigo-600">Lihat daftarnya ›</p>
+        </a>
 
         <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
             <p class="text-xs font-semibold text-slate-500">Otomasi WA Aktif</p>
