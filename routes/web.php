@@ -240,6 +240,8 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
         Route::get('cashbook/per-siswa', [CashBookController::class, 'perSiswa'])->name('cashbook.per-siswa');
         Route::post('cashbook/setoran-massal', [CashBookController::class, 'setoranMassal'])->name('cashbook.setoran-massal');
         Route::post('cashbook', [CashBookController::class, 'store'])->name('cashbook.store');
+        // Pengingat iuran bulanan ke grup WA orang tua.
+        Route::post('cashbook/pengingat', [CashBookController::class, 'simpanPengingat'])->name('cashbook.pengingat');
         Route::delete('cashbook/{cashbook}', [CashBookController::class, 'destroy'])->name('cashbook.destroy');
 
         Route::get('rekap-kehadiran', [ReportController::class, 'attendance'])->name('reports.attendance');

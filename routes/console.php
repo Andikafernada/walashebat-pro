@@ -60,3 +60,15 @@ Schedule::command('walikelas:expire-attendance')
 Schedule::command('walikelas:matikan-otomasi-kedaluwarsa')
     ->dailyAt('06:00')
     ->withoutOverlapping(10);
+
+/*
+ * Pengingat iuran bulanan ke grup WhatsApp orang tua.
+ *
+ * Jam 07:00, bukan tengah malam: pesan yang masuk grup orang tua pukul 00:00
+ * membangunkan orang, dan kegagalan gateway pada jam itu baru ketahuan siang.
+ * Perintahnya sendiri yang memutuskan kelas mana yang jatuh tempo hari ini,
+ * karena tiap kelas boleh memilih tanggalnya sendiri.
+ */
+Schedule::command('walikelas:kirim-pengingat-spp')
+    ->dailyAt('07:00')
+    ->withoutOverlapping(10);

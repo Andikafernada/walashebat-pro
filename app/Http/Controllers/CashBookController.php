@@ -105,6 +105,35 @@ class CashBookController extends Controller
         ]);
     }
 
+    /**
+     * Simpan pengaturan pengingat iuran ke grup WhatsApp orang tua.
+     *
+     * Teks bebas, tidak menyebut siapa yang belum membayar: menyebut nama anak
+     * yang menunggak di grup yang dibaca seluruh orang tua adalah keputusan
+     * yang jauh lebih besar daripada teknisnya.
+     */
+    public function simpanPengingat(Request $request, Classroom $class): RedirectResponse
+    {
+        abort_if($class->kelasAjar(), 403, 'Iuran kelas adalah urusan wali kelasnya.');
+
+        $data = $request->validate([
+            'spp_pengingat_aktif' => ['nullable', 'boolean'],
+            'spp_pengingat_tanggal' => ['required', 'integer', 'min:1', 'max:31'],
+            // min:10 supaya "aktif" tidak berarti mengirim pesan kosong ke grup.
+            'spp_pengingat_teks' => ['nullable', 'string', 'min:10', 'max:1000'],
+        ]);
+
+        $class->update([
+            'spp_pengingat_aktif' => (bool) ($data['spp_pengingat_aktif'] ?? false),
+            'spp_pengingat_tanggal' => $data['spp_pengingat_tanggal'],
+            'spp_pengingat_teks' => $data['spp_pengingat_teks'] ?: null,
+        ]);
+
+        return back()->with('success', $class->spp_pengingat_aktif
+            ? 'Pengingat iuran aktif. Terkirim otomatis tiap tanggal '.$class->spp_pengingat_tanggal.' pukul 07.00.'
+            : 'Pengingat iuran dimatikan.');
+    }
+
     public function store(Request $request, Classroom $class): RedirectResponse
     {
         $data = $request->validate([

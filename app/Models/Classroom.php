@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -31,6 +32,9 @@ class Classroom extends Model
     protected $fillable = [
         'user_id', 'name', 'jenis', 'academic_year', 'major', 'mapel',
         'homeroom_wa', 'parent_group_wa', 'auto_attendance', 'is_active',
+        'spp_pengingat_aktif', 'spp_pengingat_tanggal', 'spp_pengingat_teks',
+        // spp_pengingat_terkirim_pada sengaja TIDAK fillable: ia penjaga
+        // kirim-ganda, hanya boleh ditulis oleh perintah pengirimnya sendiri.
     ];
 
     protected $attributes = [
@@ -43,6 +47,8 @@ class Classroom extends Model
             'is_active' => 'boolean',
             'auto_attendance' => 'boolean',
             'mapel' => 'array',
+            'spp_pengingat_aktif' => 'boolean',
+            'spp_pengingat_terkirim_pada' => 'date',
         ];
     }
 
@@ -212,6 +218,21 @@ class Classroom extends Model
         }
 
         return $kelas;
+    }
+
+    /**
+     * Wali kelas pemiliknya.
+     *
+     * Relasi ini TIDAK PERNAH ADA sampai sekarang, padahal PDF administrasi dan
+     * empat berkas ekspor sudah memakai $classroom->user->school_name,
+     * ->school_city, ->nip, dan ->name sebagai cadangan. Eloquent mengembalikan
+     * null untuk relasi yang tidak dikenal, jadi rantai ?? di sana selalu jatuh
+     * ke nilai bawaan: "WALI KELAS HEBAT", "Kota", titik-titik kosong sebagai
+     * NIP — pada dokumen yang ditandatangani dan diserahkan ke sekolah.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function students(): HasMany
