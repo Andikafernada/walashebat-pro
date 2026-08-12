@@ -8,88 +8,119 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Susunan menu samping.
+ * Susunan navigasi.
  *
- * Sidebar ini dulu merangkap dua pekerjaan dalam satu daftar datar: navigasi
- * aplikasi dan navigasi satu kelas. Sembilan belas tautan di bawah enam judul
- * kategori membuat "Absensi", yang dibuka tiap hari, tampak sederajat dengan
- * "Denah Tempat Duduk", yang diisi sekali lalu ditinggal.
+ * Dulu sidebar dasbor SaaS: sembilan belas tautan di bawah enam judul kategori,
+ * memaksa "satu kelas dengan beberapa bagian" tampil sebagai sembilan belas
+ * tujuan sederajat. Sekarang pembatas buku — sampul kelas yang bisa diklik
+ * untuk ganti kelas, lalu deret pembatas berisi bagian-bagian kelas itu.
  *
- * Yang dijaga di sini bukan urutannya — itu boleh berubah — melainkan dua hal
- * yang kalau rusak tidak menimbulkan galat apa pun, jadi tidak akan ketahuan
- * sampai ada wali kelas yang mengeluh.
+ * Yang dijaga di sini bukan urutan atau labelnya — itu boleh berubah —
+ * melainkan hal-hal yang kalau rusak TIDAK menimbulkan galat apa pun, jadi
+ * tidak akan ketahuan sampai ada wali kelas yang mengeluh. Karena itu yang
+ * diperiksa alamat tujuannya, bukan teks labelnya: label pendek seperti "Poin"
+ * bisa muncul kebetulan di isi halaman dan membuat test lulus/gagal palsu.
  */
-class SidebarNavigasiTest extends TestCase
+class NavigasiPembatasTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
-     * Sidebar hanya menampilkan menu kelas bila ADA kelas yang sedang dibuka:
+     * Pembatas kelas hanya muncul bila ADA kelas yang sedang dibuka:
      * $kelasAktif dibaca dari variabel yang dikirim view anak, dan /dashboard
      * tidak mengirimkannya. Karena itu test di bawah membuka halaman kelas,
      * bukan dashboard — kalau tidak, semuanya lulus tanpa menguji apa pun.
      */
-    private function halamanKelas(string $jenis): string
+    private function halamanKelas(string $jenis): array
     {
         $guru = User::factory()->create();
         $kelas = Classroom::factory()->create(['user_id' => $guru->id, 'jenis' => $jenis]);
 
-        return $this->actingAs($guru)
+        $html = $this->actingAs($guru)
             ->get(route('classes.students.index', $kelas))
             ->assertOk()
             ->getContent();
+
+        return [$html, $kelas];
     }
 
-    public function test_menu_yang_jarang_dipakai_dilipat_bukan_dihapus(): void
+    public function test_bagian_yang_jarang_dipakai_tetap_ada_di_pembatas(): void
     {
         /*
-         * Dilipat, bukan dibuang: keempatnya tetap harus ada di DOM supaya
-         * pencarian teks peramban menemukannya walau lipatannya tertutup.
+         * Jadwal, denah, dan struktur organisasi diisi sekali per semester lalu
+         * ditinggal — tetapi tetap harus terjangkau. Dulu ketiganya dilipat di
+         * dalam <details>; sekarang duduk di ujung kanan deret pembatas dan
+         * tinggal digeser. Yang tak boleh terjadi: hilang sama sekali.
          */
-        $html = $this->halamanKelas(Classroom::JENIS_PERWALIAN);
+        [$html, $kelas] = $this->halamanKelas(Classroom::JENIS_PERWALIAN);
 
-        $this->assertStringContainsString('Pengaturan Kelas', $html);
-
-        foreach (['Jadwal Pelajaran', 'Pelanggaran', 'Denah Tempat Duduk', 'Struktur Organisasi'] as $menu) {
-            $this->assertStringContainsString($menu, $html, "{$menu} hilang dari sidebar, bukan sekadar terlipat");
+        foreach (['schedules', 'seating', 'organization', 'violations'] as $bagian) {
+            $this->assertStringContainsString(
+                route("classes.{$bagian}.index", $kelas),
+                $html,
+                "Bagian {$bagian} hilang dari deret pembatas."
+            );
         }
     }
 
-    public function test_guru_mapel_tidak_melihat_lipatan_kosong(): void
+    public function test_guru_mapel_tidak_kebagian_bagian_wali_kelas(): void
     {
         /*
-         * Seluruh isi lipatan itu milik wali kelas. Pada kelas ajar keempatnya
-         * tersembunyi — dan lipatan yang isinya kosong lebih buruk daripada
-         * tidak ada lipatan: ia mengaku menyimpan sesuatu, lalu tidak
-         * menyimpan apa-apa.
+         * Buku kas, laporan administrasi, jadwal, denah, dan buku poin adalah
+         * dokumen wali kelas; pada kelas ajar wali kelasnya orang lain.
          */
-        $html = $this->halamanKelas(Classroom::JENIS_AJAR);
+        [$html, $kelas] = $this->halamanKelas(Classroom::JENIS_AJAR);
 
-        $this->assertStringNotContainsString('Pengaturan Kelas', $html);
-    }
-
-    public function test_guru_mapel_tidak_kebagian_menu_wali_kelas(): void
-    {
-        // Buku kas dan laporan administrasi adalah dokumen wali kelas; pada
-        // kelas ajar wali kelasnya orang lain.
-        $html = $this->halamanKelas(Classroom::JENIS_AJAR);
-
-        foreach (['Buku Kas Kelas', 'Laporan PDF', 'Denah Tempat Duduk', 'Pelanggaran &amp; Poin'] as $menu) {
-            $this->assertStringNotContainsString($menu, $html, "{$menu} bocor ke guru mapel");
+        foreach (['cashbook', 'schedules', 'seating', 'organization', 'violations'] as $bagian) {
+            $this->assertStringNotContainsString(
+                route("classes.{$bagian}.index", $kelas),
+                $html,
+                "Bagian {$bagian} bocor ke guru mapel."
+            );
         }
+
+        $this->assertStringNotContainsString(route('classes.reports.full', $kelas), $html);
     }
 
-    public function test_kalender_sekolah_terjangkau_tanpa_memilih_kelas(): void
+    public function test_guru_mapel_tetap_kebagian_bagian_hariannya(): void
+    {
+        // Sisi sebaliknya: menyembunyikan kebanyakan sama merusaknya.
+        [$html, $kelas] = $this->halamanKelas(Classroom::JENIS_AJAR);
+
+        $this->assertStringContainsString(route('classes.attendance.index', $kelas), $html);
+        $this->assertStringContainsString(route('classes.character-portfolio.index', $kelas), $html);
+    }
+
+    public function test_halaman_milik_akun_terjangkau_tanpa_memilih_kelas(): void
     {
         /*
          * Kalender dulu bersarang di dalam blok kelas aktif, padahal rutenya
          * global: wali kelas yang belum punya kelas tidak punya jalan ke sana
-         * sama sekali.
+         * sama sekali. Kini semuanya hidup di balik avatar — dan yang hidup di
+         * balik menu paling gampang hilang tanpa ada yang sadar.
          */
         $guru = User::factory()->create();
 
         $html = $this->actingAs($guru)->get(route('dashboard'))->assertOk()->getContent();
 
-        $this->assertStringContainsString(route('holidays.index'), $html);
+        foreach (['holidays.index', 'whatsapp.index', 'analytics.index', 'subscription.index', 'profile.edit'] as $rute) {
+            $this->assertStringContainsString(route($rute), $html, "{$rute} tidak terjangkau dari mana pun.");
+        }
+    }
+
+    public function test_operator_tidak_kebagian_chrome_wali_kelas(): void
+    {
+        /*
+         * Admin adalah operator SaaS, bukan pemegang kelas: ia tidak punya
+         * kelas, kalender, integrasi WA, atau langganan pribadi. Chrome-nya
+         * sama, isinya saja yang lain.
+         */
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();
+
+        $this->assertStringContainsString(route('admin.teachers.index'), $html);
+        $this->assertStringNotContainsString(route('holidays.index'), $html);
+        $this->assertStringNotContainsString(route('subscription.index'), $html);
     }
 }

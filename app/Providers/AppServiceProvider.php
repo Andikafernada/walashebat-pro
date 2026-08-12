@@ -87,7 +87,12 @@ class AppServiceProvider extends ServiceProvider
         // Kompatibilitas index key untuk MySQL versi lama.
         Schema::defaultStringLength(191);
 
-        // Pintasan absensi di sidebar — hanya tampil untuk user yang sudah login.
+        /*
+         * Daftar kelas untuk tombol ganti kelas di chrome — hanya untuk user
+         * yang sudah login. Sampai chrome memakai pembatas buku, hasil kueri
+         * ini tidak dipakai satu view pun: ia berjalan di setiap permintaan
+         * halaman lalu dibuang.
+         */
         View::composer('layouts.app', function ($view) {
             $view->with('kelasPintasan', Auth::check()
                 ? \App\Models\Classroom::where('is_active', true)

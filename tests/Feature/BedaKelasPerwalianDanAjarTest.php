@@ -67,15 +67,22 @@ class BedaKelasPerwalianDanAjarTest extends TestCase
         $this->kelas('XII TKJ D', Classroom::JENIS_PERWALIAN);
         $this->kelas('XII RPL', Classroom::JENIS_AJAR, ['Informatika']);
 
-        $this->get(route('classes.index', ['jenis' => 'ajar']))
+        /*
+         * Diperiksa dari daftar yang dikirim ke view, bukan dari teks seluruh
+         * halaman. Sejak chrome memakai pembatas buku, tombol ganti kelas
+         * menyebut SEMUA kelas guru di setiap halaman — memang itu gunanya —
+         * sehingga assertDontSee() pada nama kelas selalu gagal walau
+         * saringannya bekerja sempurna.
+         */
+        $nama = fn (?string $jenis) => $this->get(route('classes.index', $jenis ? ['jenis' => $jenis] : []))
             ->assertOk()
-            ->assertSee('XII RPL')
-            ->assertDontSee('XII TKJ D');
+            ->viewData('classes')
+            ->getCollection()
+            ->pluck('name')
+            ->all();
 
-        $this->get(route('classes.index', ['jenis' => 'perwalian']))
-            ->assertOk()
-            ->assertSee('XII TKJ D')
-            ->assertDontSee('XII RPL');
+        $this->assertSame(['XII RPL'], $nama('ajar'));
+        $this->assertSame(['XII TKJ D'], $nama('perwalian'));
     }
 
     /** Saringan yang tidak pernah berguna hanya menambah beban baca. */
