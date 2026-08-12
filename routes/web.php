@@ -200,6 +200,8 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
         // Profil siswa dalam bentuk PDF. Didaftarkan SEBELUM resource agar
         // "students/{student}/pdf" tidak tertangkap sebagai parameter.
         Route::get('students/{student}/pdf', [StudentController::class, 'showPdf'])->name('students.pdf');
+        // Foto siswa disajikan Laravel, bukan nginx: lihat Student::photoUrl().
+        Route::get('students/{student}/foto', [StudentController::class, 'foto'])->name('students.foto');
 
         Route::resource('students', StudentController::class)
             ->parameter('students', 'student');

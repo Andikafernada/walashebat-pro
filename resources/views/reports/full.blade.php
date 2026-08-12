@@ -188,7 +188,7 @@
                     @foreach ($poin as $baris)
                         <li class="flex justify-between border-b border-slate-50 py-1">
                             <span>{{ $baris['siswa']->name }}</span>
-                            <span class="text-slate-500">{{ $baris['poin'] ?? 0 }}</span>
+                            <span class="text-slate-500">{{ $baris['poin_sekarang'] ?? 0 }}</span>
                         </li>
                     @endforeach
                 </ul>
@@ -217,7 +217,7 @@
             <div data-bagian="struktur" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Struktur Organisasi</h3>
                 @forelse ($struktur as $baris)
-                    <p class="text-xs text-slate-700">{{ $baris->position ?? '—' }}: {{ $baris->student->name ?? '—' }}</p>
+                    <p class="text-xs text-slate-700">{{ $baris->roleLabel() }}: {{ $baris->student->name ?? "—" }}</p>
                 @empty
                     <p class="text-xs text-slate-500">Struktur organisasi belum diisi.</p>
                 @endforelse
@@ -242,6 +242,24 @@
             <div data-bagian="kas" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Buku Kas</h3>
                 <p class="text-xs text-slate-500">Saldo akhir: {{ $rp($kas['saldo_akhir'] ?? 0) }}</p>
+            </div>
+        @endif
+
+        {{-- Bagian ini menambah satu halaman penuh per siswa, jadi ukurannya
+             disebut di depan: mencetak tanpa tahu akan keluar 40 halaman adalah
+             cara tercepat menghabiskan tinta orang. --}}
+        @if($ada('profil'))
+            @php $belumBerfoto = collect($lembarProfil)->filter(fn ($l) => ! $l['siswa']->foto_path)->count(); @endphp
+            <div data-bagian="profil" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+                <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Profil &amp; Analisis Siswa</h3>
+                <p class="text-xs text-slate-500">
+                    {{ count($lembarProfil) }} lembar — satu halaman penuh untuk tiap siswa aktif, tersedia pada berkas PDF.
+                </p>
+                @if ($belumBerfoto)
+                    <p class="text-xs font-semibold text-amber-700">
+                        {{ $belumBerfoto }} siswa belum punya pas foto; kotaknya akan terisi inisial.
+                    </p>
+                @endif
             </div>
         @endif
 

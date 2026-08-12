@@ -118,6 +118,24 @@ class StudentController extends Controller
         ));
     }
 
+    /**
+     * Sajikan foto siswa.
+     *
+     * Berkasnya di disk privat, jadi setiap permintaan melewati middleware auth
+     * kelas ini dulu. no-store dipasang supaya foto anak tidak mengendap di
+     * cache peramban komputer bersama di ruang guru.
+     */
+    public function foto(Classroom $class, Student $student): Response
+    {
+        abort_if($student->class_id !== $class->id, 404);
+        abort_unless($student->foto_path && Storage::disk('local')->exists($student->foto_path), 404);
+
+        return response(Storage::disk('local')->get($student->foto_path), 200, [
+            'Content-Type' => 'image/jpeg',
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
     public function create(Classroom $class): View
     {
         return view('students.create', ['classroom' => $class]);
@@ -127,10 +145,6 @@ class StudentController extends Controller
     {
         $data = $this->tanpaFoto($request->validated());
 
-        if ($request->hasFile('foto')) {
-            $data['foto_path'] = $request->file('foto')->store('students/photos', 'public');
-        }
-
         // Set default temporary password (hashed)
         // Siswa harus ganti password via OTP untuk pertama kali
         $defaultPassword = 'Walikelas' . date('Y'); // e.g., "Walikelas2026"
@@ -138,6 +152,10 @@ class StudentController extends Controller
         $data['must_change_password'] = true;
 
         $student = $class->students()->create($data + ['user_id' => $class->user_id]);
+
+        if ($request->hasFile('foto')) {
+            $student->simpanFoto($request->file('foto'));
+        }
 
         return redirect()->route('classes.students.index', $class)
             ->with('success', "Siswa ditambahkan. Password awal: {$defaultPassword}");
@@ -152,16 +170,12 @@ class StudentController extends Controller
     {
         $data = $this->tanpaFoto($request->validated());
 
-        if ($request->hasFile('foto')) {
-            // Buang foto lama supaya penyimpanan tidak menumpuk berkas mati.
-            if ($student->foto_path) {
-                Storage::disk('public')->delete($student->foto_path);
-            }
-
-            $data['foto_path'] = $request->file('foto')->store('students/photos', 'public');
-        }
-
         $student->update($data);
+
+        // simpanFoto() yang membuang foto lamanya sendiri.
+        if ($request->hasFile('foto')) {
+            $student->simpanFoto($request->file('foto'));
+        }
 
         return redirect()->route('classes.students.index', $class)
             ->with('success', 'Data siswa diperbarui.');

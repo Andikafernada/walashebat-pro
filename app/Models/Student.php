@@ -127,11 +127,95 @@ class Student extends Model implements AuthenticatableContract
         return $this->discipline_points < 50;
     }
 
+    /*
+     * FOTO SISWA.
+     *
+     * Disimpan di disk `local` (storage/app/private), bukan `public`. Ini foto
+     * anak di bawah umur: di disk publik berkasnya disajikan nginx tanpa
+     * melewati Laravel sama sekali, sehingga satu URL yang bocor — dari riwayat
+     * peramban, tangkapan layar, atau bookmark — berlaku selamanya untuk siapa
+     * pun, tanpa jejak dan tanpa cara mencabutnya. Lewat rute di bawah, hanya
+     * guru pemegang kelasnya yang bisa membukanya.
+     */
     public function photoUrl(): ?string
     {
-        return $this->foto_path
-            ? Storage::disk('public')->url($this->foto_path)
+        return $this->foto_path && $this->class_id
+            ? route('classes.students.foto', [$this->class_id, $this])
             : null;
+    }
+
+    /**
+     * Foto sebagai data URI, untuk disematkan ke PDF.
+     *
+     * dompdf tidak boleh disuruh mengunduh sendiri dari URL: rutenya butuh
+     * sesi login yang tidak dimiliki dompdf, jadi hasilnya kotak kosong —
+     * dan mengaktifkan isRemoteEnabled membuat templat mana pun bisa disuruh
+     * menarik berkas dari dalam jaringan server.
+     */
+    public function photoDataUri(): ?string
+    {
+        if (! $this->foto_path || ! Storage::disk('local')->exists($this->foto_path)) {
+            return null;
+        }
+
+        return 'data:image/jpeg;base64,'.base64_encode(Storage::disk('local')->get($this->foto_path));
+    }
+
+    /**
+     * Simpan foto unggahan: dipotong jadi pas foto 3:4 lalu dimampatkan.
+     *
+     * Satu-satunya jalan masuk foto — dipakai guru maupun formulir biodata
+     * publik. Foto dari kamera HP berukuran 3–8 MB; disimpan apa adanya,
+     * 192 siswa berarti ~1 GB dan satu PDF sekelas jadi puluhan megabita yang
+     * tak bisa dikirim lewat WhatsApp.
+     */
+    public function simpanFoto(\Illuminate\Http\UploadedFile $berkas): void
+    {
+        $sumber = @imagecreatefromstring(file_get_contents($berkas->getRealPath()));
+
+        if ($sumber === false) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'foto' => 'Berkas fotonya tidak bisa dibaca. Coba unggah ulang dalam format JPG atau PNG.',
+            ]);
+        }
+
+        [$lebarAsal, $tinggiAsal] = [imagesx($sumber), imagesy($sumber)];
+        [$lebar, $tinggi] = [300, 400];
+
+        // Dipotong dari tengah, bukan digepengkan: wajah yang penyok lebih
+        // buruk daripada bahu yang terpotong.
+        $skala = max($lebar / $lebarAsal, $tinggi / $tinggiAsal);
+        $petikLebar = (int) round($lebar / $skala);
+        $petikTinggi = (int) round($tinggi / $skala);
+
+        $hasil = imagecreatetruecolor($lebar, $tinggi);
+        // PNG berlatar tembus pandang jadi hitam pekat begitu ditulis ke JPEG.
+        imagefill($hasil, 0, 0, imagecolorallocate($hasil, 255, 255, 255));
+        imagecopyresampled(
+            $hasil, $sumber,
+            0, 0,
+            (int) (($lebarAsal - $petikLebar) / 2), (int) (($tinggiAsal - $petikTinggi) / 2),
+            $lebar, $tinggi, $petikLebar, $petikTinggi
+        );
+
+        ob_start();
+        imagejpeg($hasil, null, 82);
+        $jpeg = ob_get_clean();
+
+        imagedestroy($sumber);
+        imagedestroy($hasil);
+
+        $lama = $this->foto_path;
+
+        // Nama berkas acak, bukan NIS: nama yang bisa ditebak membuat seluruh
+        // arsip foto terbuka begitu satu berkas ditemukan.
+        $this->foto_path = 'siswa/foto/'.\Illuminate\Support\Str::random(40).'.jpg';
+        Storage::disk('local')->put($this->foto_path, $jpeg);
+        $this->save();
+
+        if ($lama) {
+            Storage::disk('local')->delete($lama);
+        }
     }
 
     public function initials(): string

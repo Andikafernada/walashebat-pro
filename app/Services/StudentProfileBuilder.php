@@ -74,8 +74,29 @@ class StudentProfileBuilder
                 ->where('student_id', $student->id)->get(),
             'nilai' => $this->rekapNilai($student, $dari, $hingga, $semester),
             'karakter' => $this->rekapKarakter($student, $dari, $hingga),
+            'refleksi' => $this->refleksiDiri($student, $dari, $hingga),
             'semester' => $semester,
         ];
+    }
+
+    /**
+     * Refleksi yang ditulis siswa sendiri.
+     *
+     * Terpisah dari rekapKarakter(): yang itu catatan PENGAMATAN guru tentang
+     * anak, yang ini suara anaknya sendiri. Selama ini keduanya tercampur di
+     * kepala orang karena sama-sama disebut "P5", padahal untuk rapat pembinaan
+     * jarak antara keduanya justru yang paling berarti — anak yang menilai
+     * dirinya 5 bintang sementara buku pengamatan gurunya penuh catatan negatif
+     * sedang memberi tahu sesuatu yang tidak bisa dibaca dari salah satunya
+     * saja.
+     */
+    private function refleksiDiri(Student $student, Carbon $dari, Carbon $hingga): Collection
+    {
+        return $student->characterReflections()
+            ->with('dimension:id,name')
+            ->whereBetween('reflection_date', [$dari, $hingga])
+            ->orderByDesc('reflection_date')->orderByDesc('id')
+            ->get();
     }
 
     /**

@@ -40,6 +40,7 @@
 
         <div class="flex items-center gap-2 flex-wrap">
             <a href="{{ route('classes.students.qr-cards', $classroom) }}" class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 shadow-xs hover:bg-emerald-100 transition-all">🎫 Cetak Kartu QR</a>
+
             {{-- Form biodata mandiri mengumpulkan alamat, HP ortu, dan data keluarga —
                  seluruhnya di luar hak guru mapel, dan grup orang tuanya pun milik
                  wali kelas lain. Salah kirim tautan ini tidak memunculkan galat apa

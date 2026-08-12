@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Classroom;
+use App\Models\Student;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -33,6 +34,7 @@ class ClassReportBuilder
         'poin' => 'Rekap Poin per Siswa',
         'perhatian' => 'Siswa Perlu Perhatian',
         'kas' => 'Buku Kas',
+        'profil' => 'Profil & Analisis Siswa (1 halaman per siswa)',
     ];
 
     /** Ambang batas yang menentukan seorang siswa masuk daftar perhatian. */
@@ -113,7 +115,39 @@ class ClassReportBuilder
             'poin' => $poin,
             'perhatian' => $this->perluPerhatian($kehadiran, $poin),
             'kas' => $this->bukuKas($class, $dari, $hingga),
+
+            /*
+             * SATU-SATUNYA bagian yang dibangun bersyarat.
+             *
+             * Bagian lain di atas murah — satu kueri kelas, dipakai atau tidak.
+             * Yang ini menembak ~6 kueri PER SISWA, jadi membangunnya selalu
+             * berarti setiap orang yang membuka laporan tanpa mencentangnya
+             * tetap membayar 230 kueri untuk data yang langsung dibuang.
+             */
+            'lembarProfil' => in_array('profil', $sections, true)
+                ? $this->lembarProfil($siswa, $dari, $hingga)
+                : [],
         ];
+    }
+
+    /**
+     * Satu lembar profil lengkap per siswa, untuk dijilid di belakang laporan.
+     *
+     * Hanya siswa aktif: yang sudah pindah tidak menambah apa pun selain tebal
+     * jilidan, dan namanya di buku administrasi berjalan justru menyesatkan.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Student>  $siswa
+     * @return array<int, array<string, mixed>>
+     */
+    private function lembarProfil(Collection $siswa, Carbon $dari, Carbon $hingga): array
+    {
+        $pembangun = app(StudentProfileBuilder::class);
+        $semester = $hingga->month >= 7 ? 1 : 2;
+
+        return $siswa->where('is_active', true)
+            ->map(fn (Student $s) => $pembangun->build($s, $dari, $hingga, $semester))
+            ->values()
+            ->all();
     }
 
     /**

@@ -20,6 +20,7 @@
 <head>
     <meta charset="utf-8">
     <title>Administrasi Wali Kelas {{ $classroom->name }}</title>
+    @include('reports.pdf._gaya-lembar')
     <style>
         @page { margin: 18mm 15mm 20mm 15mm; }
 
@@ -282,6 +283,41 @@
                     </table>
                 @endif
             @endforeach
+
+            {{--
+                Jam mengajar wali kelasnya sendiri, disaring dari jadwal yang
+                sama. Tabel di atas menjawab "kelas ini belajar apa"; rapat
+                administrasi juga menanyakan "wali kelasnya mengajar kapan", dan
+                sebelumnya jawabannya harus dipungut sendiri dari tujuh tabel.
+
+                Dicocokkan lewat nama karena kolom `teacher_name` memang teks
+                bebas — tidak ada kaitan ke tabel users. Kalau ejaannya berbeda
+                dari nama akun, blok ini tidak muncul; itu disengaja, lebih baik
+                diam daripada mengaku-aku jadwal orang lain.
+            --}}
+            @php
+                $namaGuru = mb_strtolower(trim($guru->name ?? $classroom->user->name ?? ''));
+                $jamGuru = $jadwal->flatten()
+                    ->filter(fn ($j) => $namaGuru !== '' && mb_strtolower(trim((string) $j->teacher_name)) === $namaGuru)
+                    ->sortBy([['day_of_week', 'asc'], ['start_time', 'asc']]);
+            @endphp
+
+            @if ($jamGuru->isNotEmpty())
+                <h3>Jam Mengajar Wali Kelas</h3>
+                <table class="tbl">
+                    <thead><tr><th style="width: 26%;">Hari</th><th style="width: 26%;">Jam</th><th>Mata Pelajaran</th></tr></thead>
+                    <tbody>
+                    @foreach ($jamGuru as $j)
+                        <tr>
+                            <td>{{ $hariNama[$j->day_of_week] ?? '—' }}</td>
+                            <td class="c">{{ substr($j->start_time, 0, 5) }}–{{ substr($j->end_time, 0, 5) }}</td>
+                            <td>{{ $j->subject }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+                <p class="kecil">Total {{ $jamGuru->count() }} jam pelajaran per minggu di kelas ini.</p>
+            @endif
         @endif
     </div>
 @endif
@@ -504,6 +540,56 @@
         </tr>
     </table>
 </div>
+
+@if ($ada('profil'))
+    <div class="bagian" data-bagian="profil">
+        <h2>Profil &amp; Analisis Siswa</h2>
+        <p class="kecil" style="margin-bottom: 8pt;">
+            {{ count($lembarProfil) }} lembar, satu halaman untuk setiap siswa aktif.
+            Setiap lembar memuat tren kehadiran, biodata &amp; orang tua, catatan kedisiplinan,
+            nilai rapor, pengamatan karakter, dan refleksi mandiri siswa —
+            lengkap dengan kolom tanda tangan orang tua supaya bisa dirobek dan diserahkan satuan.
+        </p>
+
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">No</th>
+                    <th>Nama Siswa</th>
+                    <th style="width: 16%;">NIS</th>
+                    <th style="width: 14%;">Kehadiran</th>
+                    <th style="width: 10%;">Poin</th>
+                    <th style="width: 12%;">Pas Foto</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach ($lembarProfil as $i => $l)
+                <tr>
+                    <td class="c">{{ $i + 1 }}</td>
+                    <td>{{ $l['siswa']->name }}</td>
+                    <td>{{ $l['siswa']->nis ?: '—' }}</td>
+                    <td class="c">{{ $l['kehadiran']['persen'] === null ? '—' : $l['kehadiran']['persen'].'%' }}</td>
+                    <td class="c {{ $l['poin']['sekarang'] < 75 ? 'tandai' : '' }}">{{ $l['poin']['sekarang'] }}</td>
+                    {{-- Sekaligus daftar kekurangan: wali kelas langsung tahu
+                         foto siapa saja yang masih harus dikejar. --}}
+                    <td class="c">{{ $l['siswa']->foto_path ? 'Ada' : 'Belum' }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    @foreach ($lembarProfil as $lembar)
+        <div class="bagian">
+            @include('reports.pdf._lembar-siswa', $lembar + [
+                'classroom' => $classroom,
+                'periode' => $periode,
+                'guru' => $guru ?? $classroom->user,
+                'kopLembar' => false,
+            ])
+        </div>
+    @endforeach
+@endif
 
 {{-- Penomoran halaman dompdf: skrip inline yang dieksekusi saat render PDF,
      bukan JavaScript browser. Inilah cara resmi dompdf menulis nomor halaman. --}}
