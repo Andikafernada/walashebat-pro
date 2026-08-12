@@ -84,6 +84,15 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        /*
+         * Semua ekspor Excel memakai pengikat nilai yang menetralkan rumus.
+         *
+         * Dipasang di sini, bukan sebagai concern pada tiap kelas ekspor:
+         * ada lima kelas ekspor dan yang keenam nanti pasti lupa memasangnya.
+         * Ini satu-satunya tempat yang tidak bisa terlewat.
+         */
+        config(['excel.value_binder.default' => \App\Support\Excel\PengikatNilaiAman::class]);
+
         // Kompatibilitas index key untuk MySQL versi lama.
         Schema::defaultStringLength(191);
 
