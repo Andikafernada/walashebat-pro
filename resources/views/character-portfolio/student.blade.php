@@ -41,11 +41,11 @@
     @include('partials.flash')
 
     <!-- Student Top Hero Card -->
-    <div class="rounded-lg p-6 text-white shadow-xl relative overflow-hidden">
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-5 text-white">
         <div class="absolute right-0 top-0 -mr-10 -mt-10 h-48 w-48 rounded-full bg-purple-500/10"></div>
         <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-                <div class="flex h-16 w-16 items-center justify-center rounded-lg text-white font-semibold text-2xl">
+                <div class="flex h-14 w-14 items-center justify-center rounded border border-white/20 font-mono text-xl font-medium text-white">
                     {{ substr($student->name, 0, 1) }}
                 </div>
                 <div>

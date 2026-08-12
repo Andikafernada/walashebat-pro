@@ -6,10 +6,10 @@
     <title>Lupa Password - WaliKelas Pro Student</title>
     <link rel="stylesheet" href="{{ mix('build/assets/app.css') }}">
     <script src="{{ mix('build/assets/app.js') }}" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body class="h-full">
-    <div class="min-h-screen flex items-center justify-center p-4">
+<body class="h-full bg-slate-50 text-slate-700 antialiased">
+    <div class="flex min-h-screen items-center justify-center bg-slate-900 p-4">
         <div class="w-full max-w-md">
             <!-- Logo -->
             <div class="text-center mb-8">

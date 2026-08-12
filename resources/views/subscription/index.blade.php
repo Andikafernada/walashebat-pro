@@ -10,7 +10,7 @@
 <div class="space-y-8 pb-16">
 
     <!-- HERO BANNER -->
-    <div class="relative overflow-hidden rounded-lg p-6 sm:p-8 text-white shadow-xl border border-slate-800">
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-5 text-white">
         <div class="relative z-10 space-y-3">
             <div class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400 border border-amber-500/20">
                 <span>👑 Paket Akun VIP PRO</span>
@@ -70,7 +70,7 @@
         
         <!-- PRO PLAN CARD -->
         <div class="rounded-lg border-2 border-indigo-600 bg-white p-6 space-y-4 relative flex flex-col justify-between">
-            <div class="absolute -top-3 right-6 rounded-full px-3 py-0.5 text-[10px] font-semibold text-white uppercase">
+            <div class="absolute -top-2.5 right-5 rounded-sm border border-indigo-700 bg-indigo-600 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-white">
                 Spesial PRO
             </div>
 
@@ -119,7 +119,7 @@
             </div>
 
             <!-- DANA INFO BOX -->
-            <div class="rounded p-5 text-white space-y-3">
+            <div class="space-y-3 rounded border border-slate-800 bg-slate-900 p-4 text-white">
                 <div class="flex items-center justify-between">
                     <span class="eyebrow text-sky-200">Nomor Akun DANA Resmi</span>
                     <span class="text-[10px] font-semibold bg-white/20 px-2 py-0.5 rounded-full">Terverifikasi</span>
@@ -162,7 +162,7 @@
                     <input type="file" name="proof_image" required accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100">
                 </div>
 
-                <button type="submit" class="h-10 w-full rounded hover: hover: text-white font-semibold transition-colors">
+                <button type="submit" class="btn-primary w-full">
                     📤 Unggah Bukti Transfer DANA ({{ $rpHarga }})
                 </button>
             </form>

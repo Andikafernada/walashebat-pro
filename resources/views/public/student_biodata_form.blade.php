@@ -22,7 +22,7 @@
 <div class="max-w-2xl mx-auto space-y-6">
 
     <!-- Header Banner -->
-    <div class="rounded-lg p-6 text-white shadow-xl relative overflow-hidden">
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-5 text-white">
         <div class="absolute right-0 top-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-2xl"></div>
         <div class="relative z-10 space-y-1">
             <span class="inline-block rounded-full bg-indigo-500/30 px-3 py-1 text-[10px] font-semibold tracking-wider uppercase text-indigo-200 border border-indigo-400/30">

@@ -84,7 +84,7 @@
                     @if ($mine->isNotEmpty())
                         <div class="space-y-3">
                             @foreach ($mine as $h)
-                                <div class="flex items-center justify-between gap-4 card hover:border-indigo-200 hover: transition-colors">
+                                <div class="flex items-center justify-between gap-4 card hover:border-indigo-200 transition-colors">
                                     <div class="flex items-center gap-3.5">
                                         <!-- Date Icon -->
                                         <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded text-indigo-700 font-semibold border border-indigo-200/60">
@@ -169,7 +169,7 @@
             <div class="card space-y-4">
                 
                 <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded text-white">
+                    <div class="stat-icon">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     </div>
                     <div>

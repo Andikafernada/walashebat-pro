@@ -50,7 +50,7 @@
         {{-- Kartu ini satu-satunya yang bisa langsung dikerjakan, jadi ia
              berubah warna dan menjadi tautan begitu ada yang menunggu. --}}
         <a href="{{ route('admin.subscriptions.index') }}"
-           class="rounded-lg border p-5 transition-shadow hover: {{ $ringkas['pembayaran_pending'] > 0 ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white' }}">
+           class="rounded-lg border p-5 transition-shadow {{ $ringkas['pembayaran_pending'] > 0 ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white' }}">
             <p class="text-xs font-semibold {{ $ringkas['pembayaran_pending'] > 0 ? 'text-amber-700' : 'text-slate-500' }}">Bukti Menunggu Verifikasi</p>
             <p class="mt-1 text-3xl font-semibold {{ $ringkas['pembayaran_pending'] > 0 ? 'text-amber-900' : 'text-slate-900' }}">
                 {{ number_format($ringkas['pembayaran_pending']) }}

@@ -6,12 +6,12 @@
     <title>Login Siswa - WaliKelas Pro</title>
     <link rel="stylesheet" href="{{ mix('build/assets/app.css') }}">
     <script src="{{ mix('build/assets/app.js') }}" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body class="h-full">
+<body class="h-full bg-slate-50 text-slate-700 antialiased">
     <div class="min-h-screen flex">
         <!-- Left side - Branding -->
-        <div class="hidden lg:flex lg:w-1/2 xl:w-2/5 flex-col justify-between p-12 text-white">
+        <div class="hidden bg-slate-900 p-12 text-white lg:flex lg:w-1/2 lg:flex-col lg:justify-between xl:w-2/5">
             <div>
                 <div class="flex items-center gap-3 mb-2">
                     <div class="w-12 h-12 rounded bg-white/10 flex items-center justify-center">

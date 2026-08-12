@@ -40,12 +40,12 @@
         <h3 class="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">6 Dimensi Profil Pelajar Pancasila</h3>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach($dimensions as $dimension)
-                <div class="card hover: transition-colors space-y-3" 
+                <div class="card transition-colors space-y-3" 
                      style="border-top: 3.5px solid {{ $dimension->color }};">
                     
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded font-semibold text-white" 
+                            <div class="stat-icon" 
                                  style="background-color: {{ $dimension->color }};">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $dimension->icon }}"/>
@@ -99,10 +99,10 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach($students as $student)
                 <a href="{{ route('classes.character-portfolio.student', [$class, $student]) }}" 
-                   class="group card hover:border-indigo-300 hover: transition-colors space-y-3 block">
+                   class="group card hover:border-indigo-300 transition-colors space-y-3 block">
                     
                     <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded text-white font-semibold text-sm">
+                        <div class="stat-icon">
                             {{ substr($student->name, 0, 1) }}
                         </div>
                         <div class="min-w-0 flex-1">
