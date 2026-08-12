@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-bold text-slate-900">Notifikasi</h2>
+            <h2 class="text-2xl font-semibold text-slate-900">Notifikasi</h2>
             <p class="text-slate-500 mt-1">Semua pemberitahuan untuk Anda</p>
         </div>
         <div class="flex items-center gap-3">
@@ -28,7 +28,7 @@
     </div>
 
     <!-- Filter Tabs -->
-    <div class="bg-white rounded-xl border border-slate-100 p-1 inline-flex">
+    <div class="bg-white rounded border border-slate-200 p-1 inline-flex">
         <a href="{{ route('notifications.index', ['filter' => 'all']) }}"
            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $filter === 'all' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-900' }}">
             Semua
@@ -44,15 +44,15 @@
     </div>
 
     <!-- Notifications List -->
-    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-        <div class="divide-y divide-slate-100">
+    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+        <div class="divide-y divide-slate-200">
             @forelse($notifications as $notification)
             <div class="p-4 sm:p-6 hover:bg-slate-50 transition-colors {{ $notification->isRead() ? 'opacity-75' : '' }}"
                  data-notification-id="{{ $notification->id }}">
                 <div class="flex gap-4">
                     <!-- Icon -->
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center @if($notification->color === 'emerald') bg-emerald-100 text-emerald-600 @elseif($notification->color === 'rose') bg-rose-100 text-rose-600 @elseif($notification->color === 'amber') bg-amber-100 text-amber-600 @else bg-indigo-100 text-indigo-600 @endif">
+                        <div class="w-10 h-10 rounded flex items-center justify-center @if($notification->color === 'emerald') bg-emerald-100 text-emerald-600 @elseif($notification->color === 'rose') bg-rose-100 text-rose-600 @elseif($notification->color === 'amber') bg-amber-100 text-amber-600 @else bg-indigo-100 text-indigo-600 @endif">
                             @if($notification->icon === 'bell')
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
@@ -122,7 +122,7 @@
         </div>
 
         @if($notifications->hasPages())
-        <div class="px-6 py-4 border-t border-slate-100">
+        <div class="px-6 py-4 border-t border-slate-200">
             {{ $notifications->links() }}
         </div>
         @endif

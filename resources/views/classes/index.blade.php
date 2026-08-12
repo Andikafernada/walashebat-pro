@@ -40,8 +40,7 @@
                 @php $ini = $jenisDipilih === $nilai; @endphp
                 <a href="{{ route('classes.index', $nilai ? ['jenis' => $nilai] : []) }}"
                    @if($ini) aria-current="page" @endif
-                   class="flex items-center gap-1.5 border-r border-slate-200 px-3 py-1.5 text-xs font-medium transition-colors last:border-r-0
-                          {{ $ini ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50' }}">
+                   class="flex items-center gap-1.5 border-r border-slate-200 px-3 py-1.5 text-xs font-medium transition-colors last:border-r-0 {{ $ini ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50' }}">
                     {{ $label }}
                     <span class="font-mono text-[10px] {{ $ini ? 'text-slate-300' : 'text-slate-400' }}">{{ $jumlah }}</span>
                 </a>
@@ -98,8 +97,7 @@
                          */
                         $tersemat = ! $ajar && $jenisDipilih === null && $jumlahAjar > 0;
                     @endphp
-                    <div class="flex flex-col gap-3 border-l-[3px] p-3.5 sm:flex-row sm:items-center
-                                {{ $ajar ? 'border-l-emerald-600' : 'border-l-indigo-600' }}">
+                    <div class="flex flex-col gap-3 border-l-[3px] p-3.5 sm:flex-row sm:items-center {{ $ajar ? 'border-l-emerald-600' : 'border-l-indigo-600' }}">
 
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">

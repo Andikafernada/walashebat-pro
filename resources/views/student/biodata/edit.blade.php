@@ -6,7 +6,7 @@
     <!-- Header -->
     <div class="glass-card flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-slate-900">Edit Biodata</h1>
+            <h1 class="text-2xl font-semibold text-slate-900">Edit Biodata</h1>
             <p class="text-slate-500 mt-1">Perbarui data pribadi dan kontak orang tua</p>
         </div>
         <a href="{{ route('student.biodata') }}" class="btn btn-secondary">Batal</a>
@@ -28,7 +28,7 @@
 
         <!-- Data Pribadi -->
         <div class="glass-card space-y-4">
-            <h2 class="font-bold text-slate-900">Data Pribadi</h2>
+            <h2 class="font-semibold text-slate-900">Data Pribadi</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Tempat Lahir</label>
@@ -89,7 +89,7 @@
 
         <!-- Alamat -->
         <div class="glass-card space-y-4">
-            <h2 class="font-bold text-slate-900">Alamat</h2>
+            <h2 class="font-semibold text-slate-900">Alamat</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
                     <label class="block text-sm font-medium mb-1">Alamat Lengkap</label>
@@ -125,7 +125,7 @@
 
         <!-- Orang Tua -->
         <div class="glass-card space-y-4">
-            <h2 class="font-bold text-slate-900">Data Orang Tua</h2>
+            <h2 class="font-semibold text-slate-900">Data Orang Tua</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Nama Ayah</label>

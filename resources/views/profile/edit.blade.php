@@ -8,11 +8,11 @@
         <div class="bento-item bento-wide bento-highlight bento-highlight--sky">
             <div class="flex items-center gap-5">
                 <!-- Avatar -->
-                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-2xl font-bold text-slate-600 shadow-sm">
+                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-white/80 text-2xl font-semibold text-slate-600">
                     {{ strtoupper(substr($user->name, 0, 1)) }}
                 </div>
                 <div class="flex-1">
-                    <h2 class="text-xl font-bold text-slate-900">{{ $user->name }}</h2>
+                    <h2 class="text-xl font-semibold text-slate-900">{{ $user->name }}</h2>
                     <p class="text-sm text-slate-500">{{ $user->email }}</p>
                     @if($user->whatsapp_number)
                         <p class="text-xs text-slate-400 mt-1">{{ $user->whatsapp_number }}</p>
@@ -80,7 +80,7 @@
                         @enderror
                     </div>
 
-                    <div class="border-t border-slate-100 pt-4">
+                    <div class="border-t border-slate-200 pt-4">
                         <div class="form-group">
                             <label for="school_name" class="form-label form-label--required">Nama sekolah</label>
                             <input type="text" id="school_name" name="school_name"

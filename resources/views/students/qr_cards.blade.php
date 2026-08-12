@@ -17,14 +17,14 @@
                 <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 <span class="text-slate-700 font-semibold">Cetak Kartu QR Siswa</span>
             </nav>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
                 Kartu QR Code Presensi Siswa — {{ $class->name }}
             </h1>
             <p class="text-xs text-slate-500 mt-0.5">Cetak kartu ID ber-QR Code untuk presensi kilat di kelas. 8 kartu per lembar A4.</p>
         </div>
 
         <div class="flex items-center gap-2">
-            <button onclick="window.print()" class="h-10 px-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors">
+            <button onclick="window.print()" class="h-10 px-5 inline-flex items-center gap-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors">
                 🖨️ Cetak Kartu Sekarang
             </button>
         </div>
@@ -33,14 +33,14 @@
     <!-- CARDS GRID CONTAINER -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 print:grid-cols-2 print:gap-3">
         @foreach($students as $s)
-            <div class="relative overflow-hidden rounded-2xl border-2 border-slate-900 bg-white p-4 text-slate-900 flex flex-col justify-between h-56 print:h-48 print:border-slate-800">
+            <div class="relative overflow-hidden rounded-lg border-2 border-slate-900 bg-white p-4 text-slate-900 flex flex-col justify-between h-56 print:h-48 print:border-slate-800">
                 
                 <!-- CARD HEADER -->
                 <div class="flex items-center justify-between border-b-2 border-slate-900 pb-2">
                     <div class="flex items-center gap-2">
                         <span class="text-lg">🏫</span>
                         <div>
-                            <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">WALI KELAS HEBAT</p>
+                            <p class="eyebrow leading-tight">WALI KELAS HEBAT</p>
                             <p class="text-xs font-semibold text-indigo-950 uppercase leading-tight">{{ $class->name }}</p>
                         </div>
                     </div>
@@ -51,11 +51,11 @@
                 <div class="flex items-center justify-between gap-3 my-auto">
                     <div class="min-w-0 space-y-1">
                         <p class="text-xs font-semibold text-slate-900 leading-tight uppercase truncate" title="{{ $s->name }}">{{ $s->name }}</p>
-                        <p class="text-[10px] text-slate-600 font-semibold">NIS: <span class="font-bold text-slate-900">{{ $s->nis ?: '-' }}</span></p>
-                        <p class="text-[10px] text-slate-600 font-semibold">NISN: <span class="font-bold text-slate-900">{{ $s->nisn ?: '-' }}</span></p>
+                        <p class="text-[10px] text-slate-600 font-semibold">NIS: <span class="font-semibold text-slate-900">{{ $s->nis ?: '-' }}</span></p>
+                        <p class="text-[10px] text-slate-600 font-semibold">NISN: <span class="font-semibold text-slate-900">{{ $s->nisn ?: '-' }}</span></p>
                     </div>
 
-                    <div class="shrink-0 p-1.5 bg-white border border-slate-300 rounded-xl shadow-xs">
+                    <div class="shrink-0 p-1.5 bg-white border border-slate-300 rounded">
                         <canvas id="qr-student-{{ $s->id }}" width="80" height="80" class="h-20 w-20 print:h-16 print:w-16"></canvas>
                         <script>
                             (function() {

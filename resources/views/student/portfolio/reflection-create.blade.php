@@ -5,7 +5,7 @@
 <div class="p-6 lg:p-8 space-y-6">
     <div class="glass-card flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-slate-900">Refleksi Baru</h1>
+            <h1 class="text-2xl font-semibold text-slate-900">Refleksi Baru</h1>
             <p class="text-slate-500 mt-1">Luangkan waktu sejenak untuk merefleksikan dirimu</p>
         </div>
         <a href="{{ route('student.portfolio') }}" class="btn btn-secondary">Batal</a>

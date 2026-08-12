@@ -5,7 +5,7 @@
 <div class="p-6 lg:p-8 space-y-6">
     <!-- Header -->
     <div class="glass-card">
-        <h1 class="text-2xl font-bold text-slate-900">Biodata Diri</h1>
+        <h1 class="text-2xl font-semibold text-slate-900">Biodata Diri</h1>
         <p class="text-slate-500 mt-1">Data profil dan kontak orang tua</p>
     </div>
 
@@ -16,7 +16,7 @@
                 <span class="avatar-initials">{{ substr($student->name, 0, 2) }}</span>
             </div>
             <div>
-                <h2 class="text-xl font-bold">{{ $student->name }}</h2>
+                <h2 class="text-xl font-semibold">{{ $student->name }}</h2>
                 <p class="text-slate-500">NIS: {{ $student->nis }} • {{ $student->classroom->name }}</p>
             </div>
             <div class="ml-auto flex gap-2">

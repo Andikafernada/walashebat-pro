@@ -10,13 +10,13 @@
             <div class="flex items-start justify-between mb-6">
                 <div class="flex items-center gap-4">
                     <a href="{{ route('classes.character-portfolio.student', [$class, $student]) }}"
-                       class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                       class="p-2 rounded hover:bg-slate-100 transition-colors">
                         <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                         </svg>
                     </a>
                     <div>
-                        <h2 class="text-xl font-bold text-slate-900">Detail Catatan Karakter</h2>
+                        <h2 class="text-xl font-semibold text-slate-900">Detail Catatan Karakter</h2>
                         <p class="text-sm text-slate-500">{{ $record->student->name }} - {{ $record->dimension->name }}</p>
                     </div>
                 </div>
@@ -44,9 +44,9 @@
 
             <!-- Record Info -->
             <div class="grid gap-6">
-                <div class="flex items-center gap-4 p-4 rounded-xl"
+                <div class="flex items-center gap-4 p-4 rounded"
                      style="background-color: {{ $record->dimension->color }}15; border-left: 4px solid {{ $record->dimension->color }};">
-                    <div class="w-12 h-12 rounded-xl flex items-center justify-center"
+                    <div class="w-12 h-12 rounded flex items-center justify-center"
                          style="background-color: {{ $record->dimension->color }}30; color: {{ $record->dimension->color }};">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="{{ $record->dimension->icon }}"/>
@@ -54,7 +54,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-slate-500">{{ $record->dimension->name }}</p>
-                        <p class="text-2xl font-bold" style="color: {{ $record->score >= 0 ? '#16a34a' : '#dc2626' }};">
+                        <p class="text-2xl font-semibold" style="color: {{ $record->score >= 0 ? '#16a34a' : '#dc2626' }};">
                             {{ $record->getScoreDisplay() }}
                         </p>
                     </div>
@@ -97,7 +97,7 @@
                 </div>
 
                 @if($record->is_acknowledged && $record->acknowledged_at)
-                <div class="p-4 bg-emerald-50 rounded-xl">
+                <div class="p-4 bg-emerald-50 rounded">
                     <h4 class="font-medium text-emerald-800 mb-1">Dikonfirmasi pada</h4>
                     <p class="text-emerald-700">{{ $record->acknowledged_at->format('d M Y, H:i') }} oleh {{ $record->acknowledger->name ?? 'Wali Kelas' }}</p>
                 </div>
@@ -105,7 +105,7 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center gap-3 mt-8 pt-6 border-t border-slate-100">
+            <div class="flex items-center gap-3 mt-8 pt-6 border-t border-slate-200">
                 <form method="POST" action="{{ route('classes.character-portfolio.record.destroy', [$class, $record]) }}"
                       onsubmit="return confirm('Hapus catatan ini?')">
                     @csrf @method('DELETE')

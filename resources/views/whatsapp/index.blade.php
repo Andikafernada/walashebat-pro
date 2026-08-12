@@ -11,7 +11,7 @@
     <!-- Header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
                 Integrasi WhatsApp &amp; Balasan Otomatis 📲
             </h1>
             <p class="text-xs text-slate-500 mt-0.5">Tautkan nomor WhatsApp Anda, atur kata kunci patokan izin/sakit, dan tentukan grup mana yang dibalas otomatis.</p>
@@ -22,28 +22,28 @@
     @include('partials.flash')
 
     <!-- PAIRING / CONNECTION STATUS CARD -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+    <div class="card space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-4">
             <div class="flex items-center gap-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 font-bold text-2xl">
+                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 font-semibold text-2xl">
                     💬
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-slate-900">Status Koneksi WhatsApp</h3>
+                    <h3 class="text-base font-semibold text-slate-900">Status Koneksi WhatsApp</h3>
                     <p class="text-xs text-slate-500">Nomor Guru: <strong class="text-slate-800">{{ auth()->user()->whatsapp_number ?: 'Belum diisi' }}</strong></p>
                 </div>
             </div>
 
-            <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
+            <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
                   :class="status === 'connected' ? 'bg-emerald-100 text-emerald-800' : (status === 'pairing' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')"
                   x-text="label()">
             </span>
         </div>
 
         @if(!auth()->user()->whatsappConnected())
-            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-3">
+            <div class="bg-amber-50 p-4 rounded border border-amber-200 text-xs text-amber-900 space-y-3">
                 <div>
-                    <p class="font-bold text-sm text-amber-950">⚠️ Nomor WhatsApp Belum Tersambung</p>
+                    <p class="font-semibold text-sm text-amber-950">⚠️ Nomor WhatsApp Belum Tersambung</p>
                     <p class="text-slate-600 mt-0.5">Pilih cara menautkan yang sesuai dengan perangkat yang sedang Anda pakai.</p>
                 </div>
 
@@ -61,7 +61,7 @@
                         @csrf
                         <input type="hidden" name="metode" value="kode">
                         <button type="submit"
-                                class="h-auto py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors text-left">
+                                class="h-auto py-3 px-4 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition-colors text-left">
                             <span class="block text-sm">📱 Saya memakai HP ini</span>
                             <span class="block font-medium text-emerald-50/90 mt-0.5 leading-snug">
                                 Dapatkan kode 8 karakter untuk diketik di WhatsApp. Tanpa memindai apa pun.
@@ -73,7 +73,7 @@
                         @csrf
                         <input type="hidden" name="metode" value="qr">
                         <button type="submit"
-                                class="h-auto py-3 px-4 rounded-xl border-2 border-emerald-600 bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs transition-colors text-left">
+                                class="h-auto py-3 px-4 rounded border-2 border-emerald-600 bg-white hover:bg-emerald-50 text-emerald-800 font-semibold text-xs transition-colors text-left">
                             <span class="block text-sm">💻 Saya memakai laptop/komputer</span>
                             <span class="block font-medium text-slate-500 mt-0.5 leading-snug">
                                 Terbitkan Kode QR untuk dipindai dengan WhatsApp di HP Anda.
@@ -83,12 +83,12 @@
                 </div>
             </div>
         @else
-            <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
+            <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-3 rounded">
                 <span class="font-semibold text-emerald-700">✓ WhatsApp Aktif &amp; Siap Mengirim Pesan / Balas Otomatis</span>
                 <form method="POST" action="{{ route('whatsapp.disconnect') }}">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" onclick="return confirm('Putus koneksi WhatsApp ini?')" class="text-xs font-bold text-rose-600 hover:underline">
+                    <button type="submit" onclick="return confirm('Putus koneksi WhatsApp ini?')" class="text-xs font-semibold text-rose-600 hover:underline">
                         Putus Koneksi
                     </button>
                 </form>
@@ -97,9 +97,9 @@
     </div>
 
     {{-- KARTU KODE PENAUTAN — jalur "saya memakai HP ini" --}}
-    <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
+    <div class="rounded-lg border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
          x-show="status !== 'connected' && kodePairing" x-cloak>
-        <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+        <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
             <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
             <span>Kode Penautan Berhasil Diterbitkan</span>
         </div>
@@ -111,20 +111,20 @@
              mudah salah baca. --}}
         <div class="flex justify-center gap-1.5 sm:gap-2 py-1 flex-wrap">
             <template x-for="(huruf, i) in String(kodePairing).split('')" :key="i">
-                <span class="inline-flex h-12 w-9 sm:h-14 sm:w-11 items-center justify-center rounded-xl border-2 border-slate-900 bg-slate-50 text-xl sm:text-2xl font-semibold tracking-widest text-slate-900 shadow-sm"
+                <span class="inline-flex h-12 w-9 sm:h-14 sm:w-11 items-center justify-center rounded border-2 border-slate-900 bg-slate-50 text-xl sm:text-2xl font-semibold tracking-widest text-slate-900"
                       x-text="huruf"></span>
             </template>
         </div>
 
-        <div class="mx-auto max-w-md rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-left text-xs text-slate-700 space-y-1.5">
-            <p class="font-bold text-slate-900">Langkahnya:</p>
+        <div class="mx-auto max-w-md rounded bg-slate-50 border border-slate-200 p-3.5 text-left text-xs text-slate-700 space-y-1.5">
+            <p class="font-semibold text-slate-900">Langkahnya:</p>
             <p>1. Buka <strong>WhatsApp</strong> di HP ini.</p>
             <p>2. Ketuk <strong>Titik Tiga (⋮)</strong> &rarr; <strong>Perangkat Tertaut</strong>.</p>
             <p>3. Ketuk <strong>Tautkan Perangkat</strong>, lalu pilih <strong>Tautkan dengan nomor telepon</strong>.</p>
             <p>4. Masukkan kode di atas.</p>
         </div>
 
-        <p class="text-xs font-bold text-indigo-600">
+        <p class="text-xs font-semibold text-indigo-600">
             ⏳ Menunggu kode dimasukkan… Halaman akan otomatis terhubung.
         </p>
 
@@ -134,9 +134,9 @@
     </div>
 
     <!-- DYNAMIC REAL-TIME QR CODE DISPLAY CARD -->
-    <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
+    <div class="rounded-lg border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
          x-show="status !== 'connected' && qr">
-        <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+        <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
             <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
             <span>Kode QR WhatsApp Berhasil Diterbitkan</span>
         </div>
@@ -149,19 +149,19 @@
 
         <!-- QR CODE CANVAS CONTAINER -->
         <div class="py-2 flex justify-center">
-            <div class="p-3 bg-white border-2 border-slate-900 rounded-2xl shadow-xl inline-block">
+            <div class="p-3 bg-white border-2 border-slate-900 rounded-lg shadow-xl inline-block">
                 <canvas id="wa-qr-canvas-dynamic"></canvas>
             </div>
         </div>
 
-        <p class="text-xs font-bold text-indigo-600">
+        <p class="text-xs font-semibold text-indigo-600">
             ⏳ Menunggu pemindaian dari HP... Halaman akan otomatis terhubung begitu dipindai.
         </p>
     </div>
 
     <!-- AUTOREPLY GROUPS SELECTION & EDITING (IF WA CONNECTED) -->
     @if(auth()->user()->whatsappConnected())
-        <div class="rounded-2xl border-2 border-indigo-200 bg-white p-6 space-y-5"
+        <div class="rounded-lg border-2 border-indigo-200 bg-white p-6 space-y-5"
              x-data="autoreply({
                 grupUrl: '{{ route('whatsapp.groups') }}',
                 terpilih: {{ json_encode($autoreply['groups'] ?? []) }},
@@ -169,16 +169,16 @@
              })"
              x-init="awal()">
             
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-4">
                 <div>
-                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <h3 class="text-base font-semibold text-slate-900 flex items-center gap-2">
                         <span>👥 Pilih &amp; Kelola Grup WhatsApp yang Dibalas Otomatis</span>
                     </h3>
                     <p class="text-xs text-slate-500 mt-0.5">Centang grup WhatsApp orang tua yang ingin diaktifkan. Anda bisa menambah, mengurangi, atau mengedit kapan saja.</p>
                 </div>
 
                 <div class="shrink-0 flex items-center gap-2">
-                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                         <span x-text="terpilih.length"></span> Grup Terkoneksi
                     </span>
                     {{-- Memindai grup itu mahal: WhatsApp membatasi laju
@@ -188,13 +188,13 @@
                          jalan masuk ke pemindaian. --}}
                     <template x-if="mode === 'ringkas'">
                         <button type="button" @click="bukaPemilih()"
-                                class="text-xs text-indigo-600 hover:underline font-bold">
+                                class="text-xs text-indigo-600 hover:underline font-semibold">
                             ✏️ Ubah pilihan grup
                         </button>
                     </template>
                     <template x-if="mode === 'pilih'">
                         <button type="button" @click="muat(true)" :disabled="memuat"
-                                class="text-xs text-indigo-600 hover:underline font-bold disabled:opacity-50">
+                                class="text-xs text-indigo-600 hover:underline font-semibold disabled:opacity-50">
                             🔄 Refresh Grup
                         </button>
                     </template>
@@ -216,8 +216,8 @@
             @endphp
 
             @unless ($gatewayTerjangkau)
-                <div class="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950 space-y-1">
-                    <p class="font-bold">⚠️ Pengaturan di bawah belum bisa dibaca</p>
+                <div class="rounded border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950 space-y-1">
+                    <p class="font-semibold">⚠️ Pengaturan di bawah belum bisa dibaca</p>
                     <p>Sistem sedang tidak bisa menghubungi layanan WhatsApp, jadi keadaan balasan otomatis Anda <strong>tidak diketahui</strong> — bukan berarti mati, dan pilihan grup Anda <strong>tidak hilang</strong>.</p>
                     <p class="text-amber-800">Ini gangguan di sisi kami, bukan pengaturan Anda.
                         @if ($tungguDetik > 0)
@@ -233,8 +233,8 @@
             @if ($gatewayTerjangkau && $kirimTerganggu)
                 {{-- Sirkuit berbeda: yang ini soal MENGIRIM pesan, bukan membaca
                      pengaturan. Magic link absensi lewat jalur yang sama. --}}
-                <div class="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950">
-                    <p class="font-bold">⚠️ Pengiriman WhatsApp sedang terganggu</p>
+                <div class="rounded border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950">
+                    <p class="font-semibold">⚠️ Pengiriman WhatsApp sedang terganggu</p>
                     <p>Pengaturan Anda terbaca normal, tetapi pesan keluar (balasan otomatis dan magic link absensi) sedang gagal terkirim. Sistem mencoba lagi otomatis.</p>
                 </div>
             @endif
@@ -257,18 +257,18 @@
                 --}}
                 <input type="hidden" name="enabled" value="0">
 
-                <label class="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-white p-3 cursor-pointer hover:bg-slate-50 transition-colors">
+                <label class="flex items-start gap-2.5 rounded border border-slate-200 bg-white p-3 cursor-pointer hover:bg-slate-50 transition-colors">
                     <input type="checkbox" name="enabled" value="1" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                            @checked($autoreply['enabled'] ?? false)>
                     <span class="text-xs">
-                        <span class="font-bold text-slate-800">Nyalakan balasan otomatis</span>
+                        <span class="font-semibold text-slate-800">Nyalakan balasan otomatis</span>
                         @if ($gatewayTerjangkau)
-                            <span class="ml-1.5 align-middle inline-block rounded-full px-2 py-0.5 text-[10px] font-bold {{ ($autoreply['enabled'] ?? false) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
+                            <span class="ml-1.5 align-middle inline-block rounded-sm px-2 py-0.5 text-[10px] font-semibold {{ ($autoreply['enabled'] ?? false) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
                                 {{ ($autoreply['enabled'] ?? false) ? 'Sedang aktif' : 'Sedang mati' }}
                             </span>
                         @else
                             {{-- Jangan mengaku tahu. "Mati" di sini akan keliru. --}}
-                            <span class="ml-1.5 align-middle inline-block rounded-full px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800">
+                            <span class="ml-1.5 align-middle inline-block rounded-sm px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-800">
                                 Tidak diketahui
                             </span>
                         @endif
@@ -288,23 +288,23 @@
                 --}}
                 <template x-if="mode === 'ringkas'">
                     <div class="space-y-2">
-                        <div class="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
+                        <div class="rounded border border-slate-200 bg-white divide-y divide-slate-200">
                             <template x-for="id in terpilih" :key="id">
                                 <div class="flex items-center justify-between gap-3 p-3">
                                     <input type="hidden" name="groups[]" :value="id">
 
                                     <div class="min-w-0">
-                                        <span class="block truncate text-xs font-bold text-slate-900" x-text="namaGrup(id)"></span>
+                                        <span class="block truncate text-xs font-semibold text-slate-900" x-text="namaGrup(id)"></span>
                                         <span class="block text-[10px] text-slate-400" x-text="ketGrup(id)"></span>
                                     </div>
 
                                     <div class="flex items-center gap-2 shrink-0">
                                         <button type="button" @click.prevent="periksa(id)" :disabled="memeriksa === id"
-                                                class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50">
+                                                class="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50">
                                             <span x-show="memeriksa !== id">Cek status</span>
                                             <span x-show="memeriksa === id">Memeriksa…</span>
                                         </button>
-                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
                                             ✓ Terkoneksi (Aktif)
                                         </span>
                                     </div>
@@ -331,11 +331,11 @@
 
                 <div class="flex gap-2">
                     <input type="text" x-model="cari" placeholder="🔍 Cari nama grup WhatsApp..."
-                           class="flex-1 h-10 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:outline-none">
+                           class="flex-1 h-10 rounded border border-slate-200 bg-slate-50 px-3.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:outline-none">
                     {{-- Daftar grup di-cache 5 menit untuk menghindari batas laju
                          WhatsApp; tombol ini untuk guru yang baru menambah grup. --}}
                     <button type="button" @click="muat(true)" :disabled="memuat" title="Ambil ulang daftar grup dari WhatsApp"
-                            class="h-10 shrink-0 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 text-xs font-bold text-slate-700 transition-colors disabled:opacity-50">
+                            class="h-10 shrink-0 rounded border border-slate-200 bg-white hover:bg-slate-50 px-3 text-xs font-semibold text-slate-700 transition-colors disabled:opacity-50">
                         <span x-show="!memuat">↻ Muat ulang</span>
                         <span x-show="memuat">Memuat…</span>
                     </button>
@@ -350,12 +350,12 @@
                 <p x-show="catatan && !memuat && !galat" x-text="catatan"
                    class="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 -mt-1"></p>
 
-                <div x-show="memuat" class="flex items-center justify-center gap-2 py-8 text-xs text-slate-500 bg-slate-50 rounded-xl">
+                <div x-show="memuat" class="flex items-center justify-center gap-2 py-8 text-xs text-slate-500 bg-slate-50 rounded">
                     <span class="h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
                     <span>Memuat daftar grup WhatsApp dari ponsel...</span>
                 </div>
 
-                <div x-show="!memuat && tersaring.length > 0" class="max-h-72 overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+                <div x-show="!memuat && tersaring.length > 0" class="max-h-72 overflow-y-auto divide-y divide-slate-200 rounded border border-slate-200 bg-white">
                     <template x-for="g in tersaring" :key="g.id">
                         <label class="flex cursor-pointer items-center justify-between gap-3 p-3 hover:bg-indigo-50/50 transition-colors"
                                :class="terpilih.includes(g.id) ? 'bg-emerald-50/30' : ''">
@@ -363,7 +363,7 @@
                                 <input type="checkbox" name="groups[]" :value="g.id" x-model="terpilih"
                                        class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                                 <div class="min-w-0">
-                                    <span class="block truncate text-xs font-bold text-slate-900" x-text="g.subject"></span>
+                                    <span class="block truncate text-xs font-semibold text-slate-900" x-text="g.subject"></span>
                                     <span class="block text-[10px] text-slate-400" x-text="g.peserta + ' Anggota'"></span>
                                 </div>
                             </div>
@@ -373,13 +373,13 @@
                                      grup orang tua, jadi aman ditekan berkali-kali. --}}
                                 <button type="button" x-show="terpilih.includes(g.id)"
                                         @click.prevent="periksa(g.id)" :disabled="memeriksa === g.id"
-                                        class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50">
+                                        class="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50">
                                     <span x-show="memeriksa !== g.id">Cek status</span>
                                     <span x-show="memeriksa === g.id">Memeriksa…</span>
                                 </button>
 
                                 <span x-show="terpilih.includes(g.id)"
-                                      class="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                      class="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
                                     ✓ Terkoneksi (Aktif)
                                 </span>
                                 <span x-show="!terpilih.includes(g.id)" 
@@ -393,16 +393,16 @@
 
                 {{-- Gagal memuat BUKAN sama dengan tidak punya grup. Dulu keduanya
                      tampil sebagai pesan "tidak ditemukan grup" yang menyesatkan. --}}
-                <div x-show="!memuat && galat" class="py-6 px-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-2">
-                    <p class="font-bold">Daftar grup gagal dimuat.</p>
+                <div x-show="!memuat && galat" class="py-6 px-4 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800 space-y-2">
+                    <p class="font-semibold">Daftar grup gagal dimuat.</p>
                     <p x-text="galat"></p>
                     <button type="button" @click="muat(true)"
-                            class="h-8 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 transition-colors">
+                            class="h-8 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold px-3 transition-colors">
                         Coba muat ulang
                     </button>
                 </div>
 
-                <div x-show="!memuat && !galat && tersaring.length === 0" class="py-8 text-center bg-slate-50 rounded-xl text-xs text-slate-500">
+                <div x-show="!memuat && !galat && tersaring.length === 0" class="py-8 text-center bg-slate-50 rounded text-xs text-slate-500">
                     Tidak ditemukan grup WhatsApp. Pastikan WhatsApp ponsel Anda sudah bergabung di grup.
                 </div>
 
@@ -411,14 +411,14 @@
 
                 {{-- Hasil "Cek status": daftar syarat yang bisa ditindaklanjuti guru,
                      bukan sekadar aktif/tidak. --}}
-                <div x-show="hasilCek" x-cloak class="rounded-xl border p-3 text-xs space-y-2"
+                <div x-show="hasilCek" x-cloak class="rounded border p-3 text-xs space-y-2"
                      :class="hasilCek && hasilCek.siap ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'">
                     <div class="flex items-start justify-between gap-2">
-                        <p class="font-bold" :class="hasilCek && hasilCek.siap ? 'text-emerald-800' : 'text-amber-800'">
+                        <p class="font-semibold" :class="hasilCek && hasilCek.siap ? 'text-emerald-800' : 'text-amber-800'">
                             <span x-text="hasilCek && hasilCek.siap ? '✓ Siap membalas' : '⚠ Belum siap membalas'"></span>
                             — <span x-text="hasilCek ? hasilCek.grup : ''"></span>
                         </p>
-                        <button type="button" @click.prevent="hasilCek = null" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+                        <button type="button" @click.prevent="hasilCek = null" class="text-slate-400 hover:text-slate-600 font-semibold">✕</button>
                     </div>
 
                     <p x-show="hasilCek && hasilCek.pesan" x-text="hasilCek ? hasilCek.pesan : ''" class="text-amber-800"></p>
@@ -434,12 +434,12 @@
                                 <p class="flex items-center gap-1.5 text-slate-700">
                                     <span x-text="hasilCek.syarat[kunci] ? '✓' : '✕'"
                                           :class="hasilCek.syarat[kunci] ? 'text-emerald-600' : 'text-rose-600'"
-                                          class="font-bold w-3"></span>
+                                          class="font-semibold w-3"></span>
                                     <span x-text="label"></span>
                                 </p>
                             </template>
                             <p class="flex items-center gap-1.5 text-slate-700">
-                                <span class="font-bold w-3"
+                                <span class="font-semibold w-3"
                                       x-text="hasilCek.syarat.kuota_tersisa > 0 ? '✓' : '✕'"
                                       :class="hasilCek.syarat.kuota_tersisa > 0 ? 'text-emerald-600' : 'text-rose-600'"></span>
                                 <span>Kuota harian tersisa
@@ -455,11 +455,11 @@
                     </template>
                 </div>
 
-                <div class="flex items-center justify-between border-t border-slate-100 pt-3">
+                <div class="flex items-center justify-between border-t border-slate-200 pt-3">
                     <span class="text-xs text-slate-500">
                         Total terpilih: <strong class="text-indigo-600" x-text="terpilih.length"></strong> grup.
                     </span>
-                    <button type="submit" class="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 transition-colors">
+                    <button type="submit" class="h-10 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-6 transition-colors">
                         💾 Simpan Perubahan Grup WA
                     </button>
                 </div>
@@ -468,9 +468,9 @@
     @endif
 
     <!-- CUSTOM KEYWORDS & TEMPLATE FORM -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 space-y-6">
-        <div class="border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900">🔤 Klasifikasi Kata Kunci &amp; Templat Balasan Guru</h3>
+    <div class="card space-y-6">
+        <div class="border-b border-slate-200 pb-3">
+            <h3 class="text-base font-semibold text-slate-900">🔤 Klasifikasi Kata Kunci &amp; Templat Balasan Guru</h3>
             <p class="text-xs text-slate-500 mt-0.5">Tentukan sendiri kata kunci yang dijadikan patokan balasan otomatis. Pesan di luar kata kunci ini <strong>TIDAK AKAN DIBALAS</strong>.</p>
         </div>
 
@@ -478,7 +478,7 @@
             @csrf
 
             <!-- KEYWORDS CONFIGURATION -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-50/50 p-4 rounded border border-indigo-100">
                 {{--
                     Kolom ini TAMBAHAN, bukan daftar utama.
 
@@ -498,20 +498,20 @@
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block font-bold text-indigo-950 uppercase tracking-wider text-[11px]">1. Tambahan Kata Kunci IZIN <span class="text-indigo-600 font-normal lowercase">(pisahkan koma, boleh kosong)</span></label>
+                    <label class="block font-semibold text-indigo-950 uppercase tracking-wider text-[11px]">1. Tambahan Kata Kunci IZIN <span class="text-indigo-600 font-normal lowercase">(pisahkan koma, boleh kosong)</span></label>
                     <input type="text" name="wa_permission_keywords"
                            value="{{ auth()->user()->wa_permission_keywords }}"
                            placeholder="mis. wangsul, ngalayad..."
-                           class="w-full rounded-xl border border-indigo-200 bg-white p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none font-mono">
+                           class="w-full rounded border border-indigo-200 bg-white p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none font-mono">
                     <p class="text-[10px] text-slate-500">Ditambahkan ke kata bawaan, bukan menggantikannya.</p>
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block font-bold text-indigo-950 uppercase tracking-wider text-[11px]">2. Tambahan Kata Kunci SAKIT <span class="text-indigo-600 font-normal lowercase">(pisahkan koma, boleh kosong)</span></label>
+                    <label class="block font-semibold text-indigo-950 uppercase tracking-wider text-[11px]">2. Tambahan Kata Kunci SAKIT <span class="text-indigo-600 font-normal lowercase">(pisahkan koma, boleh kosong)</span></label>
                     <input type="text" name="wa_sick_keywords"
                            value="{{ auth()->user()->wa_sick_keywords }}"
                            placeholder="mis. meriang, nyeri huntu..."
-                           class="w-full rounded-xl border border-indigo-200 bg-white p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none font-mono">
+                           class="w-full rounded border border-indigo-200 bg-white p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none font-mono">
                     <p class="text-[10px] text-slate-500">Ditambahkan ke kata bawaan, bukan menggantikannya.</p>
                 </div>
             </div>
@@ -526,46 +526,46 @@
                 absensi", padahal balasan otomatis memang tidak menyentuh
                 absensi sama sekali. Janji itu ikut dihapus.
             --}}
-            <div class="space-y-2 border-t border-slate-100 pt-4">
+            <div class="space-y-2 border-t border-slate-200 pt-4">
                 <div class="flex items-start justify-between gap-3">
-                    <label class="block font-bold text-slate-800 uppercase tracking-wider">Variasi Balasan Anda Sendiri</label>
-                    <span class="text-[11px] font-bold text-indigo-600 shrink-0">Tag: {nama}</span>
+                    <label class="block font-semibold text-slate-800 uppercase tracking-wider">Variasi Balasan Anda Sendiri</label>
+                    <span class="text-[11px] font-semibold text-indigo-600 shrink-0">Tag: {nama}</span>
                 </div>
-                <div class="flex items-start gap-2 text-[11px] text-slate-600 bg-slate-50 rounded-xl p-2.5">
+                <div class="flex items-start gap-2 text-[11px] text-slate-600 bg-slate-50 rounded p-2.5">
                     <span>💬</span>
                     <p>Balasan sudah berganti-ganti otomatis dari 8 kalimat bawaan, jadi kolom ini <strong>boleh dikosongkan</strong>. Isi hanya bila ingin menambah kalimat dengan gaya bahasa Anda sendiri — <strong>satu kalimat per baris</strong>. Tulis <span class="font-mono">{nama}</span> untuk menyebut nama anaknya. Kalimat Anda <strong>ditambahkan</strong>, tidak menggantikan yang bawaan.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
-                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">Untuk kabar IZIN</label>
+                        <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Untuk kabar IZIN</label>
                         <textarea name="wa_permission_template" rows="4"
                                   placeholder="Nuhun infona Bu, mugia urusan {nama} lancar.&#10;Baik Pak, izin {nama} sudah saya terima."
-                                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 font-sans focus:border-indigo-500 focus:bg-white focus:outline-none">{{ auth()->user()->wa_permission_template }}</textarea>
+                                  class="form-input form-input--sm">{{ auth()->user()->wa_permission_template }}</textarea>
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">Untuk kabar SAKIT</label>
+                        <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Untuk kabar SAKIT</label>
                         <textarea name="wa_sick_template" rows="4"
                                   placeholder="Mugia {nama} enggal damang nya Bu.&#10;Semoga {nama} lekas sehat, salam dari saya."
-                                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 font-sans focus:border-indigo-500 focus:bg-white focus:outline-none">{{ auth()->user()->wa_sick_template }}</textarea>
+                                  class="form-input form-input--sm">{{ auth()->user()->wa_sick_template }}</textarea>
                     </div>
                 </div>
             </div>
 
             <!-- TEMPLATE 2: MAGIC LINK ABSENSI BROADCAST -->
-            <div class="space-y-2 border-t border-slate-100 pt-4">
+            <div class="space-y-2 border-t border-slate-200 pt-4">
                 <div class="flex items-center justify-between">
-                    <label class="block font-bold text-slate-800 uppercase tracking-wider">Format Broadcast Magic Link Presensi Kelas</label>
-                    <span class="text-[11px] font-bold text-indigo-600">Tag: {nama_kelas}, {magic_link}, {pin}, {jam_berlaku}</span>
+                    <label class="block font-semibold text-slate-800 uppercase tracking-wider">Format Broadcast Magic Link Presensi Kelas</label>
+                    <span class="text-[11px] font-semibold text-indigo-600">Tag: {nama_kelas}, {magic_link}, {pin}, {jam_berlaku}</span>
                 </div>
                 <textarea name="wa_magic_link_template" rows="5" 
                           placeholder="Ketikkan templat pesan magic link..." 
-                          class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 font-sans focus:border-indigo-500 focus:bg-white focus:outline-none">{{ auth()->user()->wa_magic_link_template ?: "*Wali Kelas Hebat - Absensi Kelas {nama_kelas}*\n\nPetugas absensi, silakan isi kehadiran hari ini melalui tautan berikut:\n{magic_link}\n\nPIN Harian: *{pin}*\nBerlaku s/d: {jam_berlaku} WIB\n\nJangan bagikan PIN ini ke siapa pun." }}</textarea>
+                          class="form-input form-input--sm">{{ auth()->user()->wa_magic_link_template ?: "*Wali Kelas Hebat - Absensi Kelas {nama_kelas}*\n\nPetugas absensi, silakan isi kehadiran hari ini melalui tautan berikut:\n{magic_link}\n\nPIN Harian: *{pin}*\nBerlaku s/d: {jam_berlaku} WIB\n\nJangan bagikan PIN ini ke siapa pun." }}</textarea>
             </div>
 
-            <div class="flex items-center justify-end border-t border-slate-100 pt-4">
-                <button type="submit" class="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 text-xs transition-colors">
+            <div class="flex items-center justify-end border-t border-slate-200 pt-4">
+                <button type="submit" class="h-10 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 text-xs transition-colors">
                     ✓ Simpan Kata Kunci &amp; Templat WhatsApp
                 </button>
             </div>

@@ -42,7 +42,7 @@
 
 <!-- Control Bar (hidden on print) -->
 <div class="no-print mx-auto max-w-5xl p-4">
-    <div class="flex flex-wrap items-end justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-wrap items-end justify-between gap-3 card">
         <form method="GET" class="flex items-end gap-3">
             <div class="form-group">
                 <label for="bulan" class="form-label">Bulan</label>
@@ -89,11 +89,11 @@
 </div>
 
 <!-- Report Sheet -->
-<div class="lembar mx-auto max-w-[1500px] bg-white p-8 shadow-sm">
+<div class="lembar mx-auto max-w-[1500px] bg-white p-8">
 
     <!-- Header -->
     <div class="mb-5 border-b-2 border-slate-800 pb-3 text-center">
-        <h1 class="text-lg font-bold uppercase tracking-wide text-slate-900">Rekapitulasi Kehadiran Siswa</h1>
+        <h1 class="text-lg font-semibold uppercase tracking-wide text-slate-900">Rekapitulasi Kehadiran Siswa</h1>
         <p class="text-sm font-semibold uppercase text-slate-700">{{ auth()->user()->school_name ?? 'Nama Sekolah' }}</p>
         @if (auth()->user()->school_address)
             <p class="text-xs text-slate-500">{{ auth()->user()->school_address }}</p>
@@ -136,7 +136,7 @@
     </div>
 
     @if ($jumlahPertemuan === 0)
-        <div class="rounded-xl border border-amber-200 bg-amber-50 p-8 text-center text-sm text-amber-800">
+        <div class="rounded border border-amber-200 bg-amber-50 p-8 text-center text-sm text-amber-800">
             <svg class="mx-auto mb-3 h-10 w-10 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2a10 10 0 110 20 10 10 0 010-20z"/>
             </svg>
@@ -181,7 +181,7 @@
                                     // di matriks adalah penyimpangannya.
                                     $huruf = ['hadir' => '·', 'terlambat' => 'T', 'sakit' => 'S', 'izin' => 'I', 'alfa' => 'A'][$s] ?? '';
                                     $warna = match($s) {
-                                        'alfa' => 'text-rose-700 font-bold',
+                                        'alfa' => 'text-rose-700 font-semibold',
                                         'hadir' => 'text-slate-300',
                                         'terlambat' => 'text-orange-600 font-semibold',
                                         'sakit' => 'text-amber-600 font-semibold',
@@ -195,7 +195,7 @@
                             <td class="!text-center !text-orange-600">{{ $r['jumlah']['terlambat'] }}</td>
                             <td class="!text-center !text-slate-600">{{ $r['jumlah']['sakit'] }}</td>
                             <td class="!text-center !text-blue-600">{{ $r['jumlah']['izin'] }}</td>
-                            <td class="!text-center !font-bold !text-rose-700 {{ $r['jumlah']['alfa'] > 0 ? '' : '!text-slate-300' }}">
+                            <td class="!text-center !font-semibold !text-rose-700 {{ $r['jumlah']['alfa'] > 0 ? '' : '!text-slate-300' }}">
                                 {{ $r['jumlah']['alfa'] }}
                             </td>
                             <td class="!text-center !font-semibold {{ $r['persen'] >= 80 ? '!text-emerald-600' : ($r['persen'] < 70 ? '!text-rose-600' : '!text-slate-700') }}">

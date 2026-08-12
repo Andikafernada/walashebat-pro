@@ -120,9 +120,7 @@
                                             @foreach ($pilihan as $nilai => $huruf)
                                                 <label class="cursor-pointer border-r border-slate-200 last:border-r-0" title="{{ Str::title($nilai) }}">
                                                     <input type="radio" class="peer sr-only" name="attendance[{{ $st->id }}]" value="{{ $nilai }}" @checked($nilai === 'hadir')>
-                                                    <span class="block px-2.5 py-1 font-mono text-xs text-slate-500 transition-colors peer-hover:bg-slate-50
-                                                                 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500
-                                                                 peer-checked:bg-slate-900 peer-checked:text-white">{{ $huruf }}</span>
+                                                    <span class="block px-2.5 py-1 font-mono text-xs text-slate-500 transition-colors peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-checked:bg-slate-900 peer-checked:text-white">{{ $huruf }}</span>
                                                 </label>
                                             @endforeach
                                         </div>

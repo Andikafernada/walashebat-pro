@@ -27,7 +27,7 @@
 <div class="space-y-4">
 
     {{-- ============ IDENTITAS ============ --}}
-    <section class="rounded-2xl border border-slate-200">
+    <section class="rounded-lg border border-slate-200">
         <button type="button" @click="bagian = bagian === 'identitas' ? '' : 'identitas'"
                 class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
             <span>
@@ -41,7 +41,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'identitas'" data-bagian="identitas" class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'identitas'" data-bagian="identitas" class="border-t border-slate-200 p-4">
             <div class="grid gap-5">
                 <div class="form-group">
                     <label for="name" class="form-label form-label--required">Nama lengkap</label>
@@ -108,7 +108,7 @@
                     <div class="flex items-center gap-4">
                         @if ($s?->photoUrl())
                             <img src="{{ $s->photoUrl() }}" alt="Foto {{ $s->name }}"
-                                 class="h-16 w-16 rounded-2xl object-cover">
+                                 class="h-16 w-16 rounded-lg object-cover">
                         @endif
                         <input id="foto" name="foto" type="file" accept="image/*" class="form-input">
                     </div>
@@ -137,7 +137,7 @@
 
     @unless ($ajar)
     {{-- ============ DATA PRIBADI ============ --}}
-    <section class="rounded-2xl border border-slate-200">
+    <section class="rounded-lg border border-slate-200">
         <button type="button" @click="bagian = bagian === 'pribadi' ? '' : 'pribadi'"
                 class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
             <span>
@@ -151,7 +151,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'pribadi'" data-bagian="pribadi" x-cloak class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'pribadi'" data-bagian="pribadi" x-cloak class="border-t border-slate-200 p-4">
             <div class="grid gap-5">
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div class="form-group">
@@ -246,7 +246,7 @@
     </section>
 
     {{-- ============ DOMISILI ============ --}}
-    <section class="rounded-2xl border border-slate-200">
+    <section class="rounded-lg border border-slate-200">
         <button type="button" @click="bagian = bagian === 'domisili' ? '' : 'domisili'"
                 class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
             <span>
@@ -260,7 +260,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'domisili'" data-bagian="domisili" x-cloak class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'domisili'" data-bagian="domisili" x-cloak class="border-t border-slate-200 p-4">
             <div class="grid gap-5">
                 <div class="form-group">
                     <label for="address" class="form-label">Alamat</label>
@@ -313,7 +313,7 @@
     </section>
 
     {{-- ============ ORANG TUA ============ --}}
-    <section class="rounded-2xl border border-slate-200">
+    <section class="rounded-lg border border-slate-200">
         <button type="button" @click="bagian = bagian === 'ortu' ? '' : 'ortu'"
                 class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
             <span>
@@ -327,7 +327,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'ortu'" data-bagian="ortu" x-cloak class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'ortu'" data-bagian="ortu" x-cloak class="border-t border-slate-200 p-4">
             <div class="grid gap-5">
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div class="form-group">
@@ -377,7 +377,7 @@
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2">
-                    <label class="flex items-start gap-3 rounded-xl border border-slate-200 p-3">
+                    <label class="flex items-start gap-3 rounded border border-slate-200 p-3">
                         <input type="hidden" name="penerima_kip" value="0">
                         <input type="checkbox" name="penerima_kip" value="1" class="form-checkbox mt-0.5"
                                @checked(old('penerima_kip', $s?->penerima_kip ?? false))>
@@ -387,7 +387,7 @@
                         </span>
                     </label>
 
-                    <label class="flex items-start gap-3 rounded-xl border border-slate-200 p-3">
+                    <label class="flex items-start gap-3 rounded border border-slate-200 p-3">
                         <input type="hidden" name="penerima_pkh" value="0">
                         <input type="checkbox" name="penerima_pkh" value="1" class="form-checkbox mt-0.5"
                                @checked(old('penerima_pkh', $s?->penerima_pkh ?? false))>
@@ -402,7 +402,7 @@
     </section>
 
     {{-- ============ RIWAYAT SEKOLAH ============ --}}
-    <section class="rounded-2xl border border-slate-200">
+    <section class="rounded-lg border border-slate-200">
         <button type="button" @click="bagian = bagian === 'sekolah' ? '' : 'sekolah'"
                 class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
             <span>
@@ -416,7 +416,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'sekolah'" data-bagian="sekolah" x-cloak class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'sekolah'" data-bagian="sekolah" x-cloak class="border-t border-slate-200 p-4">
             <div class="grid gap-5">
                 <div class="form-group">
                     <label for="asal_sekolah" class="form-label">Asal sekolah</label>

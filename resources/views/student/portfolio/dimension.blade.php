@@ -6,7 +6,7 @@
     <!-- Header -->
     <div class="glass-card flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-slate-900">{{ $dimension->name }}</h1>
+            <h1 class="text-2xl font-semibold text-slate-900">{{ $dimension->name }}</h1>
             <p class="text-slate-500 mt-1">Riwayat catatan pada dimensi karakter ini</p>
         </div>
         <a href="{{ route('student.portfolio') }}" class="btn btn-secondary">Kembali</a>
@@ -14,9 +14,9 @@
 
     <!-- Records -->
     <div class="glass-card">
-        <h2 class="font-bold mb-4">Catatan</h2>
+        <h2 class="font-semibold mb-4">Catatan</h2>
         @forelse ($records as $record)
-            <div class="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
+            <div class="flex items-start gap-3 py-3 border-b border-slate-200 last:border-0">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center {{ $record->score > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600' }}">
                     @if ($record->score > 0)
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>

@@ -8,13 +8,13 @@
         <div class="glass-card">
             <div class="flex items-center gap-4 mb-6">
                 <a href="{{ route('classes.character-portfolio.student', [$class, $student]) }}"
-                   class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                   class="p-2 rounded hover:bg-slate-100 transition-colors">
                     <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                 </a>
                 <div>
-                    <h2 class="text-xl font-bold text-slate-900">Tambah Catatan Karakter</h2>
+                    <h2 class="text-xl font-semibold text-slate-900">Tambah Catatan Karakter</h2>
                     <p class="text-sm text-slate-500">{{ $student->name }}</p>
                 </div>
             </div>
@@ -83,7 +83,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 p-3 bg-slate-50 rounded-xl">
+                <div class="flex items-center gap-2 p-3 bg-slate-50 rounded">
                     <input type="checkbox" name="notify_parent" value="1" id="notify_parent" class="form-checkbox">
                     <label for="notify_parent" class="text-sm text-slate-600">
                         Kirim notifikasi ke orang tua via WhatsApp

@@ -47,7 +47,7 @@
                             <td class="td--mono">{{ $s->nis ?? '—' }}</td>
                             <td>
                                 <div class="flex items-center gap-2">
-                                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
                                         {{ strtoupper(substr($s->name, 0, 1)) }}
                                     </div>
                                     <span class="font-medium text-slate-900">{{ $s->name }}</span>

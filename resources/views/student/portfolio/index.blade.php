@@ -5,7 +5,7 @@
 <div class="p-6 lg:p-8 space-y-6">
     <!-- Header -->
     <div class="glass-card">
-        <h1 class="text-2xl font-bold text-slate-900">Portofolio Karakter</h1>
+        <h1 class="text-2xl font-semibold text-slate-900">Portofolio Karakter</h1>
         <p class="text-slate-500 mt-1">Catat pencapaian dan refleksi dirimu</p>
     </div>
 
@@ -30,7 +30,7 @@
     <!-- Badges -->
     @if($badges->where('is_earned', true)->isNotEmpty())
         <div class="glass-card">
-            <h2 class="font-bold mb-4">Badge Diraih</h2>
+            <h2 class="font-semibold mb-4">Badge Diraih</h2>
             <div class="flex flex-wrap gap-3">
                 @foreach($badges->where('is_earned', true) as $badge)
                     <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
@@ -44,9 +44,9 @@
 
     <!-- Records -->
     <div class="glass-card">
-        <h2 class="font-bold mb-4">Catatan Terbaru</h2>
+        <h2 class="font-semibold mb-4">Catatan Terbaru</h2>
         @forelse($records as $record)
-            <div class="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
+            <div class="flex items-start gap-3 py-3 border-b border-slate-200 last:border-0">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center {{ $record->score > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600' }}">
                     @if($record->score > 0)
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -76,8 +76,8 @@
 <div id="modal-achievement" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/50" onclick="this.closest('.fixed').classList.add('hidden')"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h3 class="text-lg font-bold mb-4">Catat Pencapaian</h3>
+        <div class="bg-white rounded shadow-xl w-full max-w-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Catat Pencapaian</h3>
             <form action="{{ route('student.portfolio.achievement') }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
@@ -114,8 +114,8 @@
 <div id="modal-reflection" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/50" onclick="this.closest('.fixed').classList.add('hidden')"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-lg font-bold mb-4">Refleksi Harian</h3>
+        <div class="bg-white rounded shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-semibold mb-4">Refleksi Harian</h3>
             <form action="{{ route('student.reflection.store') }}" method="POST" class="space-y-4">
                 @csrf
                 {{-- Modal ini khusus refleksi harian: tanggal & periode tidak ditanyakan

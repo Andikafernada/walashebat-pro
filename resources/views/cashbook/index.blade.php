@@ -9,19 +9,17 @@
 
 <div class="space-y-6 pb-12">
     <!-- Header Bar -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('classes.index') }}" class="hover:text-indigo-600 transition-colors">Kelas</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-indigo-600 transition-colors">{{ $classroom->name }}</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">Buku Kas Digital</span>
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="min-w-0">
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-slate-600">{{ $classroom->name }}</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Buku Kas</span>
             </nav>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">
-                Buku Kas Kelas {{ $classroom->name }}
-            </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Pencatatan uang kas masuk dan keluar beserta laporan keuangan transparan.</p>
+            <h1 class="mt-1 text-xl font-semibold tracking-tight text-slate-900">Buku Kas Kelas {{ $classroom->name }}</h1>
+            <p class="mt-1 text-sm text-slate-500">Pencatatan uang kas masuk dan keluar beserta laporannya.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -29,20 +27,9 @@
                  yang tepat untuk mempertanggungjawabkan saldo, tetapi tidak
                  bisa menjawab "siapa yang belum bayar?" tanpa dijumlahkan
                  sendiri per anak. --}}
-            <a href="{{ route('classes.cashbook.per-siswa', $classroom) }}"
-               class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100">
-                👥 Kas per Siswa
-            </a>
-            <a href="{{ route('classes.exports.cashbook.excel', $classroom) }}"
-               class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
-                <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                Excel
-            </a>
-            <a href="{{ route('classes.exports.cashbook.pdf', $classroom) }}" target="_blank"
-               class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
-                <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                Cetak PDF
-            </a>
+            <a href="{{ route('classes.cashbook.per-siswa', $classroom) }}" class="btn-secondary btn-secondary--sm">Kas per Siswa</a>
+            <a href="{{ route('classes.exports.cashbook.excel', $classroom) }}" class="btn-secondary btn-secondary--sm">Excel</a>
+            <a href="{{ route('classes.exports.cashbook.pdf', $classroom) }}" target="_blank" class="btn-secondary btn-secondary--sm">Cetak PDF</a>
         </div>
     </div>
 
@@ -53,49 +40,43 @@
     @include('partials.flash')
 
     <!-- Balance Banner Card -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Saldo Kas Saat Ini</span>
-                <p class="mt-1 text-3xl font-semibold tracking-tight {{ $balance < 0 ? 'text-rose-600' : 'text-emerald-600' }}">
-                    Rp {{ number_format($balance, 0, ',', '.') }}
-                </p>
-                <p class="text-xs text-slate-400 mt-0.5">Posisi keuangan terkini Kelas {{ $classroom->name }}</p>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl {{ $balance < 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600' }} shadow-xs">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                </div>
-            </div>
+    <dl class="deret-angka">
+        <div>
+            <dt class="stat-label">Saldo kas saat ini</dt>
+            <dd class="stat-value {{ $balance < 0 ? 'text-rose-700' : 'text-emerald-700' }}">Rp {{ number_format($balance, 0, ',', '.') }}</dd>
+            <p class="stat-sub">Posisi terkini Kelas {{ $classroom->name }}</p>
         </div>
-    </div>
+        <div>
+            <dt class="stat-label">Transaksi tercatat</dt>
+            <dd class="stat-value">{{ $entries->total() }}</dd>
+        </div>
+    </dl>
 
     <!-- Main Two-Column Layout -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         
         <!-- LEFT COLUMN: Cash Transactions List (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
-            <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
+            <div class="card space-y-4">
                 
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">Mutasi Transaksi Kas</h3>
+                        <h3 class="text-base font-semibold text-slate-900">Mutasi Transaksi Kas</h3>
                         <p class="text-xs text-slate-500">Daftar riwayat pemasukan dan pengeluaran</p>
                     </div>
                     <span class="text-xs font-semibold text-slate-400">{{ $entries->total() }} Transaksi</span>
                 </div>
 
                 @if ($entries->isNotEmpty())
-                    <div class="divide-y divide-slate-100">
+                    <div class="divide-y divide-slate-200">
                         @foreach ($entries as $e)
-                            <div class="flex items-center justify-between gap-4 py-3 hover:bg-slate-50/80 px-2 rounded-xl transition-colors">
+                            <div class="flex items-center justify-between gap-4 py-3 hover:bg-slate-50 px-2 rounded transition-colors">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold text-xs {{ $e->type === 'in' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200' }}">
+                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded font-semibold text-xs {{ $e->type === 'in' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200' }}">
                                         {{ $e->type === 'in' ? '+' : '-' }}
                                     </div>
                                     <div>
-                                        <h4 class="font-bold text-sm text-slate-900">{{ $e->description }}</h4>
+                                        <h4 class="font-semibold text-sm text-slate-900">{{ $e->description }}</h4>
                                         <p class="text-xs text-slate-500 mt-0.5">
                                             <span class="font-mono text-slate-400">{{ $e->transaction_date->format('d/m/Y') }}</span>
                                             @if($e->student)
@@ -106,7 +87,7 @@
                                 </div>
 
                                 <div class="flex items-center gap-3">
-                                    <span class="font-bold text-sm font-mono {{ $e->type === 'in' ? 'text-emerald-700' : 'text-rose-700' }}">
+                                    <span class="font-semibold text-sm font-mono {{ $e->type === 'in' ? 'text-emerald-700' : 'text-rose-700' }}">
                                         {{ $e->type === 'in' ? '+' : '-' }} Rp {{ number_format($e->amount, 0, ',', '.') }}
                                     </span>
 
@@ -123,17 +104,17 @@
                     </div>
 
                     @if ($entries->hasPages())
-                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                        <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
                             <span>Menampilkan {{ $entries->firstItem() }}–{{ $entries->lastItem() }} dari {{ $entries->total() }} transaksi</span>
                             <div>{{ $entries->links() }}</div>
                         </div>
                     @endif
                 @else
                     <div class="my-10 text-center">
-                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500 mb-3">
+                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 mb-3">
                             <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </div>
-                        <p class="text-sm font-bold text-slate-800">Belum Ada Transaksi Kas</p>
+                        <p class="text-sm font-semibold text-slate-800">Belum Ada Transaksi Kas</p>
                         <p class="mt-1 text-xs text-slate-500">Input transaksi pemasukan kas mingguan atau pengeluaran kelas di form sebelah kanan.</p>
                     </div>
                 @endif
@@ -152,13 +133,13 @@
                 teknisnya — kalau suatu saat memang diinginkan, itu percakapan
                 tersendiri, bukan kotak centang.
             --}}
-            <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
+            <div class="card space-y-4">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                    <div class="flex h-10 w-10 items-center justify-center rounded bg-emerald-100 text-emerald-700">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-slate-900">Pengingat Iuran Bulanan</h3>
+                        <h3 class="text-sm font-semibold text-slate-900">Pengingat Iuran Bulanan</h3>
                         <p class="text-xs text-slate-500">Terkirim otomatis ke grup WhatsApp orang tua</p>
                     </div>
                 </div>
@@ -166,27 +147,27 @@
                 @if (! $classroom->parent_group_wa)
                     {{-- Tanpa grup, kotak centang ini hanya janji yang tidak
                          pernah ditepati dan tidak ada galat yang menjelaskannya. --}}
-                    <p class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                    <p class="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
                         Grup WhatsApp orang tua kelas ini belum diatur, jadi pengingat belum bisa dikirim.
-                        Aturlah lebih dulu di <a href="{{ route('whatsapp.index') }}" class="font-bold underline">Integrasi WhatsApp</a>.
+                        Aturlah lebih dulu di <a href="{{ route('whatsapp.index') }}" class="font-semibold underline">Integrasi WhatsApp</a>.
                     </p>
                 @else
                     <form method="POST" action="{{ route('classes.cashbook.pengingat', $classroom) }}" class="space-y-3">
                         @csrf
 
-                        <label class="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <label class="flex items-center gap-2.5 rounded border border-slate-200 bg-slate-50 p-3">
                             <input type="hidden" name="spp_pengingat_aktif" value="0">
                             <input type="checkbox" name="spp_pengingat_aktif" value="1"
                                    @checked($classroom->spp_pengingat_aktif)
                                    class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                            <span class="text-xs font-bold text-slate-800">Kirim pengingat tiap bulan</span>
+                            <span class="text-xs font-semibold text-slate-800">Kirim pengingat tiap bulan</span>
                         </label>
 
                         <div>
-                            <label for="spp_pengingat_tanggal" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Tanggal kirim</label>
+                            <label for="spp_pengingat_tanggal" class="block eyebrow mb-1">Tanggal kirim</label>
                             <input id="spp_pengingat_tanggal" type="number" name="spp_pengingat_tanggal" min="1" max="31"
                                    value="{{ old('spp_pengingat_tanggal', $classroom->spp_pengingat_tanggal) }}"
-                                   class="h-9 w-24 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none">
+                                   class="h-9 w-24 rounded border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-800 focus:border-emerald-500 focus:outline-none">
                             <span class="text-[11px] text-slate-500">tiap bulan, pukul 07.00</span>
                             {{-- Bulan pendek tidak punya tanggal 31; pengingatnya
                                  jatuh ke hari terakhir alih-alih hilang. --}}
@@ -194,10 +175,10 @@
                         </div>
 
                         <div>
-                            <label for="spp_pengingat_teks" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Isi pesan</label>
+                            <label for="spp_pengingat_teks" class="block eyebrow mb-1">Isi pesan</label>
                             <textarea id="spp_pengingat_teks" name="spp_pengingat_teks" rows="6" maxlength="1000"
                                       placeholder="Kosongkan untuk memakai pesan bawaan."
-                                      class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 focus:border-emerald-500 focus:bg-white focus:outline-none">{{ old('spp_pengingat_teks', $classroom->spp_pengingat_teks) }}</textarea>
+                                      class="form-input form-input--sm">{{ old('spp_pengingat_teks', $classroom->spp_pengingat_teks) }}</textarea>
                             <p class="mt-1 text-[11px] text-slate-500">
                                 Bisa dipakai: <code>{nama_kelas}</code> <code>{bulan}</code> <code>{tahun}</code> <code>{wali_kelas}</code>
                             </p>
@@ -209,21 +190,21 @@
                             </p>
                         @endif
 
-                        <button type="submit" class="h-9 w-full rounded-xl bg-emerald-600 text-xs font-bold text-white transition-colors hover:bg-emerald-700">
+                        <button type="submit" class="h-9 w-full rounded bg-emerald-600 text-xs font-semibold text-white transition-colors hover:bg-emerald-700">
                             Simpan pengaturan pengingat
                         </button>
                     </form>
                 @endif
             </div>
 
-            <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
+            <div class="card space-y-4">
                 
-                <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl text-white">
+                <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded text-white">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-slate-900">Catat Transaksi Kas</h3>
+                        <h3 class="text-sm font-semibold text-slate-900">Catat Transaksi Kas</h3>
                         <p class="text-xs text-slate-500">Input Pemasukan / Pengeluaran</p>
                     </div>
                 </div>
@@ -232,31 +213,31 @@
                     @csrf
 
                     <div>
-                        <label for="type" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Jenis Transaksi</label>
-                        <select id="type" name="type" required class="h-9 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        <label for="type" class="form-label">Jenis Transaksi</label>
+                        <select id="type" name="type" required class="form-input form-input--sm">
                             <option value="in">Pemasukan (Kas Masuk)</option>
                             <option value="out">Pengeluaran (Kas Keluar)</option>
                         </select>
                     </div>
 
                     <div>
-                        <label for="amount" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Jumlah (Rp)</label>
-                        <input type="number" id="amount" name="amount" value="{{ old('amount') }}" placeholder="cth: 5000" min="1" required class="h-9 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        <label for="amount" class="form-label">Jumlah (Rp)</label>
+                        <input type="number" id="amount" name="amount" value="{{ old('amount') }}" placeholder="cth: 5000" min="1" required class="form-input form-input--sm">
                     </div>
 
                     <div>
-                        <label for="transaction_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tanggal Transaksi</label>
-                        <input type="date" id="transaction_date" name="transaction_date" value="{{ date('Y-m-d') }}" required class="h-9 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        <label for="transaction_date" class="form-label">Tanggal Transaksi</label>
+                        <input type="date" id="transaction_date" name="transaction_date" value="{{ date('Y-m-d') }}" required class="form-input form-input--sm">
                     </div>
 
                     <div>
-                        <label for="description" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Keterangan / Keperluan</label>
-                        <input type="text" id="description" name="description" value="{{ old('description') }}" placeholder="cth: Kas Mingguan, Beli Spidol..." required class="h-9 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        <label for="description" class="form-label">Keterangan / Keperluan</label>
+                        <input type="text" id="description" name="description" value="{{ old('description') }}" placeholder="cth: Kas Mingguan, Beli Spidol..." required class="form-input form-input--sm">
                     </div>
 
                     <div>
-                        <label for="student_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Siswa Pembayar <span class="text-slate-400 font-normal lowercase">(opsional)</span></label>
-                        <select id="student_id" name="student_id" class="h-9 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        <label for="student_id" class="form-label">Siswa Pembayar <span class="text-slate-400 font-normal lowercase">(opsional)</span></label>
+                        <select id="student_id" name="student_id" class="form-input form-input--sm">
                             <option value="">— Umum / Tidak Ditentukan —</option>
                             @foreach ($students as $st)
                                 <option value="{{ $st->id }}" @selected(old('student_id') == $st->id)>{{ $st->name }}</option>
@@ -265,7 +246,7 @@
                     </div>
 
                     <button type="submit" :disabled="loading"
-                            class="h-10 w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors flex items-center justify-center gap-2">
+                            class="h-10 w-full rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2">
                         <template x-if="!loading">
                             <span class="flex items-center gap-1.5">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

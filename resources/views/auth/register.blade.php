@@ -64,7 +64,7 @@
 
     <!-- Header -->
     <div class="text-center mb-8">
-        <h2 class="text-2xl font-bold text-slate-900">Buat akun gratis</h2>
+        <h2 class="text-2xl font-semibold text-slate-900">Buat akun gratis</h2>
         <p class="mt-2 text-sm text-slate-500">Bergabung dengan 500+ guru Indonesia</p>
     </div>
 
@@ -86,19 +86,19 @@
 
     <!-- Benefits -->
     <div class="grid grid-cols-3 gap-2 mb-8">
-        <div class="p-3 rounded-xl bg-slate-50 text-center">
+        <div class="p-3 rounded bg-slate-50 text-center">
             <svg class="w-6 h-6 mx-auto mb-1 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <p class="text-xs text-slate-600 font-medium">Absensi WA</p>
         </div>
-        <div class="p-3 rounded-xl bg-slate-50 text-center">
+        <div class="p-3 rounded bg-slate-50 text-center">
             <svg class="w-6 h-6 mx-auto mb-1 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
             <p class="text-xs text-slate-600 font-medium">Laporan</p>
         </div>
-        <div class="p-3 rounded-xl bg-slate-50 text-center">
+        <div class="p-3 rounded bg-slate-50 text-center">
             <svg class="w-6 h-6 mx-auto mb-1 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
             </svg>
@@ -143,7 +143,7 @@
                     required
                     autocomplete="name"
                     placeholder="Drs. Budi Santoso"
-                    class="input-animate pl-12 pr-4 py-3.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('name') border-red-300 focus:border-red-500 @enderror"
+                    class="input-animate pl-12 pr-4 py-3.5 block w-full rounded border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('name') border-red-300 focus:border-red-500 @enderror"
                 >
             </div>
             @error('name')
@@ -171,7 +171,7 @@
                     required
                     autocomplete="email"
                     placeholder="budi@sekolah.sch.id"
-                    class="input-animate pl-12 pr-4 py-3.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('email') border-red-300 @enderror"
+                    class="input-animate pl-12 pr-4 py-3.5 block w-full rounded border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('email') border-red-300 @enderror"
                 >
             </div>
             @error('email')
@@ -201,7 +201,7 @@
                     autocomplete="tel"
                     placeholder="8123456789"
                     pattern="[0-9]{9,13}"
-                    class="input-animate pl-12 pr-4 py-3.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('whatsapp_number') border-red-300 @enderror"
+                    class="input-animate pl-12 pr-4 py-3.5 block w-full rounded border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('whatsapp_number') border-red-300 @enderror"
                 >
             </div>
             @error('whatsapp_number')
@@ -236,7 +236,7 @@
                     autocomplete="new-password"
                     placeholder="Minimal 8 karakter"
                     minlength="8"
-                    class="input-animate pl-12 pr-12 py-3.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('password') border-red-300 @enderror"
+                    class="input-animate pl-12 pr-12 py-3.5 block w-full rounded border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('password') border-red-300 @enderror"
                 >
                 <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-4 flex items-center">
                     <svg x-show="!showPassword" class="w-5 h-5 text-slate-400 hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,7 +284,7 @@
                     required
                     autocomplete="new-password"
                     placeholder="Ulangi kata sandi"
-                    class="input-animate pl-12 pr-12 py-3.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white"
+                    class="input-animate pl-12 pr-12 py-3.5 block w-full rounded border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white"
                 >
                 <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute inset-y-0 right-0 pr-4 flex items-center">
                     <svg x-show="!showConfirmPassword" class="w-5 h-5 text-slate-400 hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -95,9 +95,7 @@
                                 <input type="radio" class="peer sr-only"
                                        name="attendance[{{ $s->id }}]" value="{{ $key }}" required
                                        x-model="status" @checked($terpilih === $key)>
-                                <span class="flex flex-col items-center gap-0.5 rounded border border-slate-200 px-0.5 py-1.5 text-center leading-tight text-slate-500 transition-colors
-                                             peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500
-                                             peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white">
+                                <span class="flex flex-col items-center gap-0.5 rounded border border-slate-200 px-0.5 py-1.5 text-center leading-tight text-slate-500 transition-colors peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white">
                                     <span class="font-mono text-xs font-medium">{{ $g['kode'] }}</span>
                                     <span class="text-[10px] font-medium">{{ $g['label'] }}</span>
                                 </span>
@@ -143,7 +141,7 @@
             <p class="empty-state__title">Belum ada siswa aktif</p>
         </div>
     @else
-        <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-lg sm:border sm:px-4">
+        <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-slate-200 bg-slate-50/95 px-4 py-3 sm:mx-0 sm:rounded-lg sm:border sm:px-4">
             <button type="submit" class="btn-primary w-full py-3.5"
                     x-bind:disabled="mengirim" x-bind:class="mengirim && 'pointer-events-none opacity-60'">
                 <span x-show="!mengirim">Simpan koreksi</span>

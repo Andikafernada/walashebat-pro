@@ -2,7 +2,7 @@
 @section('title', 'Atur Ulang Kata Sandi')
 @section('content')
 
-    <h2 class="mb-1 text-xl font-bold text-slate-900">Buat kata sandi baru</h2>
+    <h2 class="mb-1 text-xl font-semibold text-slate-900">Buat kata sandi baru</h2>
     <p class="mb-8 text-sm text-slate-500">
         Cek WhatsApp Anda untuk kode OTP, lalu masukkan kata sandi baru.
     </p>
@@ -29,7 +29,7 @@
                 required
                 maxlength="6"
                 placeholder="cth: 123456"
-                class="form-input text-center text-2xl font-bold tracking-[0.5em]"
+                class="form-input text-center text-2xl font-semibold tracking-[0.5em]"
                 style="letter-spacing: 0.5em;"
             >
             <p class="form-hint mt-1.5">Kode 6 digit dari pesan WhatsApp yang dikirim ke nomor Anda.</p>

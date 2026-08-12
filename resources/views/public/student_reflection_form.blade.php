@@ -19,10 +19,10 @@
 <div class="max-w-xl mx-auto space-y-6">
 
     <!-- Header Banner -->
-    <div class="rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+    <div class="rounded-lg p-6 text-white shadow-xl relative overflow-hidden">
         <div class="absolute right-0 top-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-purple-500/10 blur-2xl"></div>
         <div class="relative z-10 space-y-1">
-            <span class="inline-block rounded-full bg-purple-500/30 px-3 py-1 text-[10px] font-bold tracking-wider uppercase text-purple-200 border border-purple-400/30">
+            <span class="inline-block rounded-full bg-purple-500/30 px-3 py-1 text-[10px] font-semibold tracking-wider uppercase text-purple-200 border border-purple-400/30">
                 Jurnal Refleksi Mandiri (P5)
             </span>
             <h1 class="text-2xl font-semibold text-white">Profil Pelajar Pancasila</h1>
@@ -31,8 +31,8 @@
     </div>
 
     @if (session('success_public'))
-        <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-xs font-bold text-emerald-900 flex items-center gap-3 shadow-sm">
-            <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500 text-white font-bold shrink-0">✓</div>
+        <div class="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-xs font-semibold text-emerald-900 flex items-center gap-3">
+            <div class="flex h-8 w-8 items-center justify-center rounded bg-emerald-500 text-white font-semibold shrink-0">✓</div>
             <div>{{ session('success_public') }}</div>
         </div>
     @endif
@@ -40,8 +40,8 @@
     {{-- Halaman berdiri sendiri, tanpa blok ini kegagalan validasi tidak terlihat
          sama sekali: halaman hanya termuat ulang seolah tidak terjadi apa-apa. --}}
     @if ($errors->any())
-        <div class="rounded-2xl border border-rose-300 bg-rose-50 p-4 shadow-sm" role="alert">
-            <p class="text-xs font-bold text-rose-900">Refleksi belum bisa dikirim:</p>
+        <div class="rounded-lg border border-rose-300 bg-rose-50 p-4" role="alert">
+            <p class="text-xs font-semibold text-rose-900">Refleksi belum bisa dikirim:</p>
             <ul class="mt-1.5 space-y-1 text-xs text-rose-800">
                 @foreach ($errors->all() as $pesan)
                     <li>{{ $pesan }}</li>
@@ -51,13 +51,13 @@
     @endif
 
     <!-- Form Card -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 space-y-5">
+    <div class="card space-y-5">
         <form method="POST" action="{{ route('public.reflection.store', $class) }}" class="space-y-4" x-data="{ rating: {{ (int) old('self_rating', 5) }} }">
             @csrf
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Pilih Nama Siswa *</label>
-                <select name="student_id" required class="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-800 focus:border-indigo-500 focus:outline-none">
+                <label class="form-label">Pilih Nama Siswa *</label>
+                <select name="student_id" required class="form-input form-input--sm">
                     <option value="">-- Pilih Nama Anda --</option>
                     @foreach ($students as $st)
                         <option value="{{ $st->id }}" @selected(old('student_id') == $st->id)>{{ $st->name }} (NIS: {{ $st->nis ?: '-' }})</option>
@@ -66,12 +66,12 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Dimensi Karakter *</label>
+                <label class="form-label">Dimensi Karakter *</label>
                 @if ($dimensions->isEmpty())
                     {{-- Tanpa blok ini isiannya hanya kotak kosong: siswa tidak bisa
                          mengirim dan tidak tahu mengapa, padahal penyebabnya ada di
                          sisi wali kelas. --}}
-                    <p class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                    <p class="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
                         Daftar dimensi karakter belum disiapkan wali kelas, sehingga refleksi belum bisa dikirim.
                         Mohon hubungi wali kelas Anda.
                     </p>
@@ -81,7 +81,7 @@
                          atribut required jadi tidak berarti, siswa yang melewati isian
                          ini terkirim dengan dimensi yang tidak pernah ia pilih, dan
                          setiap kegagalan validasi mengembalikannya ke pilihan itu lagi. --}}
-                    <select name="character_dimension_id" required class="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-800 focus:border-indigo-500 focus:outline-none">
+                    <select name="character_dimension_id" required class="form-input form-input--sm">
                         <option value="">-- Pilih Dimensi Karakter --</option>
                         @foreach ($dimensions as $dim)
                             <option value="{{ $dim->id }}" @selected(old('character_dimension_id') == $dim->id)>{{ $dim->name }} ({{ $dim->code }})</option>
@@ -91,7 +91,7 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Penilaian Diri Sendiri (1 - 5 Bintang) *</label>
+                <label class="form-label">Penilaian Diri Sendiri (1 - 5 Bintang) *</label>
                 <div class="flex items-center gap-2 py-1">
                     <template x-for="i in 5">
                         <button type="button" @click="rating = i" class="text-2xl transition-transform" :class="i <= rating ? 'text-amber-400' : 'text-slate-300'">
@@ -99,23 +99,23 @@
                         </button>
                     </template>
                     <input type="hidden" name="self_rating" :value="rating">
-                    <span class="text-xs font-bold text-slate-600 ml-2" x-text="rating + ' / 5 Bintang'"></span>
+                    <span class="text-xs font-semibold text-slate-600 ml-2" x-text="rating + ' / 5 Bintang'"></span>
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">1. Hal Baik yang Sudah Dilakukan *</label>
-                <textarea name="what_went_well" rows="2" required placeholder="cth: Saya selalu hadir tepat waktu dan membantu menyapu kelas..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">{{ old('what_went_well') }}</textarea>
+                <label class="form-label">1. Hal Baik yang Sudah Dilakukan *</label>
+                <textarea name="what_went_well" rows="2" required placeholder="cth: Saya selalu hadir tepat waktu dan membantu menyapu kelas..." class="form-input form-input--sm">{{ old('what_went_well') }}</textarea>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">2. Hal yang Masih Perlu Ditingkatkan *</label>
-                <textarea name="what_to_improve" rows="2" required placeholder="cth: Saya masih suka mengobrol saat pelajaran berlangsung..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">{{ old('what_to_improve') }}</textarea>
+                <label class="form-label">2. Hal yang Masih Perlu Ditingkatkan *</label>
+                <textarea name="what_to_improve" rows="2" required placeholder="cth: Saya masih suka mengobrol saat pelajaran berlangsung..." class="form-input form-input--sm">{{ old('what_to_improve') }}</textarea>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">3. Rencana Aksi Perubahan Sikap *</label>
-                <textarea name="action_plan" rows="2" required placeholder="cth: Saya akan fokus mendengarkan penjelasan guru dan duduk di barisan depan..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">{{ old('action_plan') }}</textarea>
+                <label class="form-label">3. Rencana Aksi Perubahan Sikap *</label>
+                <textarea name="action_plan" rows="2" required placeholder="cth: Saya akan fokus mendengarkan penjelasan guru dan duduk di barisan depan..." class="form-input form-input--sm">{{ old('action_plan') }}</textarea>
             </div>
 
             {{-- Tiga isian di atas seluruhnya penilaian diri sendiri, dan
@@ -125,8 +125,8 @@
                  Sengaja boleh dikosongkan: anak yang merasa tidak punya teman
                  dekat tidak boleh terkunci di formulir ini gara-gara satu
                  pertanyaan yang menyakitkan untuk dijawab. --}}
-            <div class="rounded-xl border border-sky-200 bg-sky-50/60 p-3 space-y-1.5">
-                <label for="kesan_teman" class="block text-xs font-bold uppercase tracking-wider text-sky-900">
+            <div class="rounded border border-sky-200 bg-sky-50/60 p-3 space-y-1.5">
+                <label for="kesan_teman" class="block text-xs font-semibold uppercase tracking-wider text-sky-900">
                     👥 Menurut Temanmu, Kamu Itu Seperti Apa? *
                 </label>
                 {{-- Kalimat kedua bukan basa-basi: pertanyaannya wajib, jadi ia
@@ -139,14 +139,14 @@
                 </p>
                 <textarea id="kesan_teman" name="kesan_teman" rows="3" maxlength="1000" minlength="10" required
                           placeholder="cth: Kata Rina aku orangnya asyik dan suka bantu, tapi kadang suka memotong pembicaraan orang."
-                          class="w-full rounded-xl border border-sky-200 bg-white p-2.5 text-xs text-slate-800 focus:border-sky-500 focus:outline-none">{{ old('kesan_teman') }}</textarea>
+                          class="w-full rounded border border-sky-200 bg-white p-2.5 text-xs text-slate-800 focus:border-sky-500 focus:outline-none">{{ old('kesan_teman') }}</textarea>
             </div>
 
             {{-- Ditujukan kepada orang tua, bukan kepada diri sendiri maupun wali
                  kelas seperti tiga isian di atas. Karena itu disimpan dan
                  ditampilkan terpisah. --}}
-            <div class="rounded-xl border border-amber-200 bg-amber-50/60 p-3 space-y-1.5">
-                <label for="pesan_ortu" class="block text-xs font-bold text-amber-900 uppercase tracking-wider">
+            <div class="rounded border border-amber-200 bg-amber-50/60 p-3 space-y-1.5">
+                <label for="pesan_ortu" class="block text-xs font-semibold text-amber-900 uppercase tracking-wider">
                     💌 Pesan untuk Orang Tua *
                 </label>
                 <p class="text-[10px] text-amber-800">
@@ -154,10 +154,10 @@
                 </p>
                 <textarea id="pesan_ortu" name="pesan_ortu" rows="3" maxlength="1000" minlength="10" required
                           placeholder="cth: Terima kasih Ayah Ibu sudah sabar. Aku janji akan lebih rajin belajar dan membantu di rumah."
-                          class="w-full rounded-xl border border-amber-200 bg-white p-2.5 text-xs text-slate-800 focus:border-amber-500 focus:outline-none">{{ old('pesan_ortu') }}</textarea>
+                          class="w-full rounded border border-amber-200 bg-white p-2.5 text-xs text-slate-800 focus:border-amber-500 focus:outline-none">{{ old('pesan_ortu') }}</textarea>
             </div>
 
-            <button type="submit" class="h-10 w-full rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors">
+            <button type="submit" class="h-10 w-full rounded bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-colors">
                 ✓ Kirim Refleksi Karakter ke Wali Kelas
             </button>
         </form>

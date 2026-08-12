@@ -99,8 +99,7 @@
                 @php $ini = $jenisDipilih === $nilai; @endphp
                 <a href="{{ route('dashboard', $nilai ? ['jenis' => $nilai] : []) }}"
                    @if($ini) aria-current="page" @endif
-                   class="flex items-center gap-1.5 border-r border-slate-200 px-3 py-1.5 text-xs font-medium transition-colors last:border-r-0
-                          {{ $ini ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50' }}">
+                   class="flex items-center gap-1.5 border-r border-slate-200 px-3 py-1.5 text-xs font-medium transition-colors last:border-r-0 {{ $ini ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50' }}">
                     {{ $label }}
                     <span class="font-mono text-[10px] {{ $ini ? 'text-slate-300' : 'text-slate-400' }}">{{ $jumlah }}</span>
                 </a>

@@ -219,7 +219,7 @@
 </head>
 <body class="min-h-screen antialiased">
 
-    <a href="#fitur" class="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-[color:var(--tinta)] focus:text-white focus:font-bold">
+    <a href="#fitur" class="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-[color:var(--tinta)] focus:text-white focus:font-semibold">
         Lewati ke konten
     </a>
 

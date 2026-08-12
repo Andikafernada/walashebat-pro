@@ -19,17 +19,17 @@
          Sebelum itu jangan mengaku tahu: grup yang sudah tersimpan ditampilkan
          tanpa memindai, dan menuduh "belum tersambung" di situ akan keliru. --}}
     <template x-if="! memuat && dipindai && ! tersambung">
-        <div class="mt-1 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-800 flex items-center justify-between">
+        <div class="mt-1 rounded border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-800 flex items-center justify-between">
             <div>
-                <span class="font-bold block text-amber-900">Perangkat WhatsApp Belum Tersambung</span>
+                <span class="font-semibold block text-amber-900">Perangkat WhatsApp Belum Tersambung</span>
                 Tautkan nomor WhatsApp Anda di menu Perangkat WA untuk memilih grup.
             </div>
-            <a href="{{ route('whatsapp.index') }}" class="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-700">Tautkan WA</a>
+            <a href="{{ route('whatsapp.index') }}" class="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700">Tautkan WA</a>
         </div>
     </template>
 
     <template x-if="! memuat && dipindai && tersambung && grup.length === 0">
-        <div class="mt-1 rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-xs text-slate-600">
+        <div class="mt-1 rounded border border-slate-200 bg-slate-50 p-3.5 text-xs text-slate-600">
             Tidak ada grup ditemukan pada akun WhatsApp Anda. Pastikan nomor Anda tergabung di grup kelas.
         </div>
     </template>
@@ -49,15 +49,15 @@
     --}}
     <template x-if="! memuat && locked && terpilih">
     <div class="mt-1">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-indigo-200 p-3.5 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded border border-indigo-200 p-3.5">
             <div class="flex items-center gap-3">
-                <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-xs">
+                <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-indigo-900" x-text="namaGrupTerpilih()"></span>
-                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                        <span class="text-xs font-semibold text-indigo-900" x-text="namaGrupTerpilih()"></span>
+                        <span class="inline-flex items-center gap-1 rounded-sm bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
                             🔒 Terkunci
                         </span>
                     </div>
@@ -67,12 +67,12 @@
             
             <div class="flex items-center gap-2">
                 <button type="button" @click="uji()" :disabled="menguji"
-                        class="rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">
+                        class="rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">
                     <span x-text="menguji ? 'Mengirim…' : 'Kirim Pesan Uji'"></span>
                 </button>
                 {{-- Di sinilah — dan hanya di sini — pemindaian grup dimulai. --}}
                 <button type="button" @click="ubah()"
-                        class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 transition-colors">
+                        class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors">
                     Ubah Pilihan
                 </button>
             </div>
@@ -89,14 +89,14 @@
         <div class="flex items-center gap-2">
             <select id="parent_group_wa" name="parent_group_wa"
                     x-model="terpilih"
-                    class="w-full rounded-xl border-slate-200 text-xs focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+                    class="w-full rounded border-slate-200 text-xs focus:border-indigo-500 focus:ring-indigo-500 bg-white">
                 <option value="">— Tidak Mengirim Rekap ke Grup WhatsApp —</option>
                 <template x-for="g in grup" :key="g.id">
                     <option :value="g.id" x-text="g.subject + ' (' + g.peserta + ' Anggota)'"></option>
                 </template>
             </select>
             <template x-if="terpilih">
-                <button type="button" @click="locked = true" class="shrink-0 rounded-xl bg-slate-800 px-3 py-2 text-xs font-bold text-white hover:bg-slate-900">
+                <button type="button" @click="locked = true" class="shrink-0 rounded bg-slate-800 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-900">
                     Kunci Pilihan
                 </button>
             </template>

@@ -14,7 +14,7 @@
                 <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 <span class="text-slate-700 font-semibold">Denah Tempat Duduk</span>
             </nav>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
                 Denah Tempat Duduk Kelas {{ $classroom->name }}
             </h1>
             <p class="text-xs text-slate-500 mt-0.5">Atur posisi meja dan bangku siswa secara visual interaktif.</p>
@@ -38,7 +38,7 @@
     @endphp
 
     <!-- Seating Grid Canvas Card -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-5"
+    <div class="card space-y-5"
          x-data="seating({
             saveUrl: '{{ route('classes.seating.save', $classroom) }}',
             csrf: '{{ csrf_token() }}',
@@ -48,26 +48,26 @@
          })">
         
         <!-- Controls Bar -->
-        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-2">
-                    <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Baris Meja:</label>
+                    <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Baris Meja:</label>
                     <input type="number" min="1" max="20" x-model.number="rows" @change="resize()"
-                           class="h-8 w-16 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs font-bold text-slate-900 focus:border-indigo-500 focus:outline-none">
+                           class="h-8 w-16 rounded border border-slate-200 bg-slate-50 text-center text-xs font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none">
                 </div>
                 <div class="flex items-center gap-2">
-                    <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Kolom Meja:</label>
+                    <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Kolom Meja:</label>
                     <input type="number" min="1" max="20" x-model.number="cols" @change="resize()"
-                           class="h-8 w-16 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs font-bold text-slate-900 focus:border-indigo-500 focus:outline-none">
+                           class="h-8 w-16 rounded border border-slate-200 bg-slate-50 text-center text-xs font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none">
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
-                <span x-show="savedMsg" x-cloak class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+                <span x-show="savedMsg" x-cloak class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
                     ✓ <span x-text="savedMsg"></span>
                 </span>
                 <button type="button" @click="save()" :disabled="saving"
-                        class="h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 transition-colors flex items-center gap-1.5">
+                        class="h-9 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 transition-colors flex items-center gap-1.5">
                     <template x-if="!saving">
                         <span>Simpan Denah Meja</span>
                     </template>
@@ -82,7 +82,7 @@
         </div>
 
         <!-- Teacher's Blackboard Representation Header -->
-        <div class="mx-auto w-3/4 rounded-xl bg-slate-800 py-2 text-center text-xs font-bold uppercase tracking-widest text-slate-200 shadow-inner">
+        <div class="mx-auto w-3/4 rounded bg-slate-800 py-2 text-center eyebrow shadow-inner">
              papan tulis / meja guru 
         </div>
 
@@ -93,19 +93,19 @@
                 
                 <template x-for="r in rows" :key="`r-${r}`">
                     <template x-for="c in cols" :key="`r-${r}-c-${c}`">
-                        <div class="group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-2.5 transition-colors hover:border-indigo-300 hover:bg-white hover:shadow-sm"
+                        <div class="group relative flex flex-col justify-between rounded border border-slate-200 bg-slate-50 p-2.5 transition-colors hover:border-indigo-300 hover:bg-white hover:"
                              :class="{ 'border-indigo-400 bg-indigo-50/30': seatAt(r-1, c-1).student_id }">
                             
                             <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
                                 <span class="font-mono font-semibold" x-text="`R${r}C${c}`"></span>
                                 <template x-if="seatAt(r-1, c-1).student_id">
-                                    <button @click="unassign(r-1, c-1)" class="text-rose-500 hover:text-rose-700 font-bold">×</button>
+                                    <button @click="unassign(r-1, c-1)" class="text-rose-500 hover:text-rose-700 font-semibold">×</button>
                                 </template>
                             </div>
 
                             <select :value="seatAt(r-1, c-1).student_id || ''"
                                     @change="assign(r-1, c-1, $event.target.value)"
-                                    class="w-full rounded-lg border border-slate-200 bg-white p-1.5 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:outline-none">
+                                    class="form-input form-input--sm">
                                 <option value="">-- Kosong --</option>
                                 <template x-for="st in students" :key="st.id">
                                     <option :value="st.id" :selected="st.id == seatAt(r-1, c-1).student_id" x-text="st.name"></option>

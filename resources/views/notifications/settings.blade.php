@@ -12,7 +12,7 @@
             </svg>
         </a>
         <div>
-            <h2 class="text-2xl font-bold text-slate-900">Pengaturan Notifikasi</h2>
+            <h2 class="text-2xl font-semibold text-slate-900">Pengaturan Notifikasi</h2>
             <p class="text-slate-500 mt-1">Kelola preferensi notifikasi Anda</p>
         </div>
     </div>
@@ -21,8 +21,8 @@
         @csrf
 
         <!-- Push Notifications -->
-        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100">
+        <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200">
                 <h3 class="font-semibold text-slate-900">Push Notifications</h3>
                 <p class="text-sm text-slate-500 mt-1">Notifikasi browser untuk memberi tahu Anda secara real-time</p>
             </div>
@@ -45,7 +45,7 @@
 
                 <div id="push-settings" class="{{ $preference->push_enabled ? '' : 'opacity-50 pointer-events-none' }}">
                     <!-- Browser Push Subscription -->
-                    <div class="p-4 bg-slate-50 rounded-xl mb-6">
+                    <div class="p-4 bg-slate-50 rounded mb-6">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="font-medium text-slate-900">Status Browser</p>
@@ -75,7 +75,7 @@
                     <div class="space-y-4">
                         <p class="text-sm font-medium text-slate-700">Jenis Notifikasi</p>
 
-                        <div class="flex items-center justify-between py-3 border-b border-slate-100">
+                        <div class="flex items-center justify-between py-3 border-b border-slate-200">
                             <div>
                                 <p class="font-medium text-slate-900">Pengingat Absensi</p>
                                 <p class="text-sm text-slate-500">Notifikasi untuk mengisi absensi</p>
@@ -90,7 +90,7 @@
                             </label>
                         </div>
 
-                        <div class="flex items-center justify-between py-3 border-b border-slate-100">
+                        <div class="flex items-center justify-between py-3 border-b border-slate-200">
                             <div>
                                 <p class="font-medium text-slate-900">Pelanggaran Baru</p>
                                 <p class="text-sm text-slate-500">Notifikasi saat ada pelanggaran siswa</p>
@@ -105,7 +105,7 @@
                             </label>
                         </div>
 
-                        <div class="flex items-center justify-between py-3 border-b border-slate-100">
+                        <div class="flex items-center justify-between py-3 border-b border-slate-200">
                             <div>
                                 <p class="font-medium text-slate-900">Kas Kelas Rendah</p>
                                 <p class="text-sm text-slate-500">Notifikasi saat kas kelas hampir habis</p>
@@ -141,10 +141,10 @@
 
         <!-- Save Button -->
         <div class="flex justify-end gap-3">
-            <a href="{{ route('notifications.index') }}" class="px-6 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">
+            <a href="{{ route('notifications.index') }}" class="px-6 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors">
                 Batal
             </a>
-            <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors">
+            <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 transition-colors">
                 Simpan Perubahan
             </button>
         </div>
@@ -268,7 +268,7 @@ function urlBase64ToUint8Array(base64String) {
 
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-xl  z-50  ${
+    toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded  z-50  ${
         type === 'success' ? 'bg-emerald-600 text-white' :
         type === 'error' ? 'bg-rose-600 text-white' :
         'bg-slate-800 text-white'

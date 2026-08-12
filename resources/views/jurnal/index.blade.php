@@ -15,7 +15,7 @@
             </p>
         </div>
         <button type="button" onclick="window.print()"
-                class="h-9 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 hover:bg-slate-50 print:hidden">
+                class="h-9 rounded border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 print:hidden">
             🖨️ Cetak
         </button>
     </div>
@@ -26,12 +26,12 @@
     @if (count($mapelDiampu) > 1)
         <div class="flex flex-wrap gap-2 print:hidden">
             <a href="{{ request()->fullUrlWithQuery(['mapel' => null]) }}"
-               class="rounded-xl border px-3 py-1.5 text-xs font-bold {{ $mapelDipilih === null ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
+               class="rounded border px-3 py-1.5 text-xs font-semibold {{ $mapelDipilih === null ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
                 Semua mapel
             </a>
             @foreach ($mapelDiampu as $m)
                 <a href="{{ request()->fullUrlWithQuery(['mapel' => $m]) }}"
-                   class="rounded-xl border px-3 py-1.5 text-xs font-bold {{ $mapelDipilih === $m ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
+                   class="rounded border px-3 py-1.5 text-xs font-semibold {{ $mapelDipilih === $m ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
                     {{ $m }}
                 </a>
             @endforeach
@@ -39,37 +39,37 @@
     @endif
 
     @if ($sesi->isEmpty())
-        <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <p class="text-sm font-bold text-slate-700">Belum ada pertemuan tercatat</p>
+        <div class="rounded-lg border border-slate-200 bg-white p-8 text-center">
+            <p class="text-sm font-semibold text-slate-700">Belum ada pertemuan tercatat</p>
             <p class="mt-1 text-xs text-slate-500">
                 Jurnal terisi sendiri setiap kali Anda mengisi presensi. Mulai dari menu
                 <a href="{{ route('classes.attendance.manual.create', $classroom) }}" class="font-semibold text-indigo-600 hover:underline">Absensi Manual</a>.
             </p>
         </div>
     @else
-        <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+        <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
             <table class="w-full text-left text-xs">
                 <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
                     <tr>
-                        <th class="px-3 py-2.5 font-bold">Tanggal</th>
+                        <th class="px-3 py-2.5 font-semibold">Tanggal</th>
                         @if (count($mapelDiampu) > 1 || $sesi->contains(fn ($s) => filled($s->mapel)))
-                            <th class="px-3 py-2.5 font-bold">Mapel</th>
+                            <th class="px-3 py-2.5 font-semibold">Mapel</th>
                         @endif
-                        <th class="px-3 py-2.5 font-bold">Materi</th>
-                        <th class="px-3 py-2.5 font-bold text-center">Hadir</th>
-                        <th class="px-3 py-2.5 font-bold">Tidak hadir</th>
+                        <th class="px-3 py-2.5 font-semibold">Materi</th>
+                        <th class="px-3 py-2.5 font-semibold text-center">Hadir</th>
+                        <th class="px-3 py-2.5 font-semibold">Tidak hadir</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="divide-y divide-slate-200">
                     @foreach ($sesi as $s)
                         @php
                             // "Hadir" mencakup terlambat: siswanya tetap masuk kelas.
                             $hadir = $s->jumlah_hadir + $s->jumlah_terlambat;
                             $absen = $s->jumlah_sakit + $s->jumlah_izin + $s->jumlah_alfa;
                         @endphp
-                        <tr class="align-top hover:bg-slate-50/60">
+                        <tr class="align-top hover:bg-slate-50">
                             <td class="px-3 py-2.5 whitespace-nowrap">
-                                <span class="font-bold text-slate-800">{{ $s->session_date->translatedFormat('d M Y') }}</span>
+                                <span class="font-semibold text-slate-800">{{ $s->session_date->translatedFormat('d M Y') }}</span>
                                 <span class="block text-[10px] text-slate-400">{{ $s->session_date->translatedFormat('l') }}</span>
                             </td>
 
@@ -88,16 +88,16 @@
                                     @csrf @method('PATCH')
                                     <input type="text" name="materi" value="{{ $s->materi }}"
                                            placeholder="Tulis materi…"
-                                           class="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs focus:border-indigo-500 focus:outline-none print:border-0 print:px-0">
+                                           class="form-input form-input--sm">
                                     <button type="submit"
-                                            class="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 print:hidden">
+                                            class="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 print:hidden">
                                         Simpan
                                     </button>
                                 </form>
                             </td>
 
                             <td class="px-3 py-2.5 text-center whitespace-nowrap">
-                                <span class="font-bold text-emerald-700">{{ $hadir }}</span>
+                                <span class="font-semibold text-emerald-700">{{ $hadir }}</span>
                                 @if ($s->jumlah_terlambat > 0)
                                     <span class="block text-[10px] text-amber-600">{{ $s->jumlah_terlambat }} terlambat</span>
                                 @endif
@@ -107,7 +107,7 @@
                                 @if ($absen === 0)
                                     <span class="text-slate-400">—</span>
                                 @else
-                                    <span class="font-bold text-rose-700">{{ $absen }}</span>
+                                    <span class="font-semibold text-rose-700">{{ $absen }}</span>
                                     {{-- Namanya disebut: jurnal yang hanya menyebut angka
                                          tidak menjawab saat guru ditanya siapa saja. --}}
                                     <span class="block text-[10px] text-slate-500 leading-snug">

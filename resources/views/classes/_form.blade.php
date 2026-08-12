@@ -34,20 +34,20 @@
     <div class="form-group">
         <label class="form-label form-label--required">Jenis kelas</label>
         <div class="grid gap-3 sm:grid-cols-2">
-            <label class="flex items-start gap-2.5 rounded-xl border p-3 cursor-pointer transition-colors"
+            <label class="flex items-start gap-2.5 rounded border p-3 cursor-pointer transition-colors"
                    :class="jenis === 'perwalian' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:bg-slate-50'">
                 <input type="radio" name="jenis" value="perwalian" x-model="jenis" class="mt-0.5">
                 <span class="text-xs">
-                    <span class="block font-bold text-slate-800">Kelas Perwalian</span>
+                    <span class="block font-semibold text-slate-800">Kelas Perwalian</span>
                     <span class="block text-slate-500 mt-0.5">Kelas yang Anda walikan. Semua modul aktif: absensi otomatis, buku kas, struktur organisasi, laporan administrasi.</span>
                 </span>
             </label>
 
-            <label class="flex items-start gap-2.5 rounded-xl border p-3 cursor-pointer transition-colors"
+            <label class="flex items-start gap-2.5 rounded border p-3 cursor-pointer transition-colors"
                    :class="jenis === 'ajar' ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 hover:bg-slate-50'">
                 <input type="radio" name="jenis" value="ajar" x-model="jenis" class="mt-0.5">
                 <span class="text-xs">
-                    <span class="block font-bold text-slate-800">Kelas Ajar (Guru Mapel)</span>
+                    <span class="block font-semibold text-slate-800">Kelas Ajar (Guru Mapel)</span>
                     <span class="block text-slate-500 mt-0.5">Kelas yang Anda ajar mapelnya saja. Hanya absensi, jurnal, rekap, dan nilai. Cukup impor NIS &amp; nama siswa.</span>
                 </span>
             </label>
@@ -154,7 +154,7 @@
     </div>
 
     <!-- Auto Attendance -->
-    <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+    <div class="rounded border border-slate-200 bg-slate-50 p-5">
         <label class="flex items-start gap-3 cursor-pointer">
             <input type="hidden" name="auto_attendance" value="0">
             <input type="checkbox"

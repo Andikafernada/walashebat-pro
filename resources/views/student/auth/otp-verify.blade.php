@@ -14,23 +14,23 @@
             <!-- Logo -->
             <div class="text-center mb-8">
                 <a href="{{ route('student.login') }}" class="inline-flex items-center gap-2 text-white">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                    <div class="w-10 h-10 rounded bg-white/10 flex items-center justify-center">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13.668m7.088-7.218c2.103-2.048 5.802-3.206 9.912-3.206H21v21m-7.088-7.218c-2.103 2.048-5.802 3.206-9.912 3.206H3m18-17.574V21M12 6.253V3"/>
                         </svg>
                     </div>
-                    <span class="text-lg font-bold">WaliKelas Pro</span>
+                    <span class="text-lg font-semibold">WaliKelas Pro</span>
                 </a>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <div class="bg-white rounded-lg shadow-2xl p-8">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
                         <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
                     </div>
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Verifikasi OTP</h2>
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-2">Verifikasi OTP</h2>
                     <p class="text-gray-500">
                         Masukkan kode OTP yang dikirim ke WhatsApp orang tua Anda.<br>
                         <strong class="text-indigo-600">NIS: {{ e($nis) }}</strong>

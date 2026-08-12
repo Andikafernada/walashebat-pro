@@ -52,7 +52,7 @@
 
     {{-- Papan hitung. Angka inilah yang harus dilaporkan petugas, jadi ia
          menempel di atas dan ikut berubah setiap kali satu siswa ditandai. --}}
-    <div class="sticky top-0 z-20 -mx-4 mb-3 border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur">
+    <div class="sticky top-0 z-20 -mx-4 mb-3 border-b border-slate-200 bg-slate-50/95 px-4 py-3">
         <div class="grid grid-cols-5 gap-1.5 text-center">
             @foreach ($gaya as $key => $g)
                 <div class="rounded border border-slate-200 bg-white py-1.5">
@@ -122,9 +122,7 @@
                                        required
                                        x-model="status"
                                        @checked($terpilih === $key)>
-                                <span class="flex flex-col items-center gap-0.5 rounded border border-slate-200 px-0.5 py-1.5 text-center leading-tight text-slate-500 transition-colors
-                                             peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500
-                                             peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white">
+                                <span class="flex flex-col items-center gap-0.5 rounded border border-slate-200 px-0.5 py-1.5 text-center leading-tight text-slate-500 transition-colors peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white">
                                     <span class="font-mono text-xs font-medium">{{ $g['kode'] }}</span>
                                     <span class="text-[10px] font-medium">{{ $g['label'] }}</span>
                                 </span>
@@ -151,7 +149,7 @@
 
     {{-- Tombol kirim menempel di bawah supaya tidak perlu menggulir 30 baris
          ke bawah setelah selesai menandai. --}}
-    <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur">
+    <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-slate-200 bg-slate-50/95 px-4 py-3">
         <button type="submit"
                 class="btn-primary h-11 w-full"
                 x-bind:disabled="mengirim"

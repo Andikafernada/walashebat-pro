@@ -5,7 +5,7 @@
 <div class="p-6 lg:p-8 space-y-6">
     <div class="glass-card flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-slate-900">Ubah Password</h1>
+            <h1 class="text-2xl font-semibold text-slate-900">Ubah Password</h1>
             <p class="text-slate-500 mt-1">Pastikan password baru mudah diingat tapi sulit ditebak</p>
         </div>
         <a href="{{ route('student.biodata') }}" class="btn btn-secondary">Batal</a>

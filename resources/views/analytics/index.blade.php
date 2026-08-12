@@ -42,7 +42,7 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-bold text-slate-900">Analitik & Statistik</h2>
+            <h2 class="text-2xl font-semibold text-slate-900">Analitik & Statistik</h2>
             <p class="text-slate-500 mt-1">Visualisasi data kehadiran, pelanggaran, dan karakter siswa</p>
         </div>
         <div>
@@ -62,37 +62,37 @@
     @if($selectedClass)
     <!-- Summary Stats -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div class="bg-white rounded-xl p-4 border border-slate-100">
+        <div class="bg-white rounded p-4 border border-slate-200">
             <p class="text-xs text-slate-500 mb-1">Total Siswa</p>
-            <p class="text-2xl font-bold text-slate-900">{{ $summaryStats['student_count'] }}</p>
+            <p class="text-2xl font-semibold text-slate-900">{{ $summaryStats['student_count'] }}</p>
         </div>
-        <div class="bg-white rounded-xl p-4 border border-slate-100">
+        <div class="bg-white rounded p-4 border border-slate-200">
             <p class="text-xs text-slate-500 mb-1">Kehadiran</p>
-            <p class="text-2xl font-bold text-emerald-600">{{ $summaryStats['attendance_rate'] }}%</p>
+            <p class="text-2xl font-semibold text-emerald-600">{{ $summaryStats['attendance_rate'] }}%</p>
         </div>
-        <div class="bg-white rounded-xl p-4 border border-slate-100">
+        <div class="bg-white rounded p-4 border border-slate-200">
             <p class="text-xs text-slate-500 mb-1">Total Absensi</p>
-            <p class="text-2xl font-bold text-slate-900">{{ $summaryStats['total_attendance'] }}</p>
+            <p class="text-2xl font-semibold text-slate-900">{{ $summaryStats['total_attendance'] }}</p>
         </div>
-        <div class="bg-white rounded-xl p-4 border border-slate-100">
+        <div class="bg-white rounded p-4 border border-slate-200">
             <p class="text-xs text-slate-500 mb-1">Pelanggaran</p>
-            <p class="text-2xl font-bold text-rose-600">{{ $summaryStats['violations_count'] }}</p>
+            <p class="text-2xl font-semibold text-rose-600">{{ $summaryStats['violations_count'] }}</p>
         </div>
-        <div class="bg-white rounded-xl p-4 border border-slate-100">
+        <div class="bg-white rounded p-4 border border-slate-200">
             <p class="text-xs text-slate-500 mb-1">Rata-rata Poin</p>
-            <p class="text-2xl font-bold text-indigo-600">{{ $summaryStats['avg_discipline_points'] }}</p>
+            <p class="text-2xl font-semibold text-indigo-600">{{ $summaryStats['avg_discipline_points'] }}</p>
         </div>
-        <div class="bg-white rounded-xl p-4 border border-slate-100">
+        <div class="bg-white rounded p-4 border border-slate-200">
             <p class="text-xs text-slate-500 mb-1">Poin Rendah</p>
-            <p class="text-2xl font-bold text-amber-600">{{ $summaryStats['low_points_students'] }}</p>
+            <p class="text-2xl font-semibold text-amber-600">{{ $summaryStats['low_points_students'] }}</p>
         </div>
     </div>
 
     <!-- Charts Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Monthly Attendance Chart -->
-        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                 <h3 class="font-semibold text-slate-900">Kehadiran Bulanan (12 Bulan)</h3>
                 <div class="flex items-center gap-4 text-xs">
                     <span class="flex items-center gap-1">
@@ -114,8 +114,8 @@
         </div>
 
         <!-- Violations by Category -->
-        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100">
+        <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200">
                 <h3 class="font-semibold text-slate-900">Pelanggaran per Kategori (Bulan Ini)</h3>
             </div>
             <div class="p-6">
@@ -140,8 +140,8 @@
     <!-- Heatmap & Attendance Rate Trend -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Heatmap Kehadiran -->
-        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100">
+        <div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200">
                 <h3 class="font-semibold text-slate-900">Heatmap Kehadiran (4 Minggu Terakhir)</h3>
             </div>
             <div class="p-6">
@@ -177,7 +177,7 @@
                     @endforeach
                 </div>
                 <!-- Legend -->
-                <div class="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-slate-100">
+                <div class="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-slate-200">
                     <span class="flex items-center gap-2 text-xs text-slate-500">
                         <span class="w-4 h-4 rounded bg-emerald-100"></span> ≥90%
                     </span>
@@ -192,13 +192,13 @@
         </div>
 
         <!-- Quick Stats -->
-        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100">
+        <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200">
                 <h3 class="font-semibold text-slate-900">Butuh Perhatian</h3>
             </div>
             <div class="p-6 space-y-4">
                 @if($summaryStats['repeat_alpha_students'] > 0)
-                    <div class="flex items-center gap-3 p-3 bg-rose-50 rounded-xl">
+                    <div class="flex items-center gap-3 p-3 bg-rose-50 rounded">
                         <div class="w-10 h-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -211,7 +211,7 @@
                     </div>
                 @endif
                 @if($summaryStats['low_points_students'] > 0)
-                    <div class="flex items-center gap-3 p-3 bg-amber-50 rounded-xl">
+                    <div class="flex items-center gap-3 p-3 bg-amber-50 rounded">
                         <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
@@ -235,7 +235,7 @@
         </div>
     </div>
     @else
-    <div class="bg-white rounded-2xl border border-slate-100 p-12 text-center">
+    <div class="bg-white rounded-lg border border-slate-200 p-12 text-center">
         <svg class="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
         </svg>

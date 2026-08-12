@@ -21,13 +21,13 @@
         @csrf
         @if ($assessment) @method('PATCH') @endif
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 grid gap-4 sm:grid-cols-3"
+        <div class="card grid gap-4 sm:grid-cols-3"
              x-data="{ jenis: '{{ old('jenis', $jenisAwal) }}' }">
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Jenis Penilaian *</label>
+                <label class="form-label">Jenis Penilaian *</label>
                 <select name="jenis" x-model="jenis"
-                        class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        class="form-input form-input--sm">
                     @foreach (\App\Models\Assessment::jenisTersedia() as $nilai => $label)
                         <option value="{{ $nilai }}" @selected(old('jenis', $jenisAwal) === $nilai)>{{ $label }}</option>
                     @endforeach
@@ -38,12 +38,12 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Semester *</label>
+                <label class="form-label">Semester *</label>
                 {{-- Semester DISIMPAN, bukan disimpulkan dari tanggal: nilai
                      akhir semester 1 lazim baru dimasukkan pada Januari, yang
                      menurut kalender sudah semester 2. --}}
                 <select name="semester"
-                        class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        class="form-input form-input--sm">
                     @foreach ([1, 2] as $s)
                         <option value="{{ $s }}" @selected((int) old('semester', $semesterAwal) === $s)>Semester {{ $s }}</option>
                     @endforeach
@@ -54,10 +54,10 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tanggal *</label>
+                <label class="form-label">Tanggal *</label>
                 <input type="date" name="assessment_date" required
                        value="{{ old('assessment_date', optional($assessment?->assessment_date)->toDateString() ?? date('Y-m-d')) }}"
-                       class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                       class="form-input form-input--sm">
                 @error('assessment_date')
                     <p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>
                 @enderror
@@ -68,24 +68,24 @@
                  isian ini di sana membuat wali kelas mengarang teks yang tidak
                  berarti apa-apa hanya supaya formulirnya mau tersimpan. --}}
             <div class="sm:col-span-2" x-show="jenis === 'harian'" x-cloak>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Capaian Pembelajaran *</label>
+                <label class="form-label">Capaian Pembelajaran *</label>
                 <input type="text" name="capaian_pembelajaran"
                        value="{{ old('capaian_pembelajaran', $assessment->capaian_pembelajaran ?? '') }}"
                        placeholder="cth: Memahami sistem bilangan biner dan konversinya"
-                       class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                       class="form-input form-input--sm">
                 @error('capaian_pembelajaran')
                     <p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label class="form-label">
                     Mata Pelajaran
                     @if (count($mapelDiampu) === 0) <span class="text-rose-600">*</span> @endif
                 </label>
 
                 @if (count($mapelDiampu) > 1)
-                    <select name="mapel" class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                    <select name="mapel" class="form-input form-input--sm">
                         @foreach ($mapelDiampu as $m)
                             <option value="{{ $m }}" @selected(old('mapel', $assessment->mapel ?? '') === $m)>{{ $m }}</option>
                         @endforeach
@@ -93,7 +93,7 @@
                 @elseif (count($mapelDiampu) === 1)
                     <input type="text" name="mapel" readonly
                            value="{{ old('mapel', $assessment->mapel ?? $mapelDiampu[0]) }}"
-                           class="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-600">
+                           class="form-input form-input--sm">
                 @else
                     {{-- Kelas perwalian tidak punya daftar mapel: wali kelas
                          merekap nilai dari banyak mapel yang diajar guru lain,
@@ -103,7 +103,7 @@
                     <input type="text" name="mapel" list="daftar-mapel"
                            value="{{ old('mapel', $assessment->mapel ?? '') }}"
                            placeholder="cth: Matematika"
-                           class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                           class="form-input form-input--sm">
                     <datalist id="daftar-mapel">
                         @foreach ($mapelPernahDipakai ?? [] as $m)
                             <option value="{{ $m }}"></option>
@@ -118,24 +118,24 @@
         </div>
 
         @if ($students->isEmpty())
-            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-xs text-amber-900">
+            <div class="rounded-lg border border-amber-200 bg-amber-50 p-5 text-xs text-amber-900">
                 Belum ada siswa aktif di kelas ini. Impor daftar siswa (cukup NIS &amp; nama) sebelum menilai.
             </div>
         @else
-            <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+            <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
                         <tr>
-                            <th class="px-3 py-2.5 font-bold w-10">#</th>
-                            <th class="px-3 py-2.5 font-bold">Nama</th>
-                            <th class="px-3 py-2.5 font-bold w-28">Nilai (0–100)</th>
-                            <th class="px-3 py-2.5 font-bold">Catatan (opsional)</th>
+                            <th class="px-3 py-2.5 font-semibold w-10">#</th>
+                            <th class="px-3 py-2.5 font-semibold">Nama</th>
+                            <th class="px-3 py-2.5 font-semibold w-28">Nilai (0–100)</th>
+                            <th class="px-3 py-2.5 font-semibold">Catatan (opsional)</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-200">
                         @foreach ($students as $i => $st)
                             @php $tersimpan = $nilaiTersimpan[$st->id] ?? null; @endphp
-                            <tr class="hover:bg-slate-50/60">
+                            <tr class="hover:bg-slate-50">
                                 <td class="px-3 py-2 text-slate-400 tabular-nums">{{ $i + 1 }}</td>
                                 <td class="px-3 py-2">
                                     <span class="font-semibold text-slate-800">{{ $st->name }}</span>
@@ -157,7 +157,7 @@
                                     <input type="text" name="catatan[{{ $st->id }}]" maxlength="200"
                                            value="{{ old('catatan.' . $st->id, $tersimpan->catatan ?? '') }}"
                                            placeholder="cth: remedial, belum tuntas"
-                                           class="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs focus:border-indigo-500 focus:outline-none">
+                                           class="form-input form-input--sm">
                                 </td>
                             </tr>
                         @endforeach
@@ -172,10 +172,10 @@
         @endif
 
         <div class="flex flex-wrap items-center gap-3">
-            <button type="submit" class="h-10 rounded-xl bg-indigo-600 px-5 text-xs font-bold text-white hover:bg-indigo-700">
+            <button type="submit" class="h-10 rounded bg-indigo-600 px-5 text-xs font-semibold text-white hover:bg-indigo-700">
                 {{ $assessment ? 'Simpan Perubahan' : 'Simpan Penilaian' }}
             </button>
-            <a href="{{ route('classes.nilai.index', $classroom) }}" class="h-10 inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 hover:bg-slate-50">
+            <a href="{{ route('classes.nilai.index', $classroom) }}" class="h-10 inline-flex items-center rounded border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:bg-slate-50">
                 Batal
             </a>
 
@@ -183,7 +183,7 @@
                 <span class="flex-1"></span>
                 <button type="submit" form="hapus-penilaian"
                         onclick="return confirm('Hapus penilaian ini beserta seluruh nilainya? Tindakan ini tidak bisa dibatalkan.')"
-                        class="h-10 rounded-xl border border-rose-200 bg-white px-4 text-xs font-bold text-rose-600 hover:bg-rose-50">
+                        class="h-10 rounded border border-rose-200 bg-white px-4 text-xs font-semibold text-rose-600 hover:bg-rose-50">
                     Hapus Penilaian
                 </button>
             @endif

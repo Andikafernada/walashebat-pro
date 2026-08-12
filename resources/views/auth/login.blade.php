@@ -75,7 +75,7 @@
 
     <!-- Header -->
     <div class="text-center mb-8">
-        <h2 class="text-2xl font-bold text-slate-900">Selamat datang kembali</h2>
+        <h2 class="text-2xl font-semibold text-slate-900">Selamat datang kembali</h2>
         <p class="mt-2 text-sm text-slate-500">Masuk untuk mengelola administrasi kelas Anda</p>
     </div>
 
@@ -96,7 +96,7 @@
     </div>
 
     @if (session('error'))
-        <div class="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3" role="alert">
+        <div class="mb-5 rounded border border-amber-200 bg-amber-50 px-4 py-3" role="alert">
             <p class="text-sm font-medium text-amber-900">{{ session('error') }}</p>
         </div>
     @endif
@@ -125,7 +125,7 @@
                     autofocus
                     autocomplete="email"
                     placeholder="guru@sekolah.sch.id"
-                    class="input-animate pl-12 pr-4 py-3.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('email') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                    class="input-animate pl-12 pr-4 py-3.5 block w-full rounded border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('email') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
                     aria-describedby="email-error"
                 >
             </div>
@@ -161,7 +161,7 @@
                     required
                     autocomplete="current-password"
                     placeholder="Masukkan kata sandi"
-                    class="input-animate pl-12 pr-12 py-3.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('password') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                    class="input-animate pl-12 pr-12 py-3.5 block w-full rounded border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white @error('password') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
                     aria-describedby="password-error"
                 >
                 <button type="button" @click="showPassword = !showPassword" class="password-toggle absolute inset-y-0 right-0 pr-4 flex items-center">
@@ -186,7 +186,7 @@
 
         <!-- Remember me -->
         <label class="flex items-center gap-3 cursor-pointer group">
-            <input type="checkbox" name="remember" class="form-checkbox w-4.5 h-4.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors">
+            <input type="checkbox" name="remember" class="form-checkbox w-4.5 h-4.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-1 transition-colors">
             <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
                 Ingat saya selama 30 hari
             </span>
@@ -234,21 +234,21 @@
     </div>
 
     <!-- Benefits -->
-    <div class="mt-6 pt-6 border-t border-slate-100">
+    <div class="mt-6 pt-6 border-t border-slate-200">
         <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="p-3 rounded-xl bg-slate-50">
+            <div class="p-3 rounded bg-slate-50">
                 <svg class="w-6 h-6 mx-auto mb-1 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <p class="text-xs text-slate-600 font-medium">Gratis</p>
             </div>
-            <div class="p-3 rounded-xl bg-slate-50">
+            <div class="p-3 rounded bg-slate-50">
                 <svg class="w-6 h-6 mx-auto mb-1 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                 </svg>
                 <p class="text-xs text-slate-600 font-medium">Mobile</p>
             </div>
-            <div class="p-3 rounded-xl bg-slate-50">
+            <div class="p-3 rounded bg-slate-50">
                 <svg class="w-6 h-6 mx-auto mb-1 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>

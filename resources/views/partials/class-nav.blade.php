@@ -92,8 +92,7 @@
             @php $ini = request()->routeIs($tab['aktif']); @endphp
             <a href="{{ route($tab['route'], [$classroom]) }}"
                @if($ini) aria-current="page" @endif
-               class="flex shrink-0 items-center gap-1.5 border-r border-slate-200 px-3 py-2 text-xs font-medium transition-colors last:border-r-0
-                      {{ $ini ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+               class="flex shrink-0 items-center gap-1.5 border-r border-slate-200 px-3 py-2 text-xs font-medium transition-colors last:border-r-0 {{ $ini ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                 {{ $tab['label'] }}
                 @if (($tab['badge'] ?? 0) > 0)
                     <span class="font-mono text-[10px] {{ $ini ? 'text-slate-300' : 'text-slate-400' }}">{{ $tab['badge'] }}</span>

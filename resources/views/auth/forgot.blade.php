@@ -2,7 +2,7 @@
 @section('title', 'Lupa Kata Sandi')
 @section('content')
 
-    <h2 class="mb-1 text-xl font-bold text-slate-900">Lupa kata sandi</h2>
+    <h2 class="mb-1 text-xl font-semibold text-slate-900">Lupa kata sandi</h2>
     <p class="mb-8 text-sm text-slate-500">
         Masukkan email akun Anda. Kami akan mengirim tautan reset ke email tersebut.
     </p>

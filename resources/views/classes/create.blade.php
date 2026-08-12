@@ -37,7 +37,7 @@
                 @include('classes._form')
 
                 <!-- Actions -->
-                <div class="flex items-center gap-3 border-t border-slate-100 pt-6">
+                <div class="flex items-center gap-3 border-t border-slate-200 pt-6">
                     <button type="submit"
                             class="btn-primary flex-1 justify-center sm:flex-none sm:justify-start"
                             :disabled="loading"

@@ -27,7 +27,7 @@
                         <label for="file" class="form-label form-label--required">Berkas Excel atau CSV</label>
 
                         <label for="file"
-                               class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-indigo-400 hover:bg-indigo-50/40">
+                               class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-indigo-400 hover:bg-indigo-50/40">
                             <svg class="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                             </svg>
@@ -44,7 +44,7 @@
                         @enderror
                     </div>
 
-                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row">
+                    <div class="flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row">
                         <button type="submit"
                                 class="btn-primary justify-center"
                                 :disabled="loading"
