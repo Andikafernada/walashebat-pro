@@ -5,35 +5,27 @@
 @section('content')
 <div class="space-y-8 pb-16">
 
-    <!-- WELCOME HERO GLASS BANNER -->
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl border border-slate-800">
-        <div class="absolute right-0 top-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl"></div>
-        <div class="absolute left-1/3 bottom-0 -mb-16 h-48 w-48 rounded-full bg-indigo-500/10 blur-2xl"></div>
+    {{--
+        Dulu di sini berdiri spanduk gradien setinggi ~180px: dua lingkaran
+        buram, satu titik berkedip, lencana "Sistem Realtime Monitoring", nama
+        guru berwarna pelangi, dan satu kalimat yang mendaftar ulang isi
+        aplikasi. Tak satu pun menjawab pertanyaan yang dibawa guru saat
+        membuka aplikasi — tetapi semuanya berteriak lebih keras daripada papan
+        tugas di bawahnya, yang justru berisi jawabannya.
 
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div class="space-y-2">
-                <div class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">
-                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span>Wali Kelas Hebat • Sistem Realtime Monitoring</span>
-                </div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                    Selamat Datang, <span class="bg-gradient-to-r from-emerald-300 via-teal-200 to-indigo-200 bg-clip-text text-transparent">{{ auth()->user()->name }}</span>! 👋
-                </h1>
-                <p class="text-xs sm:text-sm text-slate-300 max-w-xl">
-                    Pantau rasio siswa, kehadiran harian, status kelengkapan biodata, dan portofolio karakter P5 secara realtime.
-                </p>
-            </div>
+        Tombol "Integrasi WA" dan "Buat Kelas Baru" sudah ada di sidebar. Yang
+        kedua tetap disisakan di sini hanya untuk guru yang belum punya kelas
+        sama sekali: baginya halaman ini kosong dan ia perlu satu jalan keluar
+        yang jelas.
+    --}}
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Halo, {{ auth()->user()->name }}</h1>
 
-            <div class="flex flex-wrap items-center gap-3 shrink-0">
-                <a href="{{ route('classes.create') }}" class="h-11 px-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                    <span>Buat Kelas Baru</span>
-                </a>
-                <a href="{{ route('whatsapp.index') }}" class="h-11 px-4 inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/10 backdrop-blur-md transition-all">
-                    <span>💬 Integrasi WA</span>
-                </a>
-            </div>
-        </div>
+        @if (! ($stats['classes'] ?? 0))
+            <a href="{{ route('classes.create') }}" class="h-10 px-4 inline-flex items-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors">
+                Buat kelas pertama
+            </a>
+        @endif
     </div>
 
     {{--
@@ -109,173 +101,85 @@
         </div>
     @endif
 
-    <!-- REALTIME STATS CARDS GRID -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        
-        <!-- CARD 1: TOTAL KELAS -->
-        <div class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-indigo-300">
-            <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Kelas Binaan</span>
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 font-bold text-sm">
-                    🏫
-                </div>
-            </div>
-            <div class="mt-3 flex items-baseline gap-1.5">
-                <span class="text-2xl font-black text-slate-900">{{ $stats['classes'] ?? 0 }}</span>
-                <span class="text-[11px] text-slate-500 font-medium">kelas</span>
-            </div>
-            <p class="mt-1 text-[10px] text-slate-400">Terdaftar di sistem</p>
-        </div>
+    {{--
+        RINGKASAN ANGKA.
 
-        <!-- CARD 2: SISWA & RASIO GENDER -->
-        <div class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-emerald-300">
-            <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Siswa</span>
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 font-bold text-sm">
-                    👨‍🎓
-                </div>
-            </div>
-            <div class="mt-3 flex items-baseline gap-1.5">
-                <span class="text-2xl font-black text-slate-900">{{ $stats['students'] ?? 0 }}</span>
-                <span class="text-[11px] text-slate-500 font-medium">siswa</span>
-            </div>
-            <p class="mt-1 text-[10px] text-emerald-700 font-bold">
-                👨 {{ $stats['siswa_laki'] ?? 0 }} L  &middot;  👩 {{ $stats['siswa_perempuan'] ?? 0 }} P
-            </p>
-        </div>
+        Dulu enam kartu terpisah, masing-masing dengan bingkai, bayangan, ubin
+        ikon, dan warna aksen sendiri — indigo, emerald, teal, ungu, kuning,
+        merah — berjajar berebut perhatian. Enam kotak yang sama menonjolnya
+        berarti tidak ada satu pun yang menonjol, dan guru harus membaca
+        keenamnya untuk tahu mana yang penting.
 
-        <!-- CARD 3: REKAP KEHADIRAN HARI INI -->
-        <div class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-teal-300">
-            <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Presensi Hari Ini</span>
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 text-teal-600 font-bold text-sm">
-                    📊
-                </div>
+        Kini satu kartu tenang berisi angka polos. Yang berhak berwarna cuma
+        Alfa: itulah satu-satunya angka di baris ini yang menuntut tindakan
+        hari ini.
+
+        Kartu "EWS Riskan" dibuang seluruhnya — jumlah yang sama sudah
+        disebut papan tugas di atas ("N siswa perlu dibina") dan panel
+        "Siswa Perlu Perhatian" di bawah, lengkap dengan namanya.
+    --}}
+    <div class="rounded-2xl border border-slate-200 bg-white p-5">
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
+            <div>
+                <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Kelas Binaan</dt>
+                <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $stats['classes'] ?? 0 }}</dd>
             </div>
+
+            <div>
+                <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Siswa</dt>
+                <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $stats['students'] ?? 0 }}</dd>
+                <p class="text-[11px] text-slate-500 tabular-nums">{{ $stats['siswa_laki'] ?? 0 }} L &middot; {{ $stats['siswa_perempuan'] ?? 0 }} P</p>
+            </div>
+
             @php($persenHariIni = $stats['persen'] ?? null)
-            <div class="mt-3 flex items-baseline gap-1.5">
+            <div>
+                <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Presensi Hari Ini</dt>
                 {{-- Tanpa data, tampilkan strip. Angka apa pun di sini — 100% maupun
                      0% — adalah klaim tentang kehadiran yang belum pernah didata. --}}
-                <span class="text-2xl font-black text-slate-900">{{ $persenHariIni === null ? '—' : $persenHariIni.'%' }}</span>
+                <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $persenHariIni === null ? '—' : $persenHariIni.'%' }}</dd>
                 @if ($persenHariIni === null)
-                    <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full">Belum ada absensi</span>
+                    <p class="text-[11px] text-slate-500">Belum ada absensi</p>
                 @else
-                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Hadir {{ $stats['masuk'] ?? 0 }}</span>
+                    {{-- Persentase saja ambigu: cacah yang masuk harus ikut terbaca. --}}
+                    <p class="text-[11px] text-slate-500 tabular-nums">
+                        Hadir {{ $stats['masuk'] ?? 0 }} &middot; Sakit {{ $stats['sakit'] ?? 0 }} &middot; Izin {{ $stats['izin'] ?? 0 }} &middot;
+                        <strong class="{{ ($stats['alfa'] ?? 0) > 0 ? 'text-rose-600' : 'text-slate-500' }}">Alfa {{ $stats['alfa'] ?? 0 }}</strong>
+                    </p>
                 @endif
             </div>
-            <p class="mt-1 text-[10px] font-semibold text-slate-500">
-                💊 Sakit: <strong class="text-amber-600">{{ $stats['sakit'] ?? 0 }}</strong> | ✉️ Izin: <strong class="text-indigo-600">{{ $stats['izin'] ?? 0 }}</strong> | ❌ Alfa: <strong class="text-rose-600">{{ $stats['alfa'] ?? 0 }}</strong>
-            </p>
-        </div>
 
-        {{--
-            Tiga kartu berikut khas perwalian dan tidak dirender di mode Guru Mapel.
-
-            Biodata orang tua, refleksi P5, dan buku poin adalah pekerjaan wali
-            kelas; siswa kelas ajar bahkan tidak punya kolomnya terisi karena
-            template impornya sengaja hanya NIS dan nama. Penyebutnya pun kelas
-            perwalian saja — lihat DashboardController::angkaHariIni().
-        --}}
-        @if ($adaPerwalian)
-        <!-- CARD 4: STATUS BIODATA MANDIRI % -->
-        <div class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-purple-300">
-            <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Biodata Terisi</span>
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600 font-bold text-sm">
-                    📝
+            {{--
+                Dua angka berikut khas perwalian dan tidak dirender di mode Guru
+                Mapel. Biodata orang tua dan refleksi P5 adalah pekerjaan wali
+                kelas; siswa kelas ajar bahkan tidak punya kolomnya terisi karena
+                template impornya sengaja hanya NIS dan nama. Penyebutnya pun
+                kelas perwalian saja — lihat DashboardController::angkaHariIni().
+            --}}
+            @if ($adaPerwalian)
+                <div>
+                    <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Biodata Terisi</dt>
+                    <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $stats['biodata_percent'] ?? 0 }}%</dd>
+                    {{-- Penyebutnya disebut terang-terangan. Persentase tanpa penyebut
+                         tidak bisa diperiksa, dan angka inilah yang dulu salah. --}}
+                    <p class="text-[11px] text-slate-500">dari {{ $stats['siswa_perwalian'] }} siswa perwalian</p>
                 </div>
-            </div>
-            <div class="mt-3 flex items-baseline gap-1.5">
-                <span class="text-2xl font-black text-purple-950">{{ $stats['biodata_percent'] ?? 0 }}%</span>
-                <span class="text-[10px] text-purple-700 font-bold">Terverifikasi</span>
-            </div>
-            <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div class="bg-purple-600 h-1.5 rounded-full" style="width: {{ $stats['biodata_percent'] ?? 0 }}%"></div>
-            </div>
-            {{-- Penyebutnya disebut terang-terangan. Persentase tanpa penyebut
-                 tidak bisa diperiksa, dan angka inilah yang dulu salah. --}}
-            <p class="mt-1.5 text-[10px] text-slate-400">dari {{ $stats['siswa_perwalian'] }} siswa perwalian</p>
-        </div>
 
-        <!-- CARD 5: PORTOFOLIO KARAKTER P5 % -->
-        <div class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-amber-300">
-            <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Portofolio P5</span>
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 font-bold text-sm">
-                    🎨
+                <div>
+                    <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Portofolio P5</dt>
+                    <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $stats['character_percent'] ?? 0 }}%</dd>
+                    <p class="text-[11px] text-slate-500">dari {{ $stats['siswa_perwalian'] }} siswa perwalian</p>
                 </div>
-            </div>
-            <div class="mt-3 flex items-baseline gap-1.5">
-                <span class="text-2xl font-black text-amber-950">{{ $stats['character_percent'] ?? 0 }}%</span>
-                <span class="text-[10px] text-amber-700 font-bold">Refleksi P5</span>
-            </div>
-            <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div class="bg-amber-500 h-1.5 rounded-full" style="width: {{ $stats['character_percent'] ?? 0 }}%"></div>
-            </div>
-            <p class="mt-1.5 text-[10px] text-slate-400">dari {{ $stats['siswa_perwalian'] }} siswa perwalian</p>
-        </div>
-
-        <!-- CARD 6: SISWA PERLU PERHATIAN (EWS) -->
-        <div class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-rose-300">
-            <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">EWS Riskan</span>
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 font-bold text-sm">
-                    ⚠️
-                </div>
-            </div>
-            <div class="mt-3 flex items-baseline gap-1.5">
-                <span class="text-2xl font-black text-rose-950">{{ $perluPerhatian->count() }}</span>
-                <span class="text-[11px] text-rose-600 font-semibold">siswa</span>
-            </div>
-            <p class="mt-1 text-[10px] text-slate-400">Alfa >= 3x / poin rendah</p>
-        </div>
-        @endif
-
+            @endif
+        </dl>
     </div>
 
     <!-- INTERACTIVE CHART.JS ANALYTICS -->
     <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                <span class="text-indigo-600">📈</span> Grafik Tren Kehadiran 7 Hari Terakhir
-            </h3>
-            <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">Realtime Analytics</span>
+            <h3 class="text-base font-bold text-slate-900">Grafik Tren Kehadiran 7 Hari Terakhir</h3>
         </div>
         <div class="h-64 relative">
             <canvas id="attendanceChart"></canvas>
-        </div>
-    </div>
-
-    <!-- QUICK ACTIONS HUB -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
-        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <span>⚡ Pintasan Akses Cepat</span>
-        </h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs font-bold">
-            <a href="{{ route('classes.index') }}" class="flex flex-col items-center justify-center p-3.5 rounded-xl bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200/70 transition-all text-slate-700 text-center gap-2">
-                <span class="text-2xl">📋</span>
-                <span>Daftar Kelas</span>
-            </a>
-            <a href="{{ route('whatsapp.index') }}" class="flex flex-col items-center justify-center p-3.5 rounded-xl bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200/70 transition-all text-slate-700 text-center gap-2">
-                <span class="text-2xl">💬</span>
-                <span>WhatsApp WA</span>
-            </a>
-            <a href="{{ route('classes.index') }}" class="flex flex-col items-center justify-center p-3.5 rounded-xl bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200/70 transition-all text-slate-700 text-center gap-2">
-                <span class="text-2xl">📅</span>
-                <span>Kelola Kelas</span>
-            </a>
-            <a href="{{ route('violation-types.index') }}" class="flex flex-col items-center justify-center p-3.5 rounded-xl bg-slate-50 hover:bg-rose-50 hover:text-rose-700 border border-slate-200/70 transition-all text-slate-700 text-center gap-2">
-                <span class="text-2xl">⚖️</span>
-                <span>Jenis Pelanggaran</span>
-            </a>
-            <a href="{{ $statusKelas->isNotEmpty() ? route('classes.reports.full', $statusKelas->first()['kelas']) : route('classes.index') }}" class="flex flex-col items-center justify-center p-3.5 rounded-xl bg-slate-50 hover:bg-amber-50 hover:text-amber-700 border border-slate-200/70 transition-all text-slate-700 text-center gap-2">
-                <span class="text-2xl">📊</span>
-                <span>Cetak Laporan</span>
-            </a>
-            <a href="{{ route('subscription.index') }}" class="flex flex-col items-center justify-center p-3.5 rounded-xl bg-slate-50 hover:bg-purple-50 hover:text-purple-700 border border-slate-200/70 transition-all text-slate-700 text-center gap-2">
-                <span class="text-2xl">👑</span>
-                <span>Langganan VIP</span>
-            </a>
         </div>
     </div>
 

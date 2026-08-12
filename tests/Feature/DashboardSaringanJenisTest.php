@@ -167,7 +167,6 @@ class DashboardSaringanJenisTest extends TestCase
             ->assertOk()
             ->assertDontSee('Biodata Terisi')
             ->assertDontSee('Portofolio P5')
-            ->assertDontSee('EWS Riskan')
             ->assertDontSee('Siswa Perlu Perhatian (EWS)')
             // Yang berlaku di kedua jenis tetap ada.
             ->assertSee('Total Siswa')
@@ -184,7 +183,7 @@ class DashboardSaringanJenisTest extends TestCase
             ->assertOk()
             ->assertSee('Biodata Terisi')
             ->assertSee('Portofolio P5')
-            ->assertSee('EWS Riskan');
+            ->assertSee('Siswa Perlu Perhatian (EWS)');
     }
 
     /** Guru mapel murni tidak punya kelas perwalian sama sekali. */
