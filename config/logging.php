@@ -11,6 +11,19 @@ return [
         'trace' => env('LOG_DEPRECATIONS_TRACE', false),
     ],
     'channels' => [
+
+        /*
+         * Log test, terpisah dari log produksi. Tanpa ini galat test tercampur
+         * ke laravel-*.log dan mengubur sinyal asli saat mendiagnosis keluhan
+         * pengguna sungguhan.
+         */
+        'testing' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/testing.log'),
+            'level' => 'debug',
+            'replace_placeholders' => true,
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', env('LOG_STACK', 'single')),

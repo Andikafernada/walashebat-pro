@@ -28,5 +28,22 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="WHATSAPP_DRIVER" value="log"/>
+
+        <!--
+            Penyimpanan & log DIALIHKAN, bukan cuma database.
+
+            Sebelum ini hanya DB yang diisolasi (sqlite :memory:). Penyimpanan
+            dan log tetap menunjuk produksi, sehingga test yang lupa memanggil
+            Storage::fake() menulis berkas sungguhan ke storage/app/private —
+            213 berkas sampah menumpuk di sana sebelum ketahuan — dan setiap
+            galat test tercetak ke laravel-*.log yang sama dengan produksi,
+            membuat 110 dari 113 baris ERROR hari itu bukan galat sungguhan.
+
+            Yang menumpuk cuma sampah; tapi jalur tulisnya sama dengan jalur ke
+            berkas nyata, dan itu yang tidak boleh dibiarkan.
+        -->
+        <env name="FILESYSTEM_DISK" value="testing"/>
+        <env name="LOG_CHANNEL" value="testing"/>
+        <env name="LOG_STACK" value="testing"/>
     </php>
 </phpunit>
