@@ -9,12 +9,19 @@
 
     <!-- PWA Settings -->
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#1a1712">
 
-    <!-- Fonts -->
+    {{--
+        Dua rupa huruf, lima berat — sebelumnya dua rupa dengan delapan berat.
+
+        Instrument Sans untuk seluruh antarmuka: sedikit rapat, tenang, dan
+        tidak berlagak. IBM Plex Mono khusus untuk yang berkolom — kode absensi,
+        kepala tabel, label bagian, nomor urut. Angka administrasi harus lurus
+        ke bawah, dan itu pekerjaan rupa monospasi, bukan hiasan.
+    --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -29,9 +36,6 @@
          Alpine running" — dan penangan yang sama terpasang dua kali. --}}
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-heading { font-family: 'Outfit', sans-serif; }
-        
         /* Deret pembatas boleh digeser di ponsel, tetapi batang gulirnya
            sendiri hanya jadi kotoran di bawah tab. */
         .pembatas { scrollbar-width: none; }
@@ -50,16 +54,17 @@
         yang memuatnya sendiri, dengan versi terpaku dan integrity hash.
     --}}
 </head>
-<body class="h-full bg-slate-50 antialiased text-slate-800 selection:bg-indigo-500 selection:text-white">
+<body class="h-full bg-slate-50 text-slate-700 antialiased">
 
 {{-- Pita penyamaran: operator yang sedang masuk sebagai guru harus selalu
      sadar ia bukan dirinya, dan selalu punya jalan kembali dalam satu klik. --}}
 @if (session('impersonator_id'))
-    <div class="sticky top-0 z-[60] flex items-center justify-center gap-3 bg-amber-400 px-4 py-1.5 text-center text-xs font-bold text-slate-900">
-        <span>👁️ Anda masuk sebagai <strong>{{ auth()->user()->name }}</strong> (mode operator)</span>
+    <div class="sticky top-0 z-[60] flex h-7 items-center justify-center gap-3 border-b border-amber-700 bg-amber-600 px-4 text-center text-xs font-medium text-white">
+        <span class="kode kode--izin border-white/30 bg-white/10 text-white" aria-hidden="true">OP</span>
+        <span>Masuk sebagai <strong class="font-semibold">{{ auth()->user()->name }}</strong></span>
         <form method="POST" action="{{ route('teachers.stop-impersonate') }}">
             @csrf
-            <button type="submit" class="rounded bg-slate-900 px-2 py-0.5 text-[11px] font-bold text-white hover:bg-slate-700">Kembali ke admin</button>
+            <button type="submit" class="rounded-sm border border-white/40 px-1.5 py-0.5 text-[11px] font-medium hover:bg-white/15">Kembali ke admin</button>
         </form>
     </div>
 @endif
@@ -98,9 +103,15 @@
      * Kelas ditulis utuh di dua konstanta di bawah, bukan dirakit dari
      * potongan: Tailwind memindai berkas ini sebagai teks dan tidak
      * menjalankan PHP-nya.
+     *
+     * Bentuknya pembatas sungguhan, bukan garis bawah tebal. Pembatas yang
+     * aktif berlatar warna kertas dan kehilangan garis bawahnya, lalu digeser
+     * satu piksel menutupi garis sampul — sehingga ia menyatu dengan halaman
+     * di bawahnya persis seperti pembatas yang sedang dibuka pada map. Itu
+     * juga yang membuat "di mana saya" terbaca tanpa perlu membaca.
      */
-    $pembatasAktif = 'border-indigo-600 text-indigo-700';
-    $pembatasDiam = 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-900';
+    $pembatasAktif = '-mb-px rounded-t border border-slate-200 border-b-slate-50 bg-slate-50 text-slate-900';
+    $pembatasDiam = 'border border-transparent text-slate-500 hover:text-slate-900';
 
     if ($modeOperator) {
         $pembatas = [
@@ -172,46 +183,50 @@
 {{-- Baris ini sengaja TIDAK menempel: yang berguna tetap terlihat saat guru
      menggulir daftar siswa adalah pembatasnya, bukan merek aplikasi. --}}
 <header class="bg-slate-900">
-    <div class="mx-auto flex h-11 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+    <div class="mx-auto flex h-10 max-w-buku items-center justify-between gap-4 px-4 sm:px-6">
+        {{-- Merek diperlakukan sebagai label arsip: mono, huruf besar,
+             direnggangkan. Ia menamai bukunya, tidak menjual apa pun. --}}
         <a href="{{ $modeOperator ? route('admin.dashboard') : route('dashboard') }}"
-           class="font-heading text-sm font-extrabold tracking-tight text-white">
-            Wali Kelas <span class="text-indigo-400">Hebat</span>
+           class="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 transition-colors hover:text-white">
+            Wali Kelas <span class="text-white">Hebat</span>
         </a>
 
         <div class="relative shrink-0" x-data="{ buka: false }" @keydown.escape.window="buka = false">
             <button type="button" @click="buka = !buka" :aria-expanded="buka ? 'true' : 'false'" aria-haspopup="true"
-                    class="flex items-center gap-2 rounded-lg py-1 pl-1 pr-2 transition-colors hover:bg-slate-800">
-                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-xs font-bold text-white">
+                    class="flex items-center gap-2 rounded-sm py-1 pl-1 pr-1.5 transition-colors hover:bg-white/10">
+                <span class="flex h-6 w-6 items-center justify-center rounded-sm border border-white/20 font-mono text-[11px] font-medium text-white">
                     {{ Str::upper(Str::substr(auth()->user()->name, 0, 1)) }}
                 </span>
-                <span class="hidden max-w-[10rem] truncate text-xs font-bold text-white sm:block">{{ auth()->user()->name }}</span>
-                <span class="text-[10px] text-slate-400" aria-hidden="true">&#9662;</span>
+                <span class="hidden max-w-[10rem] truncate text-xs font-medium text-slate-200 sm:block">{{ auth()->user()->name }}</span>
+                <span class="text-[9px] text-slate-400" aria-hidden="true">&#9662;</span>
             </button>
 
             <div x-show="buka" x-cloak @click.outside="buka = false"
-                 class="absolute right-0 z-50 mt-1 w-60 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-xl">
-                <div class="border-b border-slate-100 px-4 py-2">
-                    <p class="truncate text-xs font-bold text-slate-900">{{ auth()->user()->name }}</p>
-                    <p class="truncate text-[11px] text-slate-500">{{ auth()->user()->email }}</p>
+                 class="absolute right-0 z-50 mt-1 w-60 overflow-hidden rounded border border-slate-300 bg-white py-1 shadow-xl">
+                <div class="border-b border-slate-200 px-3 py-2">
+                    <p class="truncate text-xs font-semibold text-slate-900">{{ auth()->user()->name }}</p>
+                    <p class="truncate font-mono text-[10px] text-slate-500">{{ auth()->user()->email }}</p>
                 </div>
 
-                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Profil &amp; kata sandi</a>
+                <a href="{{ route('profile.edit') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Profil &amp; kata sandi</a>
 
                 @unless ($modeOperator)
-                    <a href="{{ route('holidays.index') }}" class="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Kalender Sekolah</a>
-                    <a href="{{ route('whatsapp.index') }}" class="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Integrasi WhatsApp</a>
-                    <a href="{{ route('violation-types.index') }}" class="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Jenis Pelanggaran</a>
+                    <a href="{{ route('holidays.index') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Kalender Sekolah</a>
+                    <a href="{{ route('whatsapp.index') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Integrasi WhatsApp</a>
+                    <a href="{{ route('violation-types.index') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Jenis Pelanggaran</a>
                     {{-- Halaman analitik sudah lengkap dan berfungsi, tetapi dulu tidak
                          punya SATU PUN tautan dari mana pun: rutenya ada, controllernya
                          ada, viewnya 363 baris, dan tak seorang pun bisa mencapainya
                          kecuali mengetik URL-nya sendiri. --}}
-                    <a href="{{ route('analytics.index') }}" class="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Analitik</a>
-                    <a href="{{ route('subscription.index') }}" class="block border-t border-slate-100 px-4 py-2 text-xs font-bold text-amber-700 hover:bg-amber-50">Langganan PRO</a>
+                    <a href="{{ route('analytics.index') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Analitik</a>
+                    <a href="{{ route('subscription.index') }}" class="flex items-center justify-between gap-2 border-t border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                        Langganan <span class="kode kode--izin">PRO</span>
+                    </a>
                 @endunless
 
-                <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-100">
+                <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-200">
                     @csrf
-                    <button type="submit" class="block w-full px-4 py-2 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50">Keluar</button>
+                    <button type="submit" class="block w-full px-3 py-1.5 text-left text-xs font-medium text-rose-600 hover:bg-rose-50">Keluar</button>
                 </form>
             </div>
         </div>
@@ -228,33 +243,33 @@
 {{-- Menempel di bawah pita penyamaran bila pitanya ada; tanpa offset ini
      pitanya menutupi deret pembatas begitu halaman digulir. --}}
 <div class="sticky {{ session('impersonator_id') ? 'top-7' : 'top-0' }} z-30 border-b border-slate-200 bg-white">
-    <div class="mx-auto max-w-6xl px-4 sm:px-6">
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 pt-3">
+    <div class="mx-auto max-w-buku px-4 sm:px-6">
+        <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-3">
             @if ($modeOperator)
-                <span class="text-lg font-extrabold tracking-tight text-slate-900">Panel Operator</span>
+                <span class="text-lg font-semibold tracking-tight text-slate-900">Panel Operator</span>
             @else
                 <div class="relative" x-data="{ buka: false }" @keydown.escape.window="buka = false">
                     <button type="button" @click="buka = !buka" :aria-expanded="buka ? 'true' : 'false'" aria-haspopup="true"
-                            class="-mx-2 flex items-center gap-2 rounded-lg px-2 py-0.5 transition-colors hover:bg-slate-100">
+                            class="-mx-1.5 flex items-center gap-1.5 rounded-sm px-1.5 py-0.5 transition-colors hover:bg-slate-100">
                         {{-- Bukan "Semua Kelas": itu label saringan di halaman Daftar
                              Kelas, dan dua benda berbeda dengan nama sama di satu
                              layar adalah cara tercepat membingungkan orang. --}}
-                        <span class="text-lg font-extrabold tracking-tight text-slate-900">{{ $kelasAktif?->name ?? 'Pilih kelas' }}</span>
-                        <span class="text-xs text-slate-400" aria-hidden="true">&#9662;</span>
+                        <span class="text-lg font-semibold tracking-tight text-slate-900">{{ $kelasAktif?->name ?? 'Pilih kelas' }}</span>
+                        <span class="text-[10px] text-slate-400" aria-hidden="true">&#9662;</span>
                     </button>
 
                     <div x-show="buka" x-cloak @click.outside="buka = false"
-                         class="absolute left-0 z-50 mt-1 max-h-80 w-64 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-xl">
+                         class="absolute left-0 z-50 mt-1 max-h-80 w-64 overflow-y-auto rounded border border-slate-300 bg-white py-1 shadow-xl">
                         @forelse ($kelasPintasan as $k)
                             <a href="{{ route('classes.show', $k) }}"
-                               class="block truncate px-4 py-2 text-xs font-semibold hover:bg-slate-50 {{ $kelasAktif?->is($k) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700' }}">
+                               class="block truncate px-3 py-1.5 text-xs font-medium hover:bg-slate-50 {{ $kelasAktif?->is($k) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700' }}">
                                 {{ $k->name }}
                             </a>
                         @empty
-                            <p class="px-4 py-2 text-xs text-slate-500">Belum ada kelas.</p>
+                            <p class="px-3 py-1.5 text-xs text-slate-500">Belum ada kelas.</p>
                         @endforelse
-                        <a href="{{ route('classes.index') }}" class="block border-t border-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Kelola semua kelas</a>
-                        <a href="{{ route('classes.create') }}" class="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Buat kelas baru</a>
+                        <a href="{{ route('classes.index') }}" class="block border-t border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Kelola semua kelas</a>
+                        <a href="{{ route('classes.create') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Buat kelas baru</a>
                     </div>
                 </div>
 
@@ -262,17 +277,18 @@
                     {{-- Wali kelas dan guru mapel memegang kelas yang tampak sama
                          tetapi menuntut pekerjaan yang sangat berbeda; penandanya
                          harus terbaca sebelum guru mulai mengisi apa pun. --}}
-                    <span class="rounded-full border px-2 py-0.5 text-[10px] font-bold {{ $kelasAktif->kelasAjar() ? 'border-teal-200 bg-teal-50 text-teal-700' : 'border-indigo-200 bg-indigo-50 text-indigo-700' }}">
+                    <span class="badge {{ $kelasAktif->kelasAjar() ? 'badge--emerald' : 'badge--indigo' }}">
                         {{ $kelasAktif->kelasAjar() ? 'Guru Mapel' : 'Perwalian' }}
                     </span>
                 @endif
             @endif
         </div>
 
-        <nav class="pembatas -mb-px mt-2 flex gap-5 overflow-x-auto" aria-label="Bagian">
+        {{-- Deret pembatas. Yang aktif menyatu dengan halaman di bawahnya. --}}
+        <nav class="pembatas -mb-px mt-2.5 flex gap-0.5 overflow-x-auto" aria-label="Bagian">
             @foreach ($pembatas as [$label, $tautan, $ini])
                 <a href="{{ $tautan }}" @if($ini) aria-current="page" @endif
-                   class="shrink-0 border-b-2 pb-2 text-xs font-bold transition-colors {{ $ini ? $pembatasAktif : $pembatasDiam }}">
+                   class="shrink-0 px-3 py-1.5 text-xs font-medium transition-colors {{ $ini ? $pembatasAktif : $pembatasDiam }}">
                     {{ $label }}
                 </a>
             @endforeach
@@ -280,7 +296,7 @@
     </div>
 </div>
 
-<main class="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
+<main class="mx-auto w-full max-w-buku px-4 py-6 sm:px-6">
     @include('partials.masa-otomasi')
     @yield('content')
 </main>
