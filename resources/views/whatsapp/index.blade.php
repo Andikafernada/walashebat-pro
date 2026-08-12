@@ -12,7 +12,7 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
-                Integrasi WhatsApp &amp; Balasan Otomatis 📲
+                Integrasi WhatsApp &amp; Balasan Otomatis
             </h1>
             <p class="text-xs text-slate-500 mt-0.5">Tautkan nomor WhatsApp Anda, atur kata kunci patokan izin/sakit, dan tentukan grup mana yang dibalas otomatis.</p>
         </div>
@@ -26,7 +26,7 @@
         <div class="flex items-center justify-between border-b border-slate-200 pb-4">
             <div class="flex items-center gap-3">
                 <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 font-semibold text-2xl">
-                    💬
+
                 </div>
                 <div>
                     <h3 class="text-base font-semibold text-slate-900">Status Koneksi WhatsApp</h3>
@@ -43,7 +43,7 @@
         @if(!auth()->user()->whatsappConnected())
             <div class="bg-amber-50 p-4 rounded border border-amber-200 text-xs text-amber-900 space-y-3">
                 <div>
-                    <p class="font-semibold text-sm text-amber-950">⚠️ Nomor WhatsApp Belum Tersambung</p>
+                    <p class="font-semibold text-sm text-amber-950">Nomor WhatsApp Belum Tersambung</p>
                     <p class="text-slate-600 mt-0.5">Pilih cara menautkan yang sesuai dengan perangkat yang sedang Anda pakai.</p>
                 </div>
 
@@ -62,7 +62,7 @@
                         <input type="hidden" name="metode" value="kode">
                         <button type="submit"
                                 class="h-auto py-3 px-4 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition-colors text-left">
-                            <span class="block text-sm">📱 Saya memakai HP ini</span>
+                            <span class="block text-sm">Saya memakai HP ini</span>
                             <span class="block font-medium text-emerald-50/90 mt-0.5 leading-snug">
                                 Dapatkan kode 8 karakter untuk diketik di WhatsApp. Tanpa memindai apa pun.
                             </span>
@@ -74,7 +74,7 @@
                         <input type="hidden" name="metode" value="qr">
                         <button type="submit"
                                 class="h-auto py-3 px-4 rounded border-2 border-emerald-600 bg-white hover:bg-emerald-50 text-emerald-800 font-semibold text-xs transition-colors text-left">
-                            <span class="block text-sm">💻 Saya memakai laptop/komputer</span>
+                            <span class="block text-sm">Saya memakai laptop/komputer</span>
                             <span class="block font-medium text-slate-500 mt-0.5 leading-snug">
                                 Terbitkan Kode QR untuk dipindai dengan WhatsApp di HP Anda.
                             </span>
@@ -140,9 +140,9 @@
             <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
             <span>Kode QR WhatsApp Berhasil Diterbitkan</span>
         </div>
-        
+
         <h3 class="text-xl font-semibold text-slate-900">Pindai Kode QR Ini Menggunakan WhatsApp HP</h3>
-        
+
         <p class="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
             Buka aplikasi WhatsApp di HP Anda &rarr; Ketuk <strong>Setelan (atau Titik Tiga)</strong> &rarr; <strong>Perangkat Tertaut</strong> &rarr; <strong>Tautkan Perangkat</strong>.
         </p>
@@ -168,11 +168,11 @@
                 label: {{ json_encode($grupLabels ?? []) }},
              })"
              x-init="awal()">
-            
+
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-4">
                 <div>
                     <h3 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <span>👥 Pilih &amp; Kelola Grup WhatsApp yang Dibalas Otomatis</span>
+                        <span>Pilih &amp; Kelola Grup WhatsApp yang Dibalas Otomatis</span>
                     </h3>
                     <p class="text-xs text-slate-500 mt-0.5">Centang grup WhatsApp orang tua yang ingin diaktifkan. Anda bisa menambah, mengurangi, atau mengedit kapan saja.</p>
                 </div>
@@ -189,13 +189,13 @@
                     <template x-if="mode === 'ringkas'">
                         <button type="button" @click="bukaPemilih()"
                                 class="text-xs text-indigo-600 hover:underline font-semibold">
-                            ✏️ Ubah pilihan grup
+ Ubah pilihan grup
                         </button>
                     </template>
                     <template x-if="mode === 'pilih'">
                         <button type="button" @click="muat(true)" :disabled="memuat"
                                 class="text-xs text-indigo-600 hover:underline font-semibold disabled:opacity-50">
-                            🔄 Refresh Grup
+ Refresh Grup
                         </button>
                     </template>
                 </div>
@@ -217,7 +217,7 @@
 
             @unless ($gatewayTerjangkau)
                 <div class="rounded border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950 space-y-1">
-                    <p class="font-semibold">⚠️ Pengaturan di bawah belum bisa dibaca</p>
+                    <p class="font-semibold">Pengaturan di bawah belum bisa dibaca</p>
                     <p>Sistem sedang tidak bisa menghubungi layanan WhatsApp, jadi keadaan balasan otomatis Anda <strong>tidak diketahui</strong> — bukan berarti mati, dan pilihan grup Anda <strong>tidak hilang</strong>.</p>
                     <p class="text-amber-800">Ini gangguan di sisi kami, bukan pengaturan Anda.
                         @if ($tungguDetik > 0)
@@ -234,7 +234,7 @@
                 {{-- Sirkuit berbeda: yang ini soal MENGIRIM pesan, bukan membaca
                      pengaturan. Magic link absensi lewat jalur yang sama. --}}
                 <div class="rounded border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950">
-                    <p class="font-semibold">⚠️ Pengiriman WhatsApp sedang terganggu</p>
+                    <p class="font-semibold">Pengiriman WhatsApp sedang terganggu</p>
                     <p>Pengaturan Anda terbaca normal, tetapi pesan keluar (balasan otomatis dan magic link absensi) sedang gagal terkirim. Sistem mencoba lagi otomatis.</p>
                 </div>
             @endif
@@ -330,7 +330,7 @@
                 <div class="space-y-4">
 
                 <div class="flex gap-2">
-                    <input type="text" x-model="cari" placeholder="🔍 Cari nama grup WhatsApp..."
+                    <input type="text" x-model="cari" placeholder=" Cari nama grup WhatsApp..."
                            class="flex-1 h-10 rounded border border-slate-200 bg-slate-50 px-3.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:outline-none">
                     {{-- Daftar grup di-cache 5 menit untuk menghindari batas laju
                          WhatsApp; tombol ini untuk guru yang baru menambah grup. --}}
@@ -382,7 +382,7 @@
                                       class="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
                                     ✓ Terkoneksi (Aktif)
                                 </span>
-                                <span x-show="!terpilih.includes(g.id)" 
+                                <span x-show="!terpilih.includes(g.id)"
                                       class="inline-flex items-center text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
                                     Tidak Aktif
                                 </span>
@@ -460,7 +460,7 @@
                         Total terpilih: <strong class="text-indigo-600" x-text="terpilih.length"></strong> grup.
                     </span>
                     <button type="submit" class="h-10 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-6 transition-colors">
-                        💾 Simpan Perubahan Grup WA
+ Simpan Perubahan Grup WA
                     </button>
                 </div>
             </form>
@@ -470,7 +470,7 @@
     <!-- CUSTOM KEYWORDS & TEMPLATE FORM -->
     <div class="card space-y-6">
         <div class="border-b border-slate-200 pb-3">
-            <h3 class="text-base font-semibold text-slate-900">🔤 Klasifikasi Kata Kunci &amp; Templat Balasan Guru</h3>
+            <h3 class="text-base font-semibold text-slate-900">Klasifikasi Kata Kunci &amp; Templat Balasan Guru</h3>
             <p class="text-xs text-slate-500 mt-0.5">Tentukan sendiri kata kunci yang dijadikan patokan balasan otomatis. Pesan di luar kata kunci ini <strong>TIDAK AKAN DIBALAS</strong>.</p>
         </div>
 
@@ -493,7 +493,7 @@
                     jadi kolomnya sengaja DIBIARKAN KOSONG.
                 --}}
                 <div class="md:col-span-2 flex items-start gap-2 text-[11px] text-indigo-900">
-                    <span>ℹ️</span>
+                    <span>ℹ </span>
                     <p>Kata umum seperti <span class="font-mono">izin, sakit, demam, acara, takziyah</span> — termasuk kata Sunda seperti <span class="font-mono">gering, muriang, teu tiasa</span> — <strong>sudah dikenali otomatis</strong>. Kolom di bawah hanya untuk menambah kata khas daerah atau kebiasaan grup Anda. Boleh dikosongkan.</p>
                 </div>
 
@@ -532,7 +532,7 @@
                     <span class="text-[11px] font-semibold text-indigo-600 shrink-0">Tag: {nama}</span>
                 </div>
                 <div class="flex items-start gap-2 text-[11px] text-slate-600 bg-slate-50 rounded p-2.5">
-                    <span>💬</span>
+                    <span> </span>
                     <p>Balasan sudah berganti-ganti otomatis dari 8 kalimat bawaan, jadi kolom ini <strong>boleh dikosongkan</strong>. Isi hanya bila ingin menambah kalimat dengan gaya bahasa Anda sendiri — <strong>satu kalimat per baris</strong>. Tulis <span class="font-mono">{nama}</span> untuk menyebut nama anaknya. Kalimat Anda <strong>ditambahkan</strong>, tidak menggantikan yang bawaan.</p>
                 </div>
 
@@ -559,8 +559,8 @@
                     <label class="block font-semibold text-slate-800 uppercase tracking-wider">Format Broadcast Magic Link Presensi Kelas</label>
                     <span class="text-[11px] font-semibold text-indigo-600">Tag: {nama_kelas}, {magic_link}, {pin}, {jam_berlaku}</span>
                 </div>
-                <textarea name="wa_magic_link_template" rows="5" 
-                          placeholder="Ketikkan templat pesan magic link..." 
+                <textarea name="wa_magic_link_template" rows="5"
+                          placeholder="Ketikkan templat pesan magic link..."
                           class="form-input form-input--sm">{{ auth()->user()->wa_magic_link_template ?: "*Wali Kelas Hebat - Absensi Kelas {nama_kelas}*\n\nPetugas absensi, silakan isi kehadiran hari ini melalui tautan berikut:\n{magic_link}\n\nPIN Harian: *{pin}*\nBerlaku s/d: {jam_berlaku} WIB\n\nJangan bagikan PIN ini ke siapa pun." }}</textarea>
             </div>
 

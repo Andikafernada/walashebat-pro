@@ -51,11 +51,11 @@
 
     <!-- Main Two-Column Layout -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3" x-data="{ search: '', categoryFilter: 'all' }">
-        
+
         <!-- LEFT COLUMN: Types List (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
             <div class="card">
-                
+
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4 mb-4">
                     <div>
                         <h3 class="text-base font-semibold text-slate-900">Daftar Jenis Pelanggaran</h3>
@@ -85,7 +85,7 @@
                             @endphp
                             <div class="flex items-center justify-between gap-4 py-3.5 hover:bg-slate-50 px-2 rounded transition-colors"
                                  x-show="(search === '' || '{{ strtolower($t->name) }}'.includes(search.toLowerCase())) && (categoryFilter === 'all' || categoryFilter === '{{ $cat }}')">
-                                
+
                                 <div class="flex items-center gap-3">
                                     <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded font-semibold text-xs {{ $cat === 'ringan' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : '' }} {{ $cat === 'sedang' ? 'bg-amber-100 text-amber-800 border border-amber-200' : '' }} {{ $cat === 'berat' ? 'bg-rose-100 text-rose-800 border border-rose-200' : '' }}">
                                         {{ $t->points > 0 ? '+' : '' }}{{ $t->points }}
@@ -152,7 +152,7 @@
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4" id="add-type-form">
             <div class="card space-y-4">
-                
+
                 <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
                     <div class="stat-icon">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

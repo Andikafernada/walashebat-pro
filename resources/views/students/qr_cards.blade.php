@@ -25,7 +25,7 @@
 
         <div class="flex items-center gap-2">
             <button onclick="window.print()" class="h-10 px-5 inline-flex items-center gap-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors">
-                🖨️ Cetak Kartu Sekarang
+ Cetak Kartu Sekarang
             </button>
         </div>
     </div>
@@ -34,11 +34,11 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 print:grid-cols-2 print:gap-3">
         @foreach($students as $s)
             <div class="relative overflow-hidden rounded-lg border-2 border-slate-900 bg-white p-4 text-slate-900 flex flex-col justify-between h-56 print:h-48 print:border-slate-800">
-                
+
                 <!-- CARD HEADER -->
                 <div class="flex items-center justify-between border-b-2 border-slate-900 pb-2">
                     <div class="flex items-center gap-2">
-                        <span class="text-lg">🏫</span>
+                        <span class="text-lg"> </span>
                         <div>
                             <p class="eyebrow leading-tight">WALI KELAS HEBAT</p>
                             <p class="text-xs font-semibold text-indigo-950 uppercase leading-tight">{{ $class->name }}</p>

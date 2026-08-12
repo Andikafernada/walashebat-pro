@@ -21,7 +21,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <a href="{{ route('classes.exports.violations.excel', $class) }}" 
+            <a href="{{ route('classes.exports.violations.excel', $class) }}"
                class="btn-secondary btn-secondary--sm">
                 <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                 Excel
@@ -42,11 +42,11 @@
 
     <!-- Main Two-Column Layout -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        
+
         <!-- LEFT COLUMN: Violations List (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
             <div class="card space-y-4">
-                
+
                 <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                     <div>
                         <h3 class="text-base font-semibold text-slate-900">Riwayat Catatan Pelanggaran</h3>
@@ -73,7 +73,7 @@
                                     </div>
                                 </div>
 
-                                <form method="POST" action="{{ route('classes.violations.destroy', [$class, $v]) }}" 
+                                <form method="POST" action="{{ route('classes.violations.destroy', [$class, $v]) }}"
                                       onsubmit="return confirm('Hapus catatan pelanggaran ini?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="h-8 w-8 rounded-lg border border-slate-200 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center text-slate-400 transition-colors">
@@ -106,7 +106,7 @@
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4">
             <div class="card space-y-4">
-                
+
                 <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
                     <div class="stat-icon">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

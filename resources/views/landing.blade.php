@@ -132,19 +132,29 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        /*
+         * Nilainya disamakan dengan tailwind.config.js.
+         *
+         * Halaman ini memang berdiri sendiri — ia tidak memakai palet Tailwind
+         * aplikasi dan tidak seharusnya, karena rupa huruf jualannya berbeda.
+         * Tetapi warnanya harus sama persis: pengunjung yang menekan "Coba
+         * gratis" berpindah dari halaman ini ke halaman daftar dalam satu klik,
+         * dan tinta yang bergeser sedikit di antara keduanya terbaca sebagai
+         * dua situs yang berbeda.
+         */
         :root {
-            --kertas:      #F6F5F1;  /* kertas HVS di bawah lampu kelas */
-            --kertas-tua:  #EDEBE3;  /* baris selang-seling di tabel */
-            --garis:       #D6D3C9;  /* garis tabel dan pembatas seksi */
-            --tinta:       #1B2A6B;  /* ballpoint biru: warna utama */
-            --tinta-muda:  #55608A;
-            --abu:         #6B6F76;  /* teks penjelas */
-            --pena-merah:  #C03027;  /* HANYA untuk tanda: alfa, belum, koreksi */
-            --hijau:       #1F7A4D;  /* HANYA untuk centang hadir */
+            --kertas:      #f7f5f1;  /* = slate-50   */
+            --kertas-tua:  #efebe4;  /* = slate-100  */
+            --garis:       #e3ded4;  /* = slate-200  */
+            --tinta:       #23486b;  /* = indigo-600 */
+            --tinta-muda:  #356494;  /* = indigo-500 */
+            --abu:         #7c7466;  /* = slate-500  */
+            --pena-merah:  #9a3527;  /* = rose-600, HANYA untuk tanda: alfa, belum, koreksi */
+            --hijau:       #2e6446;  /* = emerald-600, HANYA untuk centang hadir */
             --putih:       #FFFFFF;
         }
 
-        body { background: var(--kertas); color: #22252B; }
+        body { background: var(--kertas); color: #443e33; } /* = slate-700 */
 
         .judul { font-family: 'Archivo', system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; }
         .isi   { font-family: 'Newsreader', Georgia, serif; }
@@ -394,7 +404,7 @@
             </div>
 
             {{--
-                Tanpa ikon. Kartu ini dulu dibuka emoji (💬 📝 🛡️), dan di tata
+                Tanpa ikon. Kartu ini dulu dibuka emoji (   ), dan di tata
                 rupa yang meniru formulir cetak, emoji adalah satu-satunya benda
                 yang tidak mungkin ada di atas kertas. Yang menggantikannya bukan
                 ikon lain, melainkan tidak ada apa-apa: judul yang tegas lebih

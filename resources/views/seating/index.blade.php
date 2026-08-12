@@ -46,7 +46,7 @@
             initial: {{ Illuminate\Support\Js::from($seatsArr) }},
             rows: {{ $maxRow + 1 }}, cols: {{ $maxCol + 1 }}
          })">
-        
+
         <!-- Controls Bar -->
         <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div class="flex items-center gap-4">
@@ -83,19 +83,19 @@
 
         <!-- Teacher's Blackboard Representation Header -->
         <div class="mx-auto w-3/4 rounded bg-slate-800 py-2 text-center eyebrow shadow-inner">
-             papan tulis / meja guru 
+             papan tulis / meja guru
         </div>
 
         <!-- Dynamic Seating Grid -->
         <div class="overflow-x-auto py-4">
             <div class="inline-grid gap-3 min-w-full justify-center"
                  :style="`grid-template-columns: repeat(${cols}, minmax(130px, 1fr));`">
-                
+
                 <template x-for="r in rows" :key="`r-${r}`">
                     <template x-for="c in cols" :key="`r-${r}-c-${c}`">
                         <div class="group relative flex flex-col justify-between rounded border border-slate-200 bg-slate-50 p-2.5 transition-colors hover:border-indigo-300 hover:bg-white hover:"
                              :class="{ 'border-indigo-400 bg-indigo-50/30': seatAt(r-1, c-1).student_id }">
-                            
+
                             <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
                                 <span class="font-mono font-semibold" x-text="`R${r}C${c}`"></span>
                                 <template x-if="seatAt(r-1, c-1).student_id">

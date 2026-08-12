@@ -110,7 +110,7 @@
 
                 <button type="submit" :disabled="mengirim || terpilih.length === 0"
                         class="h-9 rounded bg-emerald-600 px-5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                    <span x-show="!mengirim">💾 Catat setoran <span x-text="terpilih.length"></span> siswa</span>
+                    <span x-show="!mengirim">Catat setoran <span x-text="terpilih.length"></span>siswa</span>
                     <span x-show="mengirim" x-cloak>Menyimpan…</span>
                 </button>
             </div>

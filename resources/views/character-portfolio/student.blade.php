@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="space-y-6 pb-12" x-data="{ showRecordModal: false, showFeedbackModal: false, activeReflectionId: null }">
-    
+
     <!-- Header Bar -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -22,14 +22,14 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <button type="button" @click="showRecordModal = true" 
+            <button type="button" @click="showRecordModal = true"
                     class="btn-primary btn-primary--sm">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 + Catat Observasi Guru
             </button>
             <a href="{{ route('public.reflection.show', $class->tokenPublik()) }}" target="_blank"
                class="inline-flex items-center gap-1.5 rounded border border-purple-200 bg-purple-50 px-3.5 py-2 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors">
-                📲 Link Refleksi Siswa
+ Link Refleksi Siswa
             </a>
         </div>
     </div>
@@ -113,7 +113,7 @@
 
                             <h4 class="font-semibold text-slate-900 text-sm">{{ $rec->title }}</h4>
                             <p class="text-slate-600">{{ $rec->description ?: 'Tidak ada deskripsi detail.' }}</p>
-                            
+
                             <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-200/50">
                                 <span>Dimensi: {{ $rec->dimension->name ?? '-' }}</span>
                                 <span>{{ $rec->record_date->format('d M Y') }}</span>
@@ -158,8 +158,8 @@
 
                             <div class="space-y-1 text-slate-700 bg-white p-2.5 rounded-lg border border-purple-100">
                                 <p><strong class="text-emerald-700">✓ Hal Baik:</strong> {{ $ref->what_went_well }}</p>
-                                <p><strong class="text-rose-700">⚠ Perlu Ditingkatkan:</strong> {{ $ref->what_to_improve }}</p>
-                                <p><strong class="text-indigo-700">🎯 Rencana Aksi:</strong> {{ $ref->action_plan }}</p>
+                                <p><strong class="text-rose-700">Perlu Ditingkatkan:</strong> {{ $ref->what_to_improve }}</p>
+                                <p><strong class="text-indigo-700">Rencana Aksi:</strong> {{ $ref->action_plan }}</p>
                             </div>
 
                             {{-- Cermin dari luar. Jarak antara kotak ini dan tiga isian
@@ -169,7 +169,7 @@
                                  sebaliknya sedang menutupi sesuatu. --}}
                             @if ($ref->kesan_teman)
                                 <div class="bg-sky-50 p-2.5 rounded-lg border border-sky-200 text-sky-900">
-                                    <span class="font-semibold block text-[10px] uppercase text-sky-700">👥 Kata Temannya</span>
+                                    <span class="font-semibold block text-[10px] uppercase text-sky-700">Kata Temannya</span>
                                     <p class="italic mt-0.5">"{{ $ref->kesan_teman }}"</p>
                                 </div>
                             @endif
@@ -178,7 +178,7 @@
                                  isian di atas yang ditujukan ke diri sendiri & wali kelas. --}}
                             @if ($ref->pesan_ortu)
                                 <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200 text-amber-900">
-                                    <span class="font-semibold block text-[10px] uppercase text-amber-700">💌 Pesan untuk Orang Tua</span>
+                                    <span class="font-semibold block text-[10px] uppercase text-amber-700">Pesan untuk Orang Tua</span>
                                     <p class="italic mt-0.5">"{{ $ref->pesan_ortu }}"</p>
                                 </div>
                             @endif
@@ -227,10 +227,10 @@
                     <div>
                         <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Tipe Catatan *</label>
                         <select name="type" required class="form-input form-input--sm">
-                            <option value="positive">🟢 Catatan Positif</option>
-                            <option value="negative">🔴 Catatan Evaluasi (Negatif)</option>
-                            <option value="observation">📝 Observasi Umum</option>
-                            <option value="achievement">🏆 Prestasi Siswa</option>
+                            <option value="positive">Catatan Positif</option>
+                            <option value="negative">Catatan Evaluasi (Negatif)</option>
+                            <option value="observation">Observasi Umum</option>
+                            <option value="achievement">Prestasi Siswa</option>
                         </select>
                     </div>
                     <div>

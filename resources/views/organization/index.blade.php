@@ -34,11 +34,11 @@
 
     <!-- Main Two-Column Layout -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        
+
         <!-- LEFT COLUMN: Organization Structure List (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
             <div class="card space-y-4">
-                
+
                 <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                     <div>
                         <h3 class="text-base font-semibold text-slate-900">Pengurus Kelas Aktif</h3>
@@ -60,7 +60,7 @@
                                             <h4 class="font-semibold text-sm text-slate-900">{{ $st->roleLabel() }}</h4>
                                             @if($st->role === 'seksi_absensi')
                                                 <span class="inline-flex items-center gap-1 rounded-sm bg-indigo-50 px-2.5 py-0.5 text-[10px] font-semibold text-indigo-700 border border-indigo-200">
-                                                    📱 Penerima Magic Link WA
+ Penerima Magic Link WA
                                                 </span>
                                             @endif
                                         </div>
@@ -70,7 +70,7 @@
                                     </div>
                                 </div>
 
-                                <form method="POST" action="{{ route('classes.organization.destroy', [$classroom, $st]) }}" 
+                                <form method="POST" action="{{ route('classes.organization.destroy', [$classroom, $st]) }}"
                                       onsubmit="return confirm('Hapus penunjukan {{ $st->roleLabel() }}?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="h-8 rounded-lg border border-rose-200 bg-rose-50 px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors flex items-center gap-1">
@@ -97,7 +97,7 @@
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4">
             <div class="card space-y-4">
-                
+
                 <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
                     <div class="stat-icon">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

@@ -13,7 +13,7 @@
     <div class="rounded-lg border border-slate-800 bg-slate-900 p-5 text-white">
         <div class="relative z-10 space-y-3">
             <div class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400 border border-amber-500/20">
-                <span>👑 Paket Akun VIP PRO</span>
+                <span>Paket Akun VIP PRO</span>
             </div>
             <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
                 Upgrade ke <span class="bg-clip-text text-transparent">Wali Kelas PRO</span>
@@ -67,7 +67,7 @@
 
     <!-- PRICING & DANA PAYMENT SECTION -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
+
         <!-- PRO PLAN CARD -->
         <div class="rounded-lg border-2 border-indigo-600 bg-white p-6 space-y-4 relative flex flex-col justify-between">
             <div class="absolute -top-2.5 right-5 rounded-sm border border-indigo-700 bg-indigo-600 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-white">
@@ -114,7 +114,7 @@
                     <p class="text-xs text-slate-500">Transfer {{ $rpHarga }} ke nomor DANA resmi di bawah</p>
                 </div>
                 <span class="px-3 py-1 rounded-lg bg-sky-50 text-sky-700 font-semibold text-xs border border-sky-200">
-                    💙 ONLY DANA
+ ONLY DANA
                 </span>
             </div>
 
@@ -163,7 +163,7 @@
                 </div>
 
                 <button type="submit" class="btn-primary w-full">
-                    📤 Unggah Bukti Transfer DANA ({{ $rpHarga }})
+ Unggah Bukti Transfer DANA ({{ $rpHarga }})
                 </button>
             </form>
         </div>

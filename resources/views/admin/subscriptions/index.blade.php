@@ -6,7 +6,7 @@
 <div class="space-y-6 pb-12">
     <div>
         <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
-            Panel Admin: Persetujuan Pembayaran PRO 💳
+            Panel Admin: Persetujuan Pembayaran PRO
         </h1>
         <p class="text-xs text-slate-500 mt-0.5">Konfirmasi foto bukti transfer dari guru untuk mengaktifkan paket PRO.</p>
     </div>
@@ -67,7 +67,7 @@
                                 </td>
                                 <td class="px-3 py-2 text-center">
                                     <a href="{{ route('subscription.proof', $p) }}" target="_blank" class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:underline">
-                                        🖼️ Lihat Foto Bukti
+ Lihat Foto Bukti
                                     </a>
                                 </td>
                                 <td class="px-3 py-2 text-center">

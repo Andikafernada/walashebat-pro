@@ -16,7 +16,7 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Panel Operator 🛰️</h1>
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Panel Operator </h1>
             <p class="text-xs text-slate-500 mt-0.5">Keadaan langganan, gateway WhatsApp, dan antrian di seluruh tenant.</p>
         </div>
         <span class="text-sm font-medium text-slate-700">{{ now()->translatedFormat('l, d F Y · H:i') }}</span>
@@ -154,7 +154,7 @@
                                              dinormalkan ke format 62… oleh mutator di User. --}}
                                         <a href="https://wa.me/{{ ltrim($g['whatsapp'], '+') }}" target="_blank" rel="noopener"
                                            class="inline-flex items-center gap-1 font-semibold text-emerald-600 hover:underline">
-                                            💬 {{ $g['whatsapp'] }}
+ {{ $g['whatsapp'] }}
                                         </a>
                                     @else
                                         <span class="text-slate-300">tanpa nomor</span>

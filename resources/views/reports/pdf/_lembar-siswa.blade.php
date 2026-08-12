@@ -76,7 +76,7 @@
     <tr>
         <td style="width: 25%;">
             <div class="stat-card">
-                <div class="stat-val" style="color: #059669;">{{ $kehadiran['persen'] === null ? '-' : $kehadiran['persen'].'%' }}</div>
+                <div class="stat-val" style="color: #2e6446;">{{ $kehadiran['persen'] === null ? '-' : $kehadiran['persen'].'%' }}</div>
                 <div class="stat-label">Tingkat Kehadiran</div>
             </div>
         </td>
@@ -88,13 +88,13 @@
         </td>
         <td style="width: 25%;">
             <div class="stat-card">
-                <div class="stat-val" style="color: #4f46e5;">{{ $poin['sekarang'] }}</div>
+                <div class="stat-val" style="color: #23486b;">{{ $poin['sekarang'] }}</div>
                 <div class="stat-label">Poin Disiplin</div>
             </div>
         </td>
         <td style="width: 25%;">
             <div class="stat-card">
-                <div class="stat-val" style="color: #d97706;">{{ $poin['kejadian'] }}</div>
+                <div class="stat-val" style="color: #8a6317;">{{ $poin['kejadian'] }}</div>
                 <div class="stat-label">Catatan Pelanggaran</div>
             </div>
         </td>
@@ -111,7 +111,7 @@
     @foreach ($tren as $t)
         @php
             $persen = $t['persen'];
-            $warna = $persen === null ? '#cbd5e1' : ($persen >= 90 ? '#059669' : ($persen >= 75 ? '#d97706' : '#e11d48'));
+            $warna = $persen === null ? '#cbd5e1' : ($persen >= 90 ? '#2e6446' : ($persen >= 75 ? '#8a6317' : '#e11d48'));
         @endphp
         <tr>
             <td class="bar-label" style="width: 16%;">{{ $t['label'] }}</td>
@@ -177,7 +177,7 @@
      angka saja, "62" tidak memberi tahu seberapa dekat ia ke ambang pembinaan;
      sebagai batang, jaraknya terlihat. --}}
 @php
-    $warnaPoin = $poin['sekarang'] >= 75 ? '#059669' : ($poin['sekarang'] >= 50 ? '#d97706' : '#e11d48');
+    $warnaPoin = $poin['sekarang'] >= 75 ? '#2e6446' : ($poin['sekarang'] >= 50 ? '#8a6317' : '#e11d48');
 @endphp
 <table class="bar-tbl">
     <tr>
@@ -203,7 +203,7 @@
             <td class="c">{{ $v->occurred_on->format('d/m/Y') }}</td>
             <td>
                 <strong>{{ $v->type->name ?? 'Catatan Disiplin' }}</strong>
-                @if ($v->note) <br><span style="font-size: 7.5pt; color: #64748b;">{{ $v->note }}</span> @endif
+                @if ($v->note) <br><span style="font-size: 7.5pt; color: #7c7466;">{{ $v->note }}</span> @endif
             </td>
             <td class="c tebal" style="color: {{ $v->points >= 0 ? '#166534' : '#991b1b' }};">
                 {{ $v->points >= 0 ? '+' : '' }}{{ $v->points }}
@@ -240,14 +240,14 @@
         <tr>
             <td>{{ $b['mapel'] }}</td>
             {{-- "-" berarti belum dinilai, bukan nol. --}}
-            <td class="c tebal" style="color: {{ $b['pts'] !== null && $b['pts'] < 75 ? '#991b1b' : '#0f172a' }};">{{ $b['pts'] ?? '-' }}</td>
-            <td class="c tebal" style="color: {{ $b['pas'] !== null && $b['pas'] < 75 ? '#991b1b' : '#0f172a' }};">{{ $b['pas'] ?? '-' }}</td>
+            <td class="c tebal" style="color: {{ $b['pts'] !== null && $b['pts'] < 75 ? '#991b1b' : '#1a1712' }};">{{ $b['pts'] ?? '-' }}</td>
+            <td class="c tebal" style="color: {{ $b['pas'] !== null && $b['pas'] < 75 ? '#991b1b' : '#1a1712' }};">{{ $b['pas'] ?? '-' }}</td>
             <td>
                 @if ($tampil === null)
-                    <span style="font-size: 7pt; color: #94a3b8; font-style: italic;">belum dinilai</span>
+                    <span style="font-size: 7pt; color: #a79e90; font-style: italic;">belum dinilai</span>
                 @else
                     <div class="rel-tipis">
-                        <div class="rel-tipis-isi" style="width: {{ max(0, min(100, (int) $tampil)) }}%; background: {{ $tampil < 75 ? '#e11d48' : '#059669' }};"></div>
+                        <div class="rel-tipis-isi" style="width: {{ max(0, min(100, (int) $tampil)) }}%; background: {{ $tampil < 75 ? '#e11d48' : '#2e6446' }};"></div>
                     </div>
                 @endif
             </td>
@@ -280,15 +280,15 @@
         <tr>
             <td class="bar-label" style="width: 24%;">{{ $d['dimensi'] }}</td>
             <td style="width: 46%;">
-                <div class="rel-tipis"><div class="rel-tipis-isi" style="width: {{ (int) round($d['positif'] / $puncak * 100) }}%; background: #059669;"></div></div>
+                <div class="rel-tipis"><div class="rel-tipis-isi" style="width: {{ (int) round($d['positif'] / $puncak * 100) }}%; background: #2e6446;"></div></div>
                 <div class="rel-tipis" style="margin-top: 2pt;"><div class="rel-tipis-isi" style="width: {{ (int) round($d['negatif'] / $puncak * 100) }}%; background: #e11d48;"></div></div>
             </td>
             <td class="bar-angka" style="width: 30%;">
-                <span style="color: #059669;">+{{ $d['positif'] }}</span>
-                <span style="color: #94a3b8;"> / </span>
+                <span style="color: #2e6446;">+{{ $d['positif'] }}</span>
+                <span style="color: #a79e90;"> / </span>
                 <span style="color: #e11d48;">−{{ $d['negatif'] }}</span>
                 @if ($d['lainnya'])
-                    <span style="color: #64748b; font-weight: normal;"> &middot; {{ $d['lainnya'] }} pengamatan</span>
+                    <span style="color: #7c7466; font-weight: normal;"> &middot; {{ $d['lainnya'] }} pengamatan</span>
                 @endif
             </td>
         </tr>
@@ -305,7 +305,7 @@
     keduanya sering lebih memberi tahu daripada salah satunya saja.
 --}}
 @forelse ($refleksi->take(2) as $r)
-    <p style="font-size: 7pt; color: #64748b; margin-bottom: 3pt;">
+    <p style="font-size: 7pt; color: #7c7466; margin-bottom: 3pt;">
         {{ \Illuminate\Support\Carbon::parse($r->reflection_date)->translatedFormat('d F Y') }}
         @if ($r->dimension?->name) &middot; Dimensi {{ $r->dimension->name }} @endif
         @if ($r->self_rating) &middot; Penilaian diri {{ $r->self_rating }}/5 @endif
@@ -352,14 +352,14 @@
                 <p style="font-weight: bold;">Orang Tua / Wali Siswa</p>
                 <div class="sig-space"></div>
                 <div class="sig-line">...................................................</div>
-                <p style="font-size: 7.5pt; color: #64748b;">Tanda Tangan &amp; Nama Terang</p>
+                <p style="font-size: 7.5pt; color: #7c7466;">Tanda Tangan &amp; Nama Terang</p>
             </td>
             <td class="sig-cell">
                 <p>{{ $guru->school_city ? $guru->school_city.', ' : '' }}{{ now()->translatedFormat('d F Y') }}</p>
                 <p style="font-weight: bold;">Wali Kelas {{ $classroom->name }}</p>
                 <div class="sig-space"></div>
                 <div class="sig-line">{{ $guru->name }}</div>
-                <p style="font-size: 7.5pt; color: #64748b;">NIP. {{ $guru->nip ?: '............................' }}</p>
+                <p style="font-size: 7.5pt; color: #7c7466;">NIP. {{ $guru->nip ?: '............................' }}</p>
             </td>
         </tr>
     </table>

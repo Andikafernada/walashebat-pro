@@ -20,15 +20,15 @@
         .dimension-item { background: #f0f0f0; border: 1px solid #ddd; padding: 8px 12px; border-radius: 4px; min-width: 120px; }
         .dimension-item .name { font-weight: bold; font-size: 10px; }
         .dimension-item .score { font-size: 14px; }
-        .positive { color: #16a34a; }
-        .negative { color: #dc2626; }
+        .positive { color: #2e6446; }
+        .negative { color: #9a3527; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid #333; padding: 6px 8px; }
         th { background: #f0f0f0; font-weight: bold; }
         .type-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; }
-        .type-positive { background: #dcfce7; color: #16a34a; }
-        .type-negative { background: #fee2e2; color: #dc2626; }
-        .type-observation { background: #fef3c7; color: #d97706; }
+        .type-positive { background: #dcfce7; color: #2e6446; }
+        .type-negative { background: #fee2e2; color: #9a3527; }
+        .type-observation { background: #fef3c7; color: #8a6317; }
         .type-achievement { background: #dbeafe; color: #2563eb; }
         .footer { margin-top: 30px; text-align: right; font-size: 10px; }
         .signature-table { width: 100%; margin-top: 40px; }

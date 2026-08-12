@@ -67,14 +67,14 @@
                             <label for="sub_periode" class="form-label">Periode Evaluasi Semester</label>
                             <select id="sub_periode" name="sub_periode" class="h-9 rounded border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-800 focus:border-indigo-500">
                                 <optgroup label="Semester 1 (Ganjil)">
-                                    <option value="1_tengah" @selected(($periode['sub_periode'] ?? '') === '1_tengah')>🌓 Tengah Semester 1 (PTS / STS 1)</option>
-                                    <option value="1_akhir" @selected(($periode['sub_periode'] ?? '') === '1_akhir')>🌕 Akhir Semester 1 (PAS / SAS 1)</option>
-                                    <option value="1_penuh" @selected(($periode['sub_periode'] ?? '') === '1_penuh' || (($periode['semester'] ?? 1) == 1 && empty($periode['sub_periode'])))>📘 Semester 1 Penuh (Juli - Des)</option>
+                                    <option value="1_tengah" @selected(($periode['sub_periode'] ?? '') === '1_tengah')>Tengah Semester 1 (PTS / STS 1)</option>
+                                    <option value="1_akhir" @selected(($periode['sub_periode'] ?? '') === '1_akhir')>Akhir Semester 1 (PAS / SAS 1)</option>
+                                    <option value="1_penuh" @selected(($periode['sub_periode'] ?? '') === '1_penuh' || (($periode['semester'] ?? 1) == 1 && empty($periode['sub_periode'])))>Semester 1 Penuh (Juli - Des)</option>
                                 </optgroup>
                                 <optgroup label="Semester 2 (Genap)">
-                                    <option value="2_tengah" @selected(($periode['sub_periode'] ?? '') === '2_tengah')>🌓 Tengah Semester 2 (PTS / STS 2)</option>
-                                    <option value="2_akhir" @selected(($periode['sub_periode'] ?? '') === '2_akhir')>🌕 Akhir Semester 2 (PAS / SAS 2)</option>
-                                    <option value="2_penuh" @selected(($periode['sub_periode'] ?? '') === '2_penuh' || (($periode['semester'] ?? 1) == 2 && empty($periode['sub_periode'])))>📘 Semester 2 Penuh (Jan - Juni)</option>
+                                    <option value="2_tengah" @selected(($periode['sub_periode'] ?? '') === '2_tengah')>Tengah Semester 2 (PTS / STS 2)</option>
+                                    <option value="2_akhir" @selected(($periode['sub_periode'] ?? '') === '2_akhir')>Akhir Semester 2 (PAS / SAS 2)</option>
+                                    <option value="2_penuh" @selected(($periode['sub_periode'] ?? '') === '2_penuh' || (($periode['semester'] ?? 1) == 2 && empty($periode['sub_periode'])))>Semester 2 Penuh (Jan - Juni)</option>
                                 </optgroup>
                             </select>
                         </div>

@@ -58,13 +58,13 @@
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-semibold text-indigo-900" x-text="namaGrupTerpilih()"></span>
                         <span class="inline-flex items-center gap-1 rounded-sm bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
-                            🔒 Terkunci
+ Terkunci
                         </span>
                     </div>
                     <p class="text-[11px] text-indigo-600/80">Pesan rekap absensi otomatis dikirim ke grup ini.</p>
                 </div>
             </div>
-            
+
             <div class="flex items-center gap-2">
                 <button type="button" @click="uji()" :disabled="menguji"
                         class="rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">
@@ -114,7 +114,7 @@
     </template>
 
     <p class="mt-2 text-xs text-slate-400">
-        Setelah petugas mengirim absensi, pesan rekap otomatis dikirim ke grup ini. 
+        Setelah petugas mengirim absensi, pesan rekap otomatis dikirim ke grup ini.
         Tekan <b>Kirim Pesan Uji</b> untuk memastikan grup sebelum disimpan.
     </p>
 

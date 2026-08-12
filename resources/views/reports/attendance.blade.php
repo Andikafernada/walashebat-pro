@@ -132,7 +132,7 @@
         <span class="report-badge report-badge--sakit">S Sakit</span>
         <span class="report-badge report-badge--izin">I Izin</span>
         <span class="report-badge report-badge--alfa">A Alfa</span>
-        <span class="ml-auto text-rose-600 font-medium">⚠ Baris merah = alfa 3× atau lebih</span>
+        <span class="ml-auto text-rose-600 font-medium">Baris merah = alfa 3× atau lebih</span>
     </div>
 
     @if ($jumlahPertemuan === 0)

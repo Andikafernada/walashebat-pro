@@ -17,8 +17,8 @@
         th, td { border: 1px solid #333; padding: 4px 6px; text-align: center; font-size: 9px; }
         th { background: #f0f0f0; font-weight: bold; }
         .student-name { text-align: left !important; }
-        .positive { color: #16a34a; }
-        .negative { color: #dc2626; }
+        .positive { color: #2e6446; }
+        .negative { color: #9a3527; }
         .footer { margin-top: 30px; text-align: right; font-size: 10px; }
         .signature-table { width: 100%; margin-top: 40px; }
         .signature-table td { text-align: center; vertical-align: top; padding: 5px; }

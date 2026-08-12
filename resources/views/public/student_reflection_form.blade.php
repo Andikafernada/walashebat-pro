@@ -127,7 +127,7 @@
                  pertanyaan yang menyakitkan untuk dijawab. --}}
             <div class="rounded border border-sky-200 bg-sky-50/60 p-3 space-y-1.5">
                 <label for="kesan_teman" class="block text-xs font-semibold uppercase tracking-wider text-sky-900">
-                    👥 Menurut Temanmu, Kamu Itu Seperti Apa? *
+ Menurut Temanmu, Kamu Itu Seperti Apa? *
                 </label>
                 {{-- Kalimat kedua bukan basa-basi: pertanyaannya wajib, jadi ia
                      harus bisa dijawab anak yang belum sempat bertanya maupun
@@ -147,7 +147,7 @@
                  ditampilkan terpisah. --}}
             <div class="rounded border border-amber-200 bg-amber-50/60 p-3 space-y-1.5">
                 <label for="pesan_ortu" class="block text-xs font-semibold text-amber-900 uppercase tracking-wider">
-                    💌 Pesan untuk Orang Tua *
+ Pesan untuk Orang Tua *
                 </label>
                 <p class="text-[10px] text-amber-800">
                     Tulis pesan, harapan, atau permintaan maaf untuk Ayah dan Ibu. Pesan ini akan dibaca wali kelas dan disampaikan kepada orang tuamu.

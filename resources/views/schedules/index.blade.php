@@ -29,12 +29,12 @@
 
     <!-- Main Two-Column Layout -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        
+
         <!-- LEFT COLUMN: Schedules List by Day (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
             @foreach (\App\Models\Schedule::DAYS as $num => $day)
                 <div class="card space-y-3">
-                    
+
                     <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                         <div class="flex items-center gap-2">
                             <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-xs font-semibold text-indigo-700">
@@ -65,7 +65,7 @@
                                         </div>
                                     </div>
 
-                                    <form method="POST" action="{{ route('classes.schedules.destroy', [$classroom, $s]) }}" 
+                                    <form method="POST" action="{{ route('classes.schedules.destroy', [$classroom, $s]) }}"
                                           onsubmit="return confirm('Hapus {{ $s->subject }} hari {{ $day }}?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="h-8 w-8 rounded-lg border border-slate-200 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center text-slate-400 transition-colors">
@@ -86,7 +86,7 @@
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4">
             <div class="card space-y-4">
-                
+
                 <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
                     <div class="stat-icon">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

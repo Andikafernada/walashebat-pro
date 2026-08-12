@@ -60,11 +60,11 @@
 
     <!-- Main Two-Column Layout -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3" x-data="{ tab: 'mine' }">
-        
+
         <!-- LEFT COLUMN: Holiday Lists (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
             <div class="card">
-                
+
                 <!-- Tab Selector Header -->
                 <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
                     <div class="flex items-center gap-2">
@@ -167,7 +167,7 @@
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4">
             <div class="card space-y-4">
-                
+
                 <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
                     <div class="stat-icon">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

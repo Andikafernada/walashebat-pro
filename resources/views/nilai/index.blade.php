@@ -20,7 +20,7 @@
                  yang satu tidak menggantikan yang lain. --}}
             <a href="{{ route('classes.nilai.rekap', $classroom) }}"
                class="inline-flex h-9 items-center rounded border border-indigo-200 bg-indigo-50 px-4 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
-                📋 Leger Nilai (PTS/PAS)
+ Leger Nilai (PTS/PAS)
             </a>
             <a href="{{ route('classes.nilai.create', $classroom) }}"
                class="inline-flex h-9 items-center rounded bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700">

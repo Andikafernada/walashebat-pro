@@ -16,7 +16,7 @@
         </div>
         <button type="button" onclick="window.print()"
                 class="h-9 rounded border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 print:hidden">
-            🖨️ Cetak
+ Cetak
         </button>
     </div>
 

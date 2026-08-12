@@ -54,11 +54,11 @@
 
     <!-- Main Two-Column Layout -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        
+
         <!-- LEFT COLUMN: Cash Transactions List (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
             <div class="card space-y-4">
-                
+
                 <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                     <div>
                         <h3 class="text-base font-semibold text-slate-900">Mutasi Transaksi Kas</h3>
@@ -91,7 +91,7 @@
                                         {{ $e->type === 'in' ? '+' : '-' }} Rp {{ number_format($e->amount, 0, ',', '.') }}
                                     </span>
 
-                                    <form method="POST" action="{{ route('classes.cashbook.destroy', [$classroom, $e]) }}" 
+                                    <form method="POST" action="{{ route('classes.cashbook.destroy', [$classroom, $e]) }}"
                                           onsubmit="return confirm('Hapus transaksi &quot;{{ $e->description }}&quot;?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="h-8 w-8 rounded-lg border border-slate-200 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center text-slate-400 transition-colors">
@@ -198,7 +198,7 @@
             </div>
 
             <div class="card space-y-4">
-                
+
                 <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
                     <div class="stat-icon">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

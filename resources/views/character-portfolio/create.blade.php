@@ -27,10 +27,10 @@
                     <div class="form-group">
                         <label class="form-label form-label--required">Tipe</label>
                         <select name="type" required class="form-select">
-                            <option value="positive">🟢 Positif</option>
-                            <option value="negative">🔴 Negatif</option>
-                            <option value="observation">📝 Observasi</option>
-                            <option value="achievement">🏆 Prestasi</option>
+                            <option value="positive">Positif</option>
+                            <option value="negative">Negatif</option>
+                            <option value="observation">Observasi</option>
+                            <option value="achievement">Prestasi</option>
                         </select>
                     </div>
                     <div class="form-group">

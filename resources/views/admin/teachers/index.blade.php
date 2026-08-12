@@ -19,7 +19,7 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Daftar Guru 📇</h1>
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Daftar Guru </h1>
             <p class="text-xs text-slate-500 mt-0.5">Siapa saja yang mendaftar, di sekolah mana, dan sedang di segmen apa.</p>
         </div>
         <a href="{{ route('admin.dashboard') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">‹ Panel Operator</a>

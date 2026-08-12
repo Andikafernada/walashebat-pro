@@ -24,7 +24,7 @@
             <button type="button" @click="showShareModal = true"
                     class="inline-flex items-center gap-1.5 rounded border border-purple-200 bg-purple-50 px-3.5 py-2 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors">
                 <svg class="h-4 w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-                📲 Bagikan Form Refleksi Siswa
+ Bagikan Form Refleksi Siswa
             </button>
         </div>
     </div>
@@ -40,12 +40,12 @@
         <h3 class="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">6 Dimensi Profil Pelajar Pancasila</h3>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach($dimensions as $dimension)
-                <div class="card transition-colors space-y-3" 
+                <div class="card transition-colors space-y-3"
                      style="border-top: 3.5px solid {{ $dimension->color }};">
-                    
+
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="stat-icon" 
+                            <div class="stat-icon"
                                  style="background-color: {{ $dimension->color }};">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $dimension->icon }}"/>
@@ -98,9 +98,9 @@
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach($students as $student)
-                <a href="{{ route('classes.character-portfolio.student', [$class, $student]) }}" 
+                <a href="{{ route('classes.character-portfolio.student', [$class, $student]) }}"
                    class="group card hover:border-indigo-300 transition-colors space-y-3 block">
-                    
+
                     <div class="flex items-center gap-3">
                         <div class="stat-icon">
                             {{ substr($student->name, 0, 1) }}
@@ -152,7 +152,7 @@
                        class="h-10 w-full rounded border border-purple-200 bg-purple-50/50 px-3 text-xs font-mono text-purple-900 focus:outline-none select-all">
                 <button type="button" onclick="navigator.clipboard.writeText('{{ route('public.reflection.show', $class->tokenPublik()) }}'); alert('Tautan Refleksi disalin!');"
                         class="h-10 w-full rounded bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5">
-                    📋 Salin Tautan Ke Clipboard
+ Salin Tautan Ke Clipboard
                 </button>
             </div>
         </div>

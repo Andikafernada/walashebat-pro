@@ -97,7 +97,7 @@
                 this.mengirim = true;
             }
          }">
-        
+
         <!-- Step Indicator -->
         <div class="grid grid-cols-4 gap-1 border-b border-slate-200 pb-4 text-[11px] text-center font-semibold">
             <button type="button" @click="step = 1" :class="step === 1 ? 'text-indigo-600 border-b-2 border-indigo-600 pb-1' : 'text-slate-400'">

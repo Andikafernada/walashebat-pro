@@ -18,11 +18,11 @@
         th, td { border: 1px solid #333; padding: 8px 10px; }
         th { background: #f0f0f0; font-weight: bold; text-align: left; }
         .points { text-align: center; font-weight: bold; }
-        .points.high { color: #dc2626; }
-        .points.medium { color: #f59e0b; }
-        .points.low { color: #16a34a; }
-        .total-box { background: #fee2e2; border: 2px solid #dc2626; padding: 12px; text-align: center; border-radius: 4px; }
-        .total-box .number { font-size: 24px; font-weight: bold; color: #dc2626; }
+        .points.high { color: #9a3527; }
+        .points.medium { color: #8a6317; }
+        .points.low { color: #2e6446; }
+        .total-box { background: #fee2e2; border: 2px solid #9a3527; padding: 12px; text-align: center; border-radius: 4px; }
+        .total-box .number { font-size: 24px; font-weight: bold; color: #9a3527; }
         .footer { margin-top: 30px; text-align: right; font-size: 10px; }
         .signature-table { width: 100%; margin-top: 40px; }
         .signature-table td { text-align: center; vertical-align: top; padding: 5px; }

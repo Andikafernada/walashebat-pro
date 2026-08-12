@@ -12,21 +12,21 @@
         .header p { font-size: 10px; color: #666; }
         .summary { display: flex; gap: 20px; margin-bottom: 20px; }
         .summary-card { flex: 1; padding: 15px; border-radius: 4px; text-align: center; }
-        .summary-card.income { background: #dcfce7; border: 2px solid #16a34a; }
-        .summary-card.expense { background: #fee2e2; border: 2px solid #dc2626; }
-        .summary-card.balance { background: #e0e7ff; border: 2px solid #4f46e5; }
+        .summary-card.income { background: #dcfce7; border: 2px solid #2e6446; }
+        .summary-card.expense { background: #fee2e2; border: 2px solid #9a3527; }
+        .summary-card.balance { background: #e0e7ff; border: 2px solid #23486b; }
         .summary-card .label { font-size: 10px; color: #666; margin-bottom: 5px; }
         .summary-card .amount { font-size: 16px; font-weight: bold; }
-        .summary-card.income .amount { color: #16a34a; }
-        .summary-card.expense .amount { color: #dc2626; }
-        .summary-card.balance .amount { color: #4f46e5; }
+        .summary-card.income .amount { color: #2e6446; }
+        .summary-card.expense .amount { color: #9a3527; }
+        .summary-card.balance .amount { color: #23486b; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid #333; padding: 8px 10px; }
         th { background: #f0f0f0; font-weight: bold; text-align: center; }
         .text-left { text-align: left !important; }
         .text-right { text-align: right !important; }
-        .income { color: #16a34a; }
-        .expense { color: #dc2626; }
+        .income { color: #2e6446; }
+        .expense { color: #9a3527; }
         .footer { margin-top: 30px; text-align: right; font-size: 10px; }
         .signature-table { width: 100%; margin-top: 40px; }
         .signature-table td { text-align: center; vertical-align: top; padding: 5px; }
