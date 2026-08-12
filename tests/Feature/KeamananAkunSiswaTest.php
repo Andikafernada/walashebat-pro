@@ -157,6 +157,37 @@ class KeamananAkunSiswaTest extends TestCase
         $this->assertFalse((bool) $segar->must_change_password, 'Penanda wajib ganti harus dilepas');
     }
 
+    /**
+     * Gerbang wajib-ganti-sandi harus benar-benar MENUTUP halaman berdata
+     * pribadi, bukan cuma terpasang.
+     *
+     * Grup middleware-nya sempat dipasang persis di sekitar dua rute formulir
+     * ganti sandi — rute yang selalu ia loloskan — sehingga ia tidak pernah
+     * menyala di mana pun. Dashboard, biodata (alamat, nama & nomor HP orang
+     * tua), dan portofolio terbuka bagi siapa pun yang masuk dengan kata sandi
+     * awal. Kata sandi awal itu dibagikan wali kelas lewat grup WhatsApp.
+     */
+    public function test_halaman_pribadi_tertutup_sebelum_sandi_diganti(): void
+    {
+        $this->siswa->update(['must_change_password' => true]);
+
+        foreach (['student.dashboard', 'student.biodata.edit', 'student.portfolio'] as $rute) {
+            $this->actingAs($this->siswa, 'student')
+                ->get(route($rute))
+                ->assertRedirect(route('student.password.change'), "{$rute} terbuka tanpa ganti sandi");
+        }
+    }
+
+    /** Setelah diganti, halaman yang sama harus terbuka. */
+    public function test_halaman_pribadi_terbuka_setelah_sandi_diganti(): void
+    {
+        $this->siswa->update(['must_change_password' => false]);
+
+        $this->actingAs($this->siswa, 'student')
+            ->get(route('student.dashboard'))
+            ->assertOk();
+    }
+
     /** Kata sandi tidak boleh bisa diganti tanpa mengetahui yang lama. */
     public function test_ganti_sandi_wajib_menyertakan_sandi_lama(): void
     {

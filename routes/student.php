@@ -46,16 +46,26 @@ Route::middleware('student.auth')->group(function () {
     Route::post('student/logout', [AuthController::class, 'logout'])->name('student.logout');
     Route::get('student/logout', fn () => redirect()->route('student.login'));
 
-    // First-time password change
+    /*
+     * Formulir ganti kata sandi. TIDAK dibungkus middleware wajib-ganti —
+     * justru kedua rute inilah yang dikecualikan di dalam middleware itu.
+     *
+     * Dulu grup middleware-nya dipasang tepat di sekitar dua rute ini saja,
+     * sehingga ia membungkus persis rute yang selalu ia loloskan: gerbangnya
+     * tidak pernah menyala di mana pun, dan seluruh halaman di bawah — dashboard,
+     * biodata (alamat, nama & nomor HP orang tua), portofolio — terbuka bagi
+     * siapa pun yang berhasil masuk dengan kata sandi awal, tanpa pernah
+     * dipaksa menggantinya.
+     */
+    Route::get('student/password/ubah', [AuthController::class, 'showPasswordChange'])->name('student.password.change');
+    // WAJIB bernama: StudentMustChangePassword meloloskan request berdasarkan
+    // NAMA route. Selama POST ini anonim, pengirimannya ikut dialihkan balik ke
+    // formulir dan siswa terkunci dalam loop tanpa ujung.
+    Route::post('student/password/ubah', [AuthController::class, 'changePassword'])
+        ->name('student.password.update');
+
+    // Seluruh halaman berisi data pribadi ada DI DALAM gerbang ini.
     Route::middleware('student.must.change.password')->group(function () {
-        Route::get('student/password/ubah', [AuthController::class, 'showPasswordChange'])->name('student.password.change');
-        // WAJIB bernama: StudentMustChangePassword hanya meloloskan request
-        // berdasarkan NAMA route. Selama POST ini anonim, pengirimannya ikut
-        // dialihkan balik ke formulir dan siswa yang wajib ganti kata sandi
-        // terkunci dalam loop tanpa ujung.
-        Route::post('student/password/ubah', [AuthController::class, 'changePassword'])
-            ->name('student.password.update');
-    });
 
     // Dashboard
     Route::get('student/dashboard', [DashboardController::class, 'index'])->name('student.dashboard');
@@ -78,4 +88,5 @@ Route::middleware('student.auth')->group(function () {
     // Reflections
     Route::get('student/refleksi/baru', [PortfolioController::class, 'createReflection'])->name('student.reflection.create');
     Route::post('student/refleksi', [PortfolioController::class, 'storeReflection'])->name('student.reflection.store');
+    }); // tutup gerbang wajib-ganti-kata-sandi
 });

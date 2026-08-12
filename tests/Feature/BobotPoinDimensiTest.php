@@ -43,6 +43,10 @@ class BobotPoinDimensiTest extends TestCase
         $class = Classroom::factory()->create(['user_id' => $this->user->id]);
         $this->student = Student::factory()->create([
             'user_id' => $this->user->id, 'class_id' => $class->id, 'discipline_points' => 0,
+            // Seluruh portal siswa ada di balik gerbang wajib-ganti-sandi;
+            // tanpa ini setiap POST dialihkan ke formulir sandi, bukan ditolak
+            // — dan `assertRedirect()` tetap hijau sambil tidak menguji apa pun.
+            'must_change_password' => false,
         ]);
         $this->dimensi = CharacterDimension::forOwner($this->user->id)->active()->first();
     }
