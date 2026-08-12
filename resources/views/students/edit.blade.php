@@ -9,8 +9,34 @@
                   action="{{ route('classes.students.update', [$classroom, $student]) }}"
                   enctype="multipart/form-data"
                   class="space-y-6"
-                  x-data="{ loading: false }"
-                  @submit="loading = true">
+                  x-data="{
+                      loading: false,
+                      bagian: 'identitas',
+                      /*
+                       * Formulir ini berlipat lima tab, dan kolom yang tak sah
+                       * di tab TERTUTUP membuat Chrome membatalkan pengiriman
+                       * tanpa pesan apa pun: ia menolak menyorot kolom yang
+                       * display:none, lalu menyerah diam-diam. Cukup satu
+                       * tanggal lahir yang diketik separuh di tab Pribadi —
+                       * guru menekan Simpan berkali-kali, tidak terjadi apa-apa,
+                       * dan tidak ada satu pun permintaan sampai ke server.
+                       *
+                       * Jadi sebelum menyerah, bukakan tab yang menyembunyikan
+                       * kolom itu supaya peramban punya sesuatu untuk disorot.
+                       */
+                      periksa($form) {
+                          const buruk = $form.querySelector(':invalid');
+
+                          if (! buruk) {
+                              this.loading = true;
+                              return;
+                          }
+
+                          this.bagian = buruk.closest('[data-bagian]')?.dataset.bagian ?? this.bagian;
+                          this.$nextTick(() => { buruk.focus(); buruk.reportValidity(); });
+                      },
+                  }"
+                  @submit="periksa($el)">
 
                 @method('PUT')
                 @csrf

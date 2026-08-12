@@ -24,7 +24,7 @@
     kolom dalam satu kolom panjang membuat guru berhenti mengisi di tengah
     jalan; yang wajib ada di atas dan langsung terbuka, sisanya menyusul.
 --}}
-<div x-data="{ bagian: 'identitas' }" class="space-y-4">
+<div class="space-y-4">
 
     {{-- ============ IDENTITAS ============ --}}
     <section class="rounded-2xl border border-slate-200">
@@ -41,7 +41,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'identitas'" class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'identitas'" data-bagian="identitas" class="border-t border-slate-100 p-4">
             <div class="grid gap-5">
                 <div class="form-group">
                     <label for="name" class="form-label form-label--required">Nama lengkap</label>
@@ -151,7 +151,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'pribadi'" x-cloak class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'pribadi'" data-bagian="pribadi" x-cloak class="border-t border-slate-100 p-4">
             <div class="grid gap-5">
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div class="form-group">
@@ -260,7 +260,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'domisili'" x-cloak class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'domisili'" data-bagian="domisili" x-cloak class="border-t border-slate-100 p-4">
             <div class="grid gap-5">
                 <div class="form-group">
                     <label for="address" class="form-label">Alamat</label>
@@ -327,7 +327,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'ortu'" x-cloak class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'ortu'" data-bagian="ortu" x-cloak class="border-t border-slate-100 p-4">
             <div class="grid gap-5">
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div class="form-group">
@@ -416,7 +416,7 @@
             </svg>
         </button>
 
-        <div x-show="bagian === 'sekolah'" x-cloak class="border-t border-slate-100 p-4">
+        <div x-show="bagian === 'sekolah'" data-bagian="sekolah" x-cloak class="border-t border-slate-100 p-4">
             <div class="grid gap-5">
                 <div class="form-group">
                     <label for="asal_sekolah" class="form-label">Asal sekolah</label>

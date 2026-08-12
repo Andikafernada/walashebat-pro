@@ -58,7 +58,12 @@
                         </div>
                     </div>
 
-                    <!-- Dimension Stats -->
+                    {{-- Angka pengamatan wali kelas dan angka refleksi siswa
+                         dipisah bergaris, karena sumbernya memang dua benda
+                         berbeda: yang atas ditulis guru tentang anak, yang bawah
+                         ditulis anaknya sendiri. Dulu hanya yang atas dihitung,
+                         sehingga halaman ini melaporkan 0 kepada wali kelas yang
+                         siswanya sudah mengisi. --}}
                     <div class="grid grid-cols-3 gap-2 text-center text-xs">
                         <div class="rounded-xl bg-emerald-50 p-2 border border-emerald-100">
                             <span class="block text-base font-black text-emerald-700">{{ $dimensionStats[$dimension->id]['positive'] ?? 0 }}</span>
@@ -66,12 +71,17 @@
                         </div>
                         <div class="rounded-xl bg-slate-50 p-2 border border-slate-100">
                             <span class="block text-base font-black text-slate-700">{{ $dimensionStats[$dimension->id]['total_records'] ?? 0 }}</span>
-                            <span class="text-[10px] font-semibold text-slate-500">Total Records</span>
+                            <span class="text-[10px] font-semibold text-slate-500">Total Catatan</span>
                         </div>
                         <div class="rounded-xl bg-rose-50 p-2 border border-rose-100">
                             <span class="block text-base font-black text-rose-700">{{ $dimensionStats[$dimension->id]['negative'] ?? 0 }}</span>
                             <span class="text-[10px] font-semibold text-rose-600">Catatan Evaluasi</span>
                         </div>
+                    </div>
+
+                    <div class="flex items-center justify-between rounded-xl border border-sky-100 bg-sky-50 px-3 py-2">
+                        <span class="text-[10px] font-semibold text-sky-700">Refleksi dikirim siswa</span>
+                        <span class="text-base font-black text-sky-700">{{ $dimensionStats[$dimension->id]['refleksi'] ?? 0 }}</span>
                     </div>
 
                 </div>
@@ -107,6 +117,18 @@
                     <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
                         <span class="text-[11px] text-slate-400">Badge Karakter:</span>
                         <span class="font-bold text-indigo-600">{{ $earnedBadges->count() }} Terperoleh</span>
+                    </div>
+
+                    {{-- Yang paling ingin diketahui wali kelas setelah menyebar
+                         tautan: siapa yang belum menyetor. --}}
+                    @php $jumlahRefleksi = $refleksiPerSiswa[$student->id] ?? 0; @endphp
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-[11px] text-slate-400">Refleksi mandiri:</span>
+                        @if ($jumlahRefleksi)
+                            <span class="font-bold text-sky-700">{{ $jumlahRefleksi }} dikirim</span>
+                        @else
+                            <span class="font-bold text-amber-700">Belum mengisi</span>
+                        @endif
                     </div>
                 </a>
             @endforeach

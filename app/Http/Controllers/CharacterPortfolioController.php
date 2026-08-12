@@ -53,7 +53,24 @@ class CharacterPortfolioController extends Controller
         $dimensions = CharacterDimension::forOwner($class->user_id)->active()->get();
         $students = $class->students()->with(['characterRecords', 'studentBadges'])->get();
 
-        // Calculate stats per dimension
+        /*
+         * DUA SUMBER, BUKAN SATU.
+         *
+         * Halaman ini membagikan tautan formulir refleksi lalu — sampai
+         * perbaikan ini — menghitung tabel character_records saja, yaitu
+         * catatan PENGAMATAN yang ditulis wali kelas sendiri. Refleksi yang
+         * dikirim siswa masuk ke tabel yang sama sekali lain.
+         *
+         * Akibatnya persis yang dilaporkan dari kelas XII TKJ D: 23 siswa sudah
+         * mengisi, seluruh angka di halaman tetap 0, dan tidak ada galat apa pun
+         * yang bisa menjelaskannya. Wali kelas hanya bisa menyimpulkan
+         * kiriman siswanya hilang.
+         */
+        $refleksiPerDimensi = CharacterReflection::where('class_id', $class->id)
+            ->selectRaw('character_dimension_id, COUNT(*) as jumlah')
+            ->groupBy('character_dimension_id')
+            ->pluck('jumlah', 'character_dimension_id');
+
         $dimensionStats = [];
         foreach ($dimensions as $dimension) {
             $dimensionStats[$dimension->id] = [
@@ -68,10 +85,21 @@ class CharacterPortfolioController extends Controller
                     ->where('character_dimension_id', $dimension->id)
                     ->where('type', 'negative')
                     ->count(),
+                'refleksi' => (int) ($refleksiPerDimensi[$dimension->id] ?? 0),
             ];
         }
 
-        return view('character-portfolio.index', compact('class', 'dimensions', 'students', 'dimensionStats'));
+        // Dipakai kartu tiap siswa: siapa yang sudah menyetor dan siapa belum.
+        $refleksiPerSiswa = CharacterReflection::where('class_id', $class->id)
+            ->selectRaw('student_id, COUNT(*) as jumlah')
+            ->groupBy('student_id')
+            ->pluck('jumlah', 'student_id');
+
+        $totalRefleksi = $refleksiPerDimensi->sum();
+
+        return view('character-portfolio.index', compact(
+            'class', 'dimensions', 'students', 'dimensionStats', 'refleksiPerSiswa', 'totalRefleksi'
+        ));
     }
 
     /**
@@ -248,6 +276,9 @@ class CharacterPortfolioController extends Controller
             'what_went_well' => ['nullable', 'string', 'max:1000'],
             'what_to_improve' => ['nullable', 'string', 'max:1000'],
             'action_plan' => ['nullable', 'string', 'max:1000'],
+            // Pertanyaan yang sama ditanyakan formulir publik; tanpa ini refleksi
+            // yang ditulis lewat jalur ini menyimpan kolomnya kosong selamanya.
+            'kesan_teman' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $data['class_id'] = $class->id;
