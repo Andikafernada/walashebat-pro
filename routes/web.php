@@ -351,10 +351,20 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
         Route::get('guru', [App\Http\Controllers\AdminTeacherController::class, 'index'])->name('teachers.index');
         Route::get('guru/{guru}', [App\Http\Controllers\AdminTeacherController::class, 'show'])->name('teachers.show');
+        Route::post('guru/{guru}/aktif', [App\Http\Controllers\AdminTeacherController::class, 'toggleAktif'])->name('teachers.toggle-active');
+        Route::post('guru/{guru}/pro', [App\Http\Controllers\AdminTeacherController::class, 'beriPro'])->name('teachers.grant-pro');
+        Route::post('guru/{guru}/reset-sandi', [App\Http\Controllers\AdminTeacherController::class, 'resetPassword'])->name('teachers.reset-password');
+        Route::post('guru/{guru}/masuk', [App\Http\Controllers\AdminTeacherController::class, 'masukSebagai'])->name('teachers.impersonate');
+        Route::get('pengumuman', [App\Http\Controllers\AdminAnnouncementController::class, 'form'])->name('announcements.form');
+        Route::post('pengumuman', [App\Http\Controllers\AdminAnnouncementController::class, 'send'])->name('announcements.send');
         Route::get('subscriptions', [App\Http\Controllers\AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::post('subscriptions/{proof}/approve', [App\Http\Controllers\AdminSubscriptionController::class, 'approve'])->name('subscriptions.approve');
         Route::post('subscriptions/{proof}/reject', [App\Http\Controllers\AdminSubscriptionController::class, 'reject'])->name('subscriptions.reject');
     });
+
+    // Berhenti menyamar: DI LUAR role:admin — saat dipanggil yang login adalah
+    // guru yang sedang disamari, bukan admin. Penjaganya remah sesi.
+    Route::post('berhenti-menyamar', [App\Http\Controllers\AdminTeacherController::class, 'berhentiMenyamar'])->name('teachers.stop-impersonate');
 });
 
 Route::post('whatsapp/template', [App\Http\Controllers\WhatsAppSessionController::class, 'templateSave'])->middleware('auth')->name('whatsapp.template.save');

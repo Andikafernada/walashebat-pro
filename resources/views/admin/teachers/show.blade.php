@@ -37,9 +37,36 @@
                 @if ($guru->school_npsn) &middot; NPSN {{ $guru->school_npsn }} @endif
             </p>
         </div>
-        <div class="text-xs text-slate-500 sm:text-right shrink-0">
-            <p>Daftar {{ $guru->created_at->translatedFormat('d F Y') }}</p>
-            <p class="text-slate-400">{{ $guru->created_at->diffForHumans() }}</p>
+        <div class="text-xs text-slate-500 sm:text-right shrink-0 space-y-2">
+            <div>
+                <p>Daftar {{ $guru->created_at->translatedFormat('d F Y') }}</p>
+                <p class="text-slate-400">{{ $guru->created_at->diffForHumans() }}</p>
+            </div>
+            {{-- Satu-satunya tombol tindakan di halaman ini: membekukan akses.
+                 is_active=false menendang guru keluar pada request berikutnya. --}}
+            <form method="POST" action="{{ route('admin.teachers.toggle-active', $guru) }}"
+                  @if ($guru->is_active) onsubmit="return confirm('Nonaktifkan akun {{ $guru->name }}? Ia langsung ter-logout dan tidak bisa masuk sampai diaktifkan lagi.')" @endif>
+                @csrf
+                @if ($guru->is_active)
+                    <button type="submit" class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-700">Nonaktifkan akun</button>
+                @else
+                    <button type="submit" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700">Aktifkan kembali</button>
+                @endif
+            </form>
+            {{-- Reset sandi: sandi sementara muncul sekali di flash di atas. --}}
+            <form method="POST" action="{{ route('admin.teachers.reset-password', $guru) }}"
+                  onsubmit="return confirm('Reset kata sandi {{ $guru->name }}? Sandi lama langsung tidak berlaku dan sandi sementara akan muncul sekali.')">
+                @csrf
+                <button type="submit" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">Reset kata sandi</button>
+            </form>
+            {{-- Masuk sebagai guru: menelusuri keluhan dari sisi guru itu. --}}
+            @if ($guru->is_active)
+                <form method="POST" action="{{ route('admin.teachers.impersonate', $guru) }}"
+                      onsubmit="return confirm('Masuk sebagai {{ $guru->name }}? Anda akan melihat aplikasi persis seperti guru ini sampai menekan Kembali ke admin.')">
+                    @csrf
+                    <button type="submit" class="rounded-lg border border-indigo-300 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Masuk sebagai guru</button>
+                </form>
+            @endif
         </div>
     </div>
 
@@ -55,6 +82,15 @@
                     ? ($aktif ? 'aktif sampai '.$guru->subscription_ends_at->translatedFormat('d M Y') : 'habis '.$guru->subscription_ends_at->translatedFormat('d M Y'))
                     : 'belum berjalan' }}
             </p>
+            {{-- Beri PRO manual — tanpa bukti bayar; menumpuk di atas sisa masa. --}}
+            <form method="POST" action="{{ route('admin.teachers.grant-pro', $guru) }}" class="mt-3 flex items-center gap-2">
+                @csrf
+                <input type="number" name="bulan" min="1" max="24" value="1" required
+                       class="w-14 rounded-lg border-slate-300 text-xs py-1 focus:border-amber-500 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-500">bln</span>
+                <button type="submit"
+                        class="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-amber-600">Beri PRO</button>
+            </form>
         </div>
 
         <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">

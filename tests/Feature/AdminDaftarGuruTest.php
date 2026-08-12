@@ -187,4 +187,138 @@ class AdminDaftarGuruTest extends TestCase
             ->assertOk()
             ->assertSee(route('admin.teachers.index'));
     }
+
+    public function test_operator_bisa_menonaktifkan_dan_mengaktifkan_kembali_guru(): void
+    {
+        $guru = $this->guru(['name' => 'Bu Sinta', 'is_active' => true]);
+
+        $this->actingAs($this->operator())
+            ->post(route('admin.teachers.toggle-active', $guru))
+            ->assertRedirect();
+        $this->assertFalse($guru->fresh()->is_active);
+
+        $this->actingAs($this->operator())
+            ->post(route('admin.teachers.toggle-active', $guru))
+            ->assertRedirect();
+        $this->assertTrue($guru->fresh()->is_active);
+    }
+
+    public function test_operator_tidak_bisa_menonaktifkan_sesama_admin(): void
+    {
+        // Route hanya untuk guru; menonaktifkan admin lewat sini akan
+        // membuat operator saling mengunci.
+        $lain = User::factory()->create(['role' => User::ROLE_ADMIN, 'is_active' => true]);
+
+        $this->actingAs($this->operator())
+            ->post(route('admin.teachers.toggle-active', $lain))
+            ->assertNotFound();
+        $this->assertTrue($lain->fresh()->is_active);
+    }
+
+    public function test_guru_biasa_tidak_bisa_menonaktifkan_guru_lain(): void
+    {
+        $korban = $this->guru(['is_active' => true]);
+
+        $this->actingAs($this->guru())
+            ->post(route('admin.teachers.toggle-active', $korban))
+            ->assertForbidden();
+        $this->assertTrue($korban->fresh()->is_active);
+    }
+
+    public function test_operator_beri_pro_manual_menumpuk_di_atas_sisa_masa(): void
+    {
+        // Sisa masa yang belum terpakai tidak boleh hangus: 2 bulan diberikan di
+        // atas tanggal akhir yang masih berlaku, bukan dihitung dari hari ini.
+        $akhir = now()->addMonth()->startOfDay();
+        $guru = $this->guru(['subscription_tier' => User::TIER_TRIAL, 'subscription_ends_at' => $akhir]);
+
+        $this->actingAs($this->operator())
+            ->post(route('admin.teachers.grant-pro', $guru), ['bulan' => 2])
+            ->assertRedirect();
+
+        $guru->refresh();
+        $this->assertSame(User::TIER_PRO, $guru->subscription_tier);
+        $this->assertTrue($guru->subscription_ends_at->equalTo($akhir->copy()->addMonths(2)));
+    }
+
+    public function test_beri_pro_menolak_bulan_di_luar_rentang(): void
+    {
+        $guru = $this->guru();
+
+        $this->actingAs($this->operator())
+            ->post(route('admin.teachers.grant-pro', $guru), ['bulan' => 99])
+            ->assertSessionHasErrors('bulan');
+        $this->assertSame(User::TIER_TRIAL, $guru->fresh()->subscription_tier);
+    }
+
+    public function test_operator_reset_sandi_membuat_sandi_lama_tak_berlaku(): void
+    {
+        $guru = $this->guru(['password' => 'sandi-lama-guru']);
+
+        $this->actingAs($this->operator())
+            ->post(route('admin.teachers.reset-password', $guru))
+            ->assertRedirect();
+
+        // Sandi lama harus mati; yang baru hanya ada di flash (dibacakan operator).
+        $this->assertFalse(\Illuminate\Support\Facades\Hash::check('sandi-lama-guru', $guru->fresh()->password));
+    }
+
+    public function test_reset_sandi_hanya_untuk_guru(): void
+    {
+        $lain = User::factory()->create(['role' => User::ROLE_ADMIN, 'password' => 'sandi-admin']);
+
+        $this->actingAs($this->operator())
+            ->post(route('admin.teachers.reset-password', $lain))
+            ->assertNotFound();
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('sandi-admin', $lain->fresh()->password));
+    }
+
+    public function test_operator_bisa_masuk_dan_kembali_dari_penyamaran(): void
+    {
+        $operator = $this->operator();
+        $guru = $this->guru(['is_active' => true]);
+
+        // Masuk sebagai guru: identitas berpindah, remah kembali tersimpan.
+        $this->actingAs($operator)
+            ->post(route('admin.teachers.impersonate', $guru))
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHas('impersonator_id', $operator->id);
+        $this->assertAuthenticatedAs($guru);
+
+        // Kembali: identitas balik ke operator, remah dibuang.
+        $this->post(route('teachers.stop-impersonate'))
+            ->assertRedirect(route('admin.teachers.index'))
+            ->assertSessionMissing('impersonator_id');
+        $this->assertAuthenticatedAs($operator);
+    }
+
+    public function test_penyamaran_hanya_untuk_guru_aktif(): void
+    {
+        $operator = $this->operator();
+        $nonaktif = $this->guru(['is_active' => false]);
+
+        $this->actingAs($operator)
+            ->post(route('admin.teachers.impersonate', $nonaktif))
+            ->assertRedirect();
+        // Tetap operator; tidak berpindah ke akun nonaktif.
+        $this->assertAuthenticatedAs($operator);
+    }
+
+    public function test_guru_biasa_tidak_bisa_menyamar(): void
+    {
+        $korban = $this->guru();
+
+        $this->actingAs($this->guru())
+            ->post(route('admin.teachers.impersonate', $korban))
+            ->assertForbidden();
+    }
+
+    public function test_berhenti_menyamar_tanpa_remah_ditolak(): void
+    {
+        // Tanpa session impersonator_id, tak seorang pun boleh "kembali" jadi
+        // orang lain — jalur ini tidak boleh jadi eskalasi hak akses.
+        $this->actingAs($this->guru())
+            ->post(route('teachers.stop-impersonate'))
+            ->assertForbidden();
+    }
 }

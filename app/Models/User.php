@@ -171,6 +171,32 @@ class User extends Authenticatable
         return now()->addMonths(self::BULAN_MASA_GRATIS);
     }
 
+    /**
+     * Tambahkan N bulan akses PRO, menumpuk di atas sisa masa yang belum
+     * terpakai (tidak menghanguskannya). Satu-satunya tempat aturan penumpukan
+     * ini ditulis: dipakai persetujuan pembayaran maupun pemberian PRO manual
+     * oleh operator, agar keduanya tidak pernah berselisih. Mengembalikan
+     * tanggal akhir yang baru.
+     *
+     * subscription_tier/ends_at sengaja di-guard dari mass assignment; ditulis
+     * resmi lewat forceFill().
+     */
+    public function tambahPro(int $months): \Illuminate\Support\Carbon
+    {
+        $currentEnd = $this->subscription_ends_at && $this->subscription_ends_at->isFuture()
+            ? $this->subscription_ends_at
+            : now();
+
+        $newEnd = $currentEnd->copy()->addMonths($months);
+
+        $this->forceFill([
+            'subscription_tier' => self::TIER_PRO,
+            'subscription_ends_at' => $newEnd,
+        ])->save();
+
+        return $newEnd;
+    }
+
     /** Apakah user adalah admin (kepala sekolah)? */
     public function isAdmin(): bool
     {

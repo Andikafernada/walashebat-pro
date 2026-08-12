@@ -60,22 +60,12 @@ class AdminSubscriptionController extends Controller
 
         /*
          * Sisa masa yang belum terpakai TIDAK hangus: perpanjangan ditumpuk di
-         * atasnya. Guru yang membayar lebih awal tidak dirugikan karena
-         * membayar sebelum masanya habis.
+         * atasnya (aturannya ada di User::tambahPro, dipakai bersama pemberian
+         * PRO manual). Guru yang membayar lebih awal tidak dirugikan.
          */
-        $currentEnd = $user->subscription_ends_at && $user->subscription_ends_at->isFuture()
-            ? $user->subscription_ends_at
-            : now();
+        $newEnd = $user->tambahPro($months);
 
-        $newEnd = $currentEnd->copy()->addMonths($months);
-
-        // subscription_tier/ends_at & status pada PaymentProof sengaja di-guard agar
-        // tidak bisa diisi lewat mass assignment. Penulisan resmi lewat forceFill().
-        $user->forceFill([
-            'subscription_tier' => User::TIER_PRO,
-            'subscription_ends_at' => $newEnd,
-        ])->save();
-
+        // status pada PaymentProof sengaja di-guard dari mass assignment.
         $proof->forceFill([
             'status' => 'approved',
             // Jejak audit: berapa bulan yang benar-benar diberikan, yang bisa

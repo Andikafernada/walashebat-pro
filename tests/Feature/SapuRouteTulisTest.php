@@ -44,6 +44,9 @@ class SapuRouteTulisTest extends TestCase
             'classroom' => $class->id,
             'student' => $student->id,
             'user' => $user->id,
+            // Rute operator memakai {guru}; disapu sebagai teacher biasa, jadi
+            // yang diharapkan 403 (role:admin) — cukup asal tidak 500.
+            'guru' => $user->id,
         ] + $this->fixtureTambahan($user, $class, $student);
 
         $rusak = [];

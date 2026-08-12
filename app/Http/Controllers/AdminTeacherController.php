@@ -105,6 +105,142 @@ class AdminTeacherController extends Controller
         ]));
     }
 
+    /**
+     * Nonaktifkan / aktifkan akun guru.
+     *
+     * is_active=false punya gigi nyata: EnsureUserIsActive ('auth.tenant')
+     * langsung me-logout akun itu pada request berikutnya. Jadi ini bukan
+     * penanda kosmetik — operator memakainya untuk menghentikan penyalahguna
+     * atau membekukan akun yang bermasalah.
+     *
+     * is_active tidak fillable (kolom sensitif di $guarded), jadi diisi lewat
+     * penetapan properti langsung, bukan update() massal.
+     */
+    public function toggleAktif(User $guru): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless($guru->role === User::ROLE_TEACHER, 404);
+
+        $guru->is_active = ! $guru->is_active;
+        $guru->save();
+
+        return back()->with('success', $guru->is_active
+            ? "Akun {$guru->name} diaktifkan kembali."
+            : "Akun {$guru->name} dinonaktifkan — ia akan ter-logout dan tidak bisa masuk.");
+    }
+
+    /**
+     * Beri / perpanjang PRO manual — tanpa bukti bayar.
+     *
+     * Jalur cepat operator untuk kompensasi, keluhan, atau perpanjangan trial,
+     * saat tidak ada (atau tidak perlu) upload bukti. Aturan penumpukan bulan
+     * memakai User::tambahPro yang SAMA dengan persetujuan pembayaran, jadi
+     * keduanya tak pernah menghitung tanggal akhir dengan cara berbeda.
+     */
+    public function beriPro(Request $request, User $guru): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless($guru->role === User::ROLE_TEACHER, 404);
+
+        $data = $request->validate([
+            'bulan' => ['required', 'integer', 'min:1', 'max:24'],
+        ], [
+            'bulan.max' => 'Maksimal 24 bulan sekali beri.',
+            'bulan.min' => 'Jumlah bulan minimal 1.',
+        ]);
+
+        $newEnd = $guru->tambahPro($data['bulan']);
+
+        // Guru harus tahu ia mendapat PRO; pola & try/catch sama dengan
+        // persetujuan pembayaran. Gagal kirim dicatat, bukan membatalkan hibah.
+        if ($guru->whatsapp_number) {
+            $msg = "🎉 *AKSES PRO DIBERIKAN*\n\n"
+                . "Halo Bpk/Ibu *{$guru->name}*,\n"
+                . "Akses PRO {$data['bulan']} bulan telah diaktifkan untuk akun Anda.\n\n"
+                . "✅ Status: *PRO AKTIF*\n"
+                . "📅 Berlaku Hingga: *{$newEnd->translatedFormat('d F Y')}*\n\n"
+                . "Terima kasih telah menggunakan WaliKelas Pro! 🚀";
+
+            try {
+                app(\App\Support\Contracts\NotificationChannel::class)->send(
+                    $guru->whatsapp_number,
+                    $msg,
+                    ['type' => 'subscription_granted', 'user_id' => $guru->id],
+                    auth()->user()->whatsapp_number,
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('[langganan] Konfirmasi PRO manual gagal dikirim', [
+                    'user_id' => $guru->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return back()->with('success', "{$guru->name} diberi PRO {$data['bulan']} bulan — aktif hingga {$newEnd->translatedFormat('d F Y')}.");
+    }
+
+    /**
+     * Reset kata sandi guru — keluhan support paling umum ("saya lupa sandi").
+     *
+     * Sandi sementara dibuat acak dan ditampilkan SEKALI di flash agar operator
+     * membacakannya ke guru; ia tidak disimpan dalam bentuk terbaca di mana pun.
+     * Tanpa simbol supaya mudah dieja lewat telepon/WA. Kolom password 'hashed'
+     * cast, jadi update() otomatis mem-bcrypt-nya.
+     */
+    public function resetPassword(User $guru): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless($guru->role === User::ROLE_TEACHER, 404);
+
+        $sementara = \Illuminate\Support\Str::password(10, letters: true, numbers: true, symbols: false);
+        $guru->update(['password' => $sementara]);
+
+        return back()->with('success', "Kata sandi {$guru->name} direset. Sandi sementara (tampil sekali): {$sementara} — minta guru menggantinya setelah masuk.");
+    }
+
+    /**
+     * Masuk sebagai guru (impersonate) untuk menelusuri keluhan "di akun saya
+     * error" dari sisi guru itu sendiri.
+     *
+     * TenantScope memakai Auth::id(), jadi begitu login berpindah ke guru,
+     * SELURUH data otomatis ter-scope ke guru itu — tidak ada jalan pintas yang
+     * menembus tenant. id admin disimpan di sesi sebagai remah untuk kembali.
+     *
+     * Dicatat sebagai jejak audit: masuk ke akun orang lain harus terlihat.
+     * Akun nonaktif tidak bisa disamari — EnsureUserIsActive akan langsung
+     * menendang keluar; suruh operator mengaktifkannya dulu.
+     */
+    public function masukSebagai(User $guru): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless($guru->role === User::ROLE_TEACHER, 404);
+
+        if (! $guru->is_active) {
+            return back()->with('error', 'Akun ini nonaktif — aktifkan dulu sebelum masuk sebagai guru.');
+        }
+
+        \Illuminate\Support\Facades\Log::info('[impersonate] Operator masuk sebagai guru', [
+            'admin_id' => auth()->id(),
+            'guru_id' => $guru->id,
+        ]);
+
+        session(['impersonator_id' => auth()->id()]);
+        \Illuminate\Support\Facades\Auth::login($guru);
+
+        return redirect()->route('dashboard');
+    }
+
+    /**
+     * Kembali ke akun operator. Sengaja DI LUAR grup role:admin: saat dipanggil,
+     * yang login adalah guru (bukan admin), jadi middleware role:admin justru
+     * akan menghalanginya kembali. Penjaganya remah sesi impersonator_id.
+     */
+    public function berhentiMenyamar(): \Illuminate\Http\RedirectResponse
+    {
+        $adminId = session()->pull('impersonator_id');
+        abort_unless($adminId, 403);
+
+        \Illuminate\Support\Facades\Auth::loginUsingId($adminId);
+
+        return redirect()->route('admin.teachers.index');
+    }
+
     private function daftar(string $cari, ?string $segmen): LengthAwarePaginator
     {
         return User::query()
