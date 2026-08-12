@@ -16,8 +16,13 @@ use Illuminate\View\View;
  */
 class LandingController extends Controller
 {
-    /** Harga PRO per bulan, dalam rupiah. */
-    public const HARGA_PRO = 10000;
+    /*
+     * Menunjuk ke PaymentProof, tidak menuliskan angkanya sendiri. Harga yang
+     * diiklankan di halaman muka dan harga yang tersimpan pada bukti transfer
+     * WAJIB berasal dari satu tempat — dulu keduanya berselisih Rp 9.000 tanpa
+     * ada yang menyadarinya.
+     */
+    public const HARGA_PRO = \App\Models\PaymentProof::HARGA_BULANAN;
 
     /**
      * Tanya-jawab halaman muka.

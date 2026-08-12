@@ -25,7 +25,15 @@ class SubscriptionController extends Controller
             ->take(5)
             ->get();
 
-        return view('subscription.index', compact('user', 'pendingProof', 'history'));
+        /*
+         * Harga dikirim ke view, tidak diketik di dalamnya. Sebelumnya "Rp
+         * 10.000" tertulis harfiah di enam tempat pada halaman ini sementara
+         * controller menyimpan Rp 19.000 — tujuh salinan angka yang sama, dan
+         * satu di antaranya sudah menyimpang tanpa ada yang tahu.
+         */
+        return view('subscription.index', compact('user', 'pendingProof', 'history') + [
+            'hargaBulanan' => PaymentProof::HARGA_BULANAN,
+        ]);
     }
 
     /** Unggah bukti transfer / QRIS */
@@ -61,7 +69,15 @@ class SubscriptionController extends Controller
          * yang memeriksa pemilik atau admin lebih dulu.
          */
         $path = $request->file('proof_image')->store('payment_proofs', 'local');
-        $amount = $request->plan_type === 'yearly' ? 149000 : 19000;
+        /*
+         * Dihitung dari satu konstanta, bukan diketik ulang: nominal yang
+         * tersimpan di sini adalah yang dibaca operator saat memutuskan
+         * menerima atau menolak transfer seseorang, jadi ia HARUS sama dengan
+         * yang tertulis di halaman yang dibaca guru.
+         *
+         * Paket tahunan = 12 bulan, tanpa potongan yang dikarang sendiri.
+         */
+        $amount = PaymentProof::HARGA_BULANAN * ($request->plan_type === 'yearly' ? 12 : 1);
 
         PaymentProof::create([
             'user_id' => $user->id,

@@ -3,6 +3,10 @@
 @section('title', 'Langganan PRO Wali Kelas')
 
 @section('content')
+@php
+    // Satu-satunya sumber angka di halaman ini; lihat PaymentProof::HARGA_BULANAN.
+    $rpHarga = 'Rp '.number_format($hargaBulanan, 0, ',', '.');
+@endphp
 <div class="space-y-8 pb-16">
 
     <!-- HERO BANNER -->
@@ -64,7 +68,7 @@
     <!-- PRICING & DANA PAYMENT SECTION -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        <!-- PRO PLAN CARD (RP 10.000 / BULAN) -->
+        <!-- PRO PLAN CARD -->
         <div class="rounded-2xl border-2 border-indigo-600 bg-white p-6 shadow-md space-y-4 relative flex flex-col justify-between">
             <div class="absolute -top-3 right-6 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-0.5 text-[10px] font-extrabold text-white uppercase shadow-sm">
                 Spesial PRO
@@ -74,10 +78,10 @@
                 <span class="inline-block rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-bold text-indigo-700 uppercase tracking-wider">Akses Penuh 1 Bulan</span>
                 <h3 class="text-2xl font-extrabold text-slate-900">PRO Bulanan</h3>
                 <div class="flex items-baseline gap-1">
-                    <span class="text-4xl font-black text-indigo-600">Rp 10.000</span>
+                    <span class="text-4xl font-black text-indigo-600">{{ $rpHarga }}</span>
                     <span class="text-xs text-slate-500 font-medium">/ bulan</span>
                 </div>
-                <p class="text-xs text-slate-500">Harga sangat terjangkau hanya Rp 10rb/bulan untuk kemudahan pengelolaan kelas.</p>
+                <p class="text-xs text-slate-500">Harga sangat terjangkau hanya {{ $rpHarga }}/bulan untuk kemudahan pengelolaan kelas.</p>
 
                 <ul class="space-y-2.5 text-xs text-slate-700 pt-3 border-t border-slate-100 font-medium">
                     <li class="flex items-center gap-2 text-emerald-700 font-bold">
@@ -107,7 +111,7 @@
             <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
                 <div>
                     <h3 class="text-base font-bold text-slate-900">Pembayaran Resmi DANA</h3>
-                    <p class="text-xs text-slate-500">Transfer Rp 10.000 ke nomor DANA resmi di bawah</p>
+                    <p class="text-xs text-slate-500">Transfer {{ $rpHarga }} ke nomor DANA resmi di bawah</p>
                 </div>
                 <span class="px-3 py-1 rounded-lg bg-sky-50 text-sky-700 font-black text-xs border border-sky-200">
                     💙 ONLY DANA
@@ -128,7 +132,7 @@
 
                 <div class="pt-2 border-t border-white/20 flex items-center justify-between text-xs">
                     <span class="text-sky-100">Jumlah Transfer:</span>
-                    <strong class="text-amber-300 font-black text-sm">Rp 10.000</strong>
+                    <strong class="text-amber-300 font-black text-sm">{{ $rpHarga }}</strong>
                 </div>
             </div>
 
@@ -140,7 +144,7 @@
 
                 <div>
                     <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Paket Dibatalkan / Dipilih</label>
-                    <input type="text" readonly value="PRO 1 Bulan — Rp 10.000" class="h-9 w-full rounded-xl border border-slate-200 bg-slate-100 px-3 text-xs font-bold text-slate-800">
+                    <input type="text" readonly value="PRO 1 Bulan — {{ $rpHarga }}" class="h-9 w-full rounded-xl border border-slate-200 bg-slate-100 px-3 text-xs font-bold text-slate-800">
                 </div>
 
                 <div>
@@ -159,7 +163,7 @@
                 </div>
 
                 <button type="submit" class="h-10 w-full rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold transition-all shadow-md shadow-sky-500/20 active:scale-95">
-                    📤 Unggah Bukti Transfer DANA (Rp 10.000)
+                    📤 Unggah Bukti Transfer DANA ({{ $rpHarga }})
                 </button>
             </form>
         </div>

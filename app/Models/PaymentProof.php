@@ -10,6 +10,20 @@ class PaymentProof extends Model
 {
     use HasFactory;
 
+    /**
+     * Harga langganan PRO, per bulan, dalam rupiah.
+     *
+     * SATU-SATUNYA tempat angka ini boleh ditulis.
+     *
+     * Sebelumnya ia hidup di empat tempat yang saling tidak tahu: halaman muka
+     * dan formulir unggah bukti menyebut Rp 10.000 kepada guru, controller
+     * menyimpan Rp 19.000 ke kolom amount, dan panel operator melabelinya
+     * "PRO BULANAN (19rb)". Operator karena itu membaca nominal yang berbeda
+     * dari yang guru diberi tahu dan benar-benar transfer — pada data yang
+     * menentukan apakah pembayaran seseorang diterima atau ditolak.
+     */
+    const HARGA_BULANAN = 10000;
+
     // Status constants
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED = 'approved';

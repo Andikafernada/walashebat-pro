@@ -47,8 +47,18 @@
                                     <span class="text-[10px] text-indigo-600 font-semibold block">{{ $p->user->school_name ?: 'Sekolah -' }}</span>
                                 </td>
                                 <td class="py-3 px-3 font-bold text-slate-800 uppercase">
+                                    {{--
+                                        Nominalnya DIBACA dari baris, bukan diketik ulang
+                                        di sini. Label lama menyebut "19rb" sementara guru
+                                        disuruh transfer Rp 10.000 — dan yang membandingkan
+                                        angka pada bukti transfer dengan angka di layar ini
+                                        adalah operator yang memutuskan terima atau tolak.
+                                        Label yang mengulang harga adalah sumber kebenaran
+                                        kedua yang cepat atau lambat menyimpang.
+                                    --}}
                                     <span class="inline-block rounded-md px-2 py-0.5 text-[10px] font-bold {{ $p->plan_type === 'yearly' ? 'bg-purple-100 text-purple-800' : 'bg-indigo-100 text-indigo-800' }}">
-                                        {{ $p->plan_type === 'yearly' ? 'PRO TAHUNAN (149rb)' : 'PRO BULANAN (19rb)' }}
+                                        {{ $p->plan_type === 'yearly' ? 'PRO TAHUNAN' : 'PRO BULANAN' }}
+                                        (Rp {{ number_format((int) $p->amount, 0, ',', '.') }})
                                     </span>
                                 </td>
                                 <td class="py-3 px-3">
