@@ -8,7 +8,7 @@
 
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <h1 class="text-xl font-black tracking-tight text-slate-900">Nilai Harian</h1>
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Nilai Harian</h1>
             <p class="text-xs text-slate-500 mt-0.5">
                 {{ $classroom->name }} &middot; {{ $periode['label'] }}
                 @if ($mapelDipilih) &middot; <span class="font-semibold text-indigo-600">{{ $mapelDipilih }}</span> @endif
@@ -97,8 +97,7 @@
                                 <td class="px-3 py-2.5 whitespace-nowrap text-slate-600">{{ $p->mapel ?: '—' }}</td>
                             @endif
                             <td class="px-3 py-2.5 whitespace-nowrap">
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold
-                                      {{ $p->harian() ? 'bg-slate-100 text-slate-700' : 'bg-indigo-100 text-indigo-800' }}">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold {{ $p->harian() ? 'bg-slate-100 text-slate-700' : 'bg-indigo-100 text-indigo-800' }}">
                                     {{ $p->harian() ? 'Harian' : strtoupper($p->jenis).' · Sem '.$p->semester }}
                                 </span>
                             </td>
@@ -112,7 +111,7 @@
                                     {{-- Rata-rata dari nol isian bukan 0, melainkan tidak ada. --}}
                                     <span class="text-slate-400">—</span>
                                 @else
-                                    <span class="font-black tabular-nums {{ $rata < 75 ? 'text-rose-700' : 'text-slate-800' }}">{{ $rata }}</span>
+                                    <span class="font-semibold tabular-nums {{ $rata < 75 ? 'text-rose-700' : 'text-slate-800' }}">{{ $rata }}</span>
                                 @endif
                             </td>
                             <td class="px-3 py-2.5 text-center tabular-nums {{ $belum > 0 ? 'font-bold text-amber-700' : 'text-slate-400' }}">

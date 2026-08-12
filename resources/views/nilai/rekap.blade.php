@@ -12,7 +12,7 @@
 
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <h1 class="text-xl font-black tracking-tight text-slate-900">Leger Nilai</h1>
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Leger Nilai</h1>
             <p class="text-xs text-slate-500 mt-0.5">
                 {{ $classroom->name }}
                 @if ($classroom->academic_year) &middot; T.A. {{ $classroom->academic_year }} @endif
@@ -115,7 +115,7 @@
                                     </td>
                                 @endforeach
 
-                                <td class="px-3 py-2 text-center bg-indigo-50/40 font-black text-indigo-800">
+                                <td class="px-3 py-2 text-center bg-indigo-50/40 font-semibold text-indigo-800">
                                     {{ $rata ?? '—' }}
                                 </td>
                             </tr>

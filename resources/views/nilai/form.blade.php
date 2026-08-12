@@ -7,7 +7,7 @@
 <div class="space-y-6 pb-12">
 
     <div>
-        <h1 class="text-xl font-black tracking-tight text-slate-900">
+        <h1 class="text-xl font-semibold tracking-tight text-slate-900">
             {{ $assessment ? 'Isi / Ubah Nilai' : 'Penilaian Baru' }}
         </h1>
         <p class="text-xs text-slate-500 mt-0.5">{{ $classroom->name }} &middot; {{ $students->count() }} siswa</p>

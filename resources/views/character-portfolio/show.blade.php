@@ -5,7 +5,7 @@
     @include('partials.class-nav')
 
     <div class="max-w-3xl mx-auto">
-        <div class="glass-card animate-in">
+        <div class="glass-card">
             <!-- Header -->
             <div class="flex items-start justify-between mb-6">
                 <div class="flex items-center gap-4">

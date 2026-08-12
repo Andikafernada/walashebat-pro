@@ -8,7 +8,7 @@
 
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <h1 class="text-xl font-black tracking-tight text-slate-900">Kas per Siswa</h1>
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Kas per Siswa</h1>
             <p class="text-xs text-slate-500 mt-0.5">
                 {{ $classroom->name }} &middot; {{ $periode['label'] }}
             </p>
@@ -25,15 +25,15 @@
     <div class="grid gap-3 sm:grid-cols-3">
         <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
             <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Sudah setor</p>
-            <p class="mt-1 text-2xl font-black text-emerald-800">{{ $sudah }} <span class="text-sm font-bold text-emerald-600">siswa</span></p>
+            <p class="mt-1 text-2xl font-semibold text-emerald-800">{{ $sudah }} <span class="text-sm font-bold text-emerald-600">siswa</span></p>
         </div>
         <div class="rounded-2xl border border-rose-200 bg-rose-50/60 p-4">
             <p class="text-[11px] font-bold uppercase tracking-wider text-rose-700">Belum setor</p>
-            <p class="mt-1 text-2xl font-black text-rose-800">{{ $belum }} <span class="text-sm font-bold text-rose-600">siswa</span></p>
+            <p class="mt-1 text-2xl font-semibold text-rose-800">{{ $belum }} <span class="text-sm font-bold text-rose-600">siswa</span></p>
         </div>
         <div class="rounded-2xl border border-slate-200 bg-white p-4">
             <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Terkumpul</p>
-            <p class="mt-1 text-2xl font-black text-slate-900">Rp {{ number_format($total, 0, ',', '.') }}</p>
+            <p class="mt-1 text-2xl font-semibold text-slate-900">Rp {{ number_format($total, 0, ',', '.') }}</p>
         </div>
     </div>
 
@@ -109,7 +109,7 @@
                 </div>
 
                 <button type="submit" :disabled="mengirim || terpilih.length === 0"
-                        class="h-9 rounded-xl bg-emerald-600 px-5 text-xs font-bold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                        class="h-9 rounded-xl bg-emerald-600 px-5 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                     <span x-show="!mengirim">💾 Catat setoran <span x-text="terpilih.length"></span> siswa</span>
                     <span x-show="mengirim" x-cloak>Menyimpan…</span>
                 </button>

@@ -62,27 +62,27 @@
     @if($selectedClass)
     <!-- Summary Stats -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+        <div class="bg-white rounded-xl p-4 border border-slate-100">
             <p class="text-xs text-slate-500 mb-1">Total Siswa</p>
             <p class="text-2xl font-bold text-slate-900">{{ $summaryStats['student_count'] }}</p>
         </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+        <div class="bg-white rounded-xl p-4 border border-slate-100">
             <p class="text-xs text-slate-500 mb-1">Kehadiran</p>
             <p class="text-2xl font-bold text-emerald-600">{{ $summaryStats['attendance_rate'] }}%</p>
         </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+        <div class="bg-white rounded-xl p-4 border border-slate-100">
             <p class="text-xs text-slate-500 mb-1">Total Absensi</p>
             <p class="text-2xl font-bold text-slate-900">{{ $summaryStats['total_attendance'] }}</p>
         </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+        <div class="bg-white rounded-xl p-4 border border-slate-100">
             <p class="text-xs text-slate-500 mb-1">Pelanggaran</p>
             <p class="text-2xl font-bold text-rose-600">{{ $summaryStats['violations_count'] }}</p>
         </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+        <div class="bg-white rounded-xl p-4 border border-slate-100">
             <p class="text-xs text-slate-500 mb-1">Rata-rata Poin</p>
             <p class="text-2xl font-bold text-indigo-600">{{ $summaryStats['avg_discipline_points'] }}</p>
         </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+        <div class="bg-white rounded-xl p-4 border border-slate-100">
             <p class="text-xs text-slate-500 mb-1">Poin Rendah</p>
             <p class="text-2xl font-bold text-amber-600">{{ $summaryStats['low_points_students'] }}</p>
         </div>
@@ -91,7 +91,7 @@
     <!-- Charts Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Monthly Attendance Chart -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="font-semibold text-slate-900">Kehadiran Bulanan (12 Bulan)</h3>
                 <div class="flex items-center gap-4 text-xs">
@@ -114,7 +114,7 @@
         </div>
 
         <!-- Violations by Category -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100">
                 <h3 class="font-semibold text-slate-900">Pelanggaran per Kategori (Bulan Ini)</h3>
             </div>
@@ -140,7 +140,7 @@
     <!-- Heatmap & Attendance Rate Trend -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Heatmap Kehadiran -->
-        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100">
                 <h3 class="font-semibold text-slate-900">Heatmap Kehadiran (4 Minggu Terakhir)</h3>
             </div>
@@ -192,7 +192,7 @@
         </div>
 
         <!-- Quick Stats -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100">
                 <h3 class="font-semibold text-slate-900">Butuh Perhatian</h3>
             </div>
@@ -235,7 +235,7 @@
         </div>
     </div>
     @else
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 text-center">
+    <div class="bg-white rounded-2xl border border-slate-100 p-12 text-center">
         <svg class="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
         </svg>

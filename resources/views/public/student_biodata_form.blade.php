@@ -17,18 +17,18 @@
          salinan Alpine berjalan berbarengan — "Detected multiple instances of
          Alpine running" — dan penangan yang sama terpasang dua kali. --}}
 </head>
-<body class="h-full font-sans antialiased text-slate-900 bg-gradient-to-br from-slate-100 via-indigo-50/30 to-purple-50/20 py-8 px-4 sm:px-6">
+<body class="h-full font-sans antialiased text-slate-900 py-8 px-4 sm:px-6">
 
 <div class="max-w-2xl mx-auto space-y-6">
 
     <!-- Header Banner -->
-    <div class="rounded-2xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 p-6 text-white shadow-xl relative overflow-hidden">
+    <div class="rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
         <div class="absolute right-0 top-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-2xl"></div>
         <div class="relative z-10 space-y-1">
             <span class="inline-block rounded-full bg-indigo-500/30 px-3 py-1 text-[10px] font-bold tracking-wider uppercase text-indigo-200 border border-indigo-400/30">
                 Form Biodata Mandiri Siswa &amp; Orang Tua
             </span>
-            <h1 class="text-2xl font-extrabold text-white">Kelas {{ $class->name }}</h1>
+            <h1 class="text-2xl font-semibold text-white">Kelas {{ $class->name }}</h1>
             <p class="text-xs text-slate-300">Lengkapi data diri Anda dengan lengkap, teliti, dan benar.</p>
         </div>
     </div>
@@ -67,7 +67,7 @@
         dijalankan sendiri di sini: langkah yang bermasalah dibuka dulu, baru
         peringatannya ditampilkan pada isian yang bersangkutan.
     --}}
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-6"
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 space-y-6"
          x-data="{
             step: 1,
             siswaTerpilih: '{{ old('student_id') }}',
@@ -206,7 +206,7 @@
                     </div>
                 </div>
 
-                <button type="button" @click="step = 2" class="h-10 w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-all shadow-md shadow-indigo-500/20">
+                <button type="button" @click="step = 2" class="h-10 w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors">
                     Lanjut ke Data Orang Tua &amp; Wali &rarr;
                 </button>
             </div>
@@ -267,7 +267,7 @@
                     <button type="button" @click="step = 1" class="h-10 w-1/3 rounded-xl border border-slate-200 bg-slate-100 font-bold text-xs text-slate-700">
                         &larr; Kembali
                     </button>
-                    <button type="button" @click="step = 3" class="h-10 w-2/3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-all shadow-md shadow-indigo-500/20">
+                    <button type="button" @click="step = 3" class="h-10 w-2/3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors">
                         Lanjut ke Alamat Rumah &rarr;
                     </button>
                 </div>
@@ -324,7 +324,7 @@
                     <button type="button" @click="step = 2" class="h-10 w-1/3 rounded-xl border border-slate-200 bg-slate-100 font-bold text-xs text-slate-700">
                         &larr; Kembali
                     </button>
-                    <button type="button" @click="step = 4" class="h-10 w-2/3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-all shadow-md shadow-indigo-500/20">
+                    <button type="button" @click="step = 4" class="h-10 w-2/3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors">
                         Lanjut ke Fisik &amp; KIP/PKH &rarr;
                     </button>
                 </div>
@@ -390,7 +390,7 @@
                         &larr; Kembali
                     </button>
                     <button type="submit" :disabled="mengirim"
-                            class="h-10 w-2/3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-bold text-xs transition-all shadow-md shadow-emerald-500/20">
+                            class="h-10 w-2/3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-bold text-xs transition-colors">
                         <span x-show="! mengirim">✓ Simpan Biodata Mandiri</span>
                         <span x-show="mengirim" x-cloak>Menyimpan…</span>
                     </button>

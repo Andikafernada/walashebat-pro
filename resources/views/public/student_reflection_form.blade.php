@@ -14,18 +14,18 @@
          salinan Alpine berjalan berbarengan — "Detected multiple instances of
          Alpine running" — dan penangan yang sama terpasang dua kali. --}}
 </head>
-<body class="h-full font-sans antialiased text-slate-900 bg-gradient-to-br from-slate-100 via-indigo-50/30 to-purple-50/20 py-8 px-4 sm:px-6">
+<body class="h-full font-sans antialiased text-slate-900 py-8 px-4 sm:px-6">
 
 <div class="max-w-xl mx-auto space-y-6">
 
     <!-- Header Banner -->
-    <div class="rounded-2xl bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-6 text-white shadow-xl relative overflow-hidden">
+    <div class="rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
         <div class="absolute right-0 top-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-purple-500/10 blur-2xl"></div>
         <div class="relative z-10 space-y-1">
             <span class="inline-block rounded-full bg-purple-500/30 px-3 py-1 text-[10px] font-bold tracking-wider uppercase text-purple-200 border border-purple-400/30">
                 Jurnal Refleksi Mandiri (P5)
             </span>
-            <h1 class="text-2xl font-extrabold text-white">Profil Pelajar Pancasila</h1>
+            <h1 class="text-2xl font-semibold text-white">Profil Pelajar Pancasila</h1>
             <p class="text-xs text-slate-300">Kelas {{ $class->name }} &middot; Tuliskan evaluasi perkembangan sikap Anda.</p>
         </div>
     </div>
@@ -51,7 +51,7 @@
     @endif
 
     <!-- Form Card -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-5">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 space-y-5">
         <form method="POST" action="{{ route('public.reflection.store', $class) }}" class="space-y-4" x-data="{ rating: {{ (int) old('self_rating', 5) }} }">
             @csrf
 
@@ -94,7 +94,7 @@
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Penilaian Diri Sendiri (1 - 5 Bintang) *</label>
                 <div class="flex items-center gap-2 py-1">
                     <template x-for="i in 5">
-                        <button type="button" @click="rating = i" class="text-2xl transition-transform hover:scale-110" :class="i <= rating ? 'text-amber-400' : 'text-slate-300'">
+                        <button type="button" @click="rating = i" class="text-2xl transition-transform" :class="i <= rating ? 'text-amber-400' : 'text-slate-300'">
                             ★
                         </button>
                     </template>
@@ -157,7 +157,7 @@
                           class="w-full rounded-xl border border-amber-200 bg-white p-2.5 text-xs text-slate-800 focus:border-amber-500 focus:outline-none">{{ old('pesan_ortu') }}</textarea>
             </div>
 
-            <button type="submit" class="h-10 w-full rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-all shadow-md shadow-purple-500/20">
+            <button type="submit" class="h-10 w-full rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors">
                 ✓ Kirim Refleksi Karakter ke Wali Kelas
             </button>
         </form>

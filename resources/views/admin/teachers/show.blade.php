@@ -114,7 +114,7 @@
     </div>
 
     <!-- Kelas -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+    <div class="rounded-2xl border border-slate-200/80 bg-white overflow-hidden">
         <div class="flex items-baseline justify-between gap-3 border-b border-slate-100 px-5 py-3">
             <h2 class="text-sm font-bold text-slate-900">Kelas</h2>
             <span class="text-[11px] font-semibold text-slate-400">{{ $kelas->count() }} kelas</span>
@@ -146,7 +146,7 @@
         dengan melihat delivery_status beserta sebabnya — dan sebab itu selama
         ini tersimpan di basis data tanpa satu pun layar yang menampilkannya.
     --}}
-    <div class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+    <div class="rounded-2xl border border-slate-200/80 bg-white overflow-hidden">
         <div class="flex items-baseline justify-between gap-3 border-b border-slate-100 px-5 py-3">
             <h2 class="text-sm font-bold text-slate-900">Sesi absensi terakhir</h2>
             <span class="text-[11px] font-semibold text-slate-400">10 terbaru</span>
@@ -194,7 +194,7 @@
     </div>
 
     <!-- Pembayaran -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+    <div class="rounded-2xl border border-slate-200/80 bg-white overflow-hidden">
         <div class="flex items-baseline justify-between gap-3 border-b border-slate-100 px-5 py-3">
             <h2 class="text-sm font-bold text-slate-900">Riwayat pembayaran</h2>
             <a href="{{ route('admin.subscriptions.index') }}" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-700">Kelola di halaman langganan ›</a>

@@ -40,7 +40,7 @@
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a href="{{ route('student.portfolio') }}" class="glass-card hover-lift transition-all">
+        <a href="{{ route('student.portfolio') }}" class="glass-card hover-lift transition-colors">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
                     <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@
             </div>
         </a>
 
-        <a href="{{ route('student.biodata') }}" class="glass-card hover-lift transition-all">
+        <a href="{{ route('student.biodata') }}" class="glass-card hover-lift transition-colors">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
                     <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

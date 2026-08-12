@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="h-full bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-950">
+<html lang="id" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +14,7 @@
         <div class="hidden lg:flex lg:w-1/2 xl:w-2/5 flex-col justify-between p-12 text-white">
             <div>
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center">
+                    <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13.668m7.088-7.218c2.103-2.048 5.802-3.206 9.912-3.206H21v21m-7.088-7.218c-2.103 2.048-5.802 3.206-9.912 3.206H3m18-17.574V21M12 6.253V3"/>
                         </svg>
@@ -29,7 +29,7 @@
 
             <div class="space-y-6">
                 <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6.618 2.443c.457-.443.811-1.008.811-1.66c0-.65-.35-1.218-.811-1.66m-3.618-.443V5.618m3-.443V3"/>
                         </svg>
@@ -40,7 +40,7 @@
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0a4 4 0 018 0zM12 14a9 9 0 100-18 9a9 9 0 0018 0zm9-4.5v4.5l3 3l-3 3m-4.5-10.5h-4.5"/>
                         </svg>
@@ -61,7 +61,7 @@
                 <!-- Mobile logo -->
                 <div class="lg:hidden text-center mb-8">
                     <div class="inline-flex items-center gap-2 text-white mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13.668m7.088-7.218c2.103-2.048 5.802-3.206 9.912-3.206H21v21m-7.088-7.218c-2.103 2.048-5.802 3.206-9.912 3.206H3m18-17.574V21M12 6.253V3"/>
                             </svg>
@@ -103,13 +103,13 @@
                         <div>
                             <label for="nis" class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
                             <input type="text" id="nis" name="nis" value="{{ old('nis') }}" required autofocus
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
 
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                             <input type="password" id="password" name="password" required
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
 
                         <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors">

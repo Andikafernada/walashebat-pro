@@ -21,7 +21,7 @@
         @csrf
 
         <!-- Push Notifications -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100">
                 <h3 class="font-semibold text-slate-900">Push Notifications</h3>
                 <p class="text-sm text-slate-500 mt-1">Notifikasi browser untuk memberi tahu Anda secara real-time</p>
@@ -39,7 +39,7 @@
 <input type="hidden" name="push_enabled" value="0">
 <input type="checkbox" name="push_enabled" value="1" {{ $preference->push_enabled ? 'checked' : '' }}
                                class="sr-only peer" onchange="togglePushSettings(this.checked)">
-                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-colors peer-checked:bg-indigo-600"></div>
                     </label>
                 </div>
 
@@ -86,7 +86,7 @@
 <input type="hidden" name="push_attendance_reminder" value="0">
 <input type="checkbox" name="push_attendance_reminder" value="1" {{ $preference->push_attendance_reminder ? 'checked' : '' }}
                                        class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-colors peer-checked:bg-indigo-600"></div>
                             </label>
                         </div>
 
@@ -101,7 +101,7 @@
 <input type="hidden" name="push_new_violation" value="0">
 <input type="checkbox" name="push_new_violation" value="1" {{ $preference->push_new_violation ? 'checked' : '' }}
                                        class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-colors peer-checked:bg-indigo-600"></div>
                             </label>
                         </div>
 
@@ -116,7 +116,7 @@
 <input type="hidden" name="push_low_cashbook" value="0">
 <input type="checkbox" name="push_low_cashbook" value="1" {{ $preference->push_low_cashbook ? 'checked' : '' }}
                                        class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-colors peer-checked:bg-indigo-600"></div>
                             </label>
                         </div>
 
@@ -131,7 +131,7 @@
 <input type="hidden" name="push_daily_summary" value="0">
 <input type="checkbox" name="push_daily_summary" value="1" {{ $preference->push_daily_summary ? 'checked' : '' }}
                                        class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-colors peer-checked:bg-indigo-600"></div>
                             </label>
                         </div>
                     </div>
@@ -268,7 +268,7 @@ function urlBase64ToUint8Array(base64String) {
 
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-xl shadow-lg z-50 animate-slide-up ${
+    toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-xl  z-50  ${
         type === 'success' ? 'bg-emerald-600 text-white' :
         type === 'error' ? 'bg-rose-600 text-white' :
         'bg-slate-800 text-white'

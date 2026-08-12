@@ -10,13 +10,13 @@
 <div class="space-y-8 pb-16">
 
     <!-- HERO BANNER -->
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl border border-slate-800">
+    <div class="relative overflow-hidden rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-slate-800">
         <div class="relative z-10 space-y-3">
             <div class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400 border border-amber-500/20">
                 <span>👑 Paket Akun VIP PRO</span>
             </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Upgrade ke <span class="bg-gradient-to-r from-amber-300 via-amber-200 to-indigo-200 bg-clip-text text-transparent">Wali Kelas PRO</span>
+            <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
+                Upgrade ke <span class="bg-clip-text text-transparent">Wali Kelas PRO</span>
             </h1>
             <p class="text-xs sm:text-sm text-slate-300 max-w-2xl">
                 Nikmati akses otomatisasi grup WhatsApp, pengisian biodata mandiri 33 field, rekapitulasi presensi, dan cetak PDF laporan tanpa batas.
@@ -57,7 +57,7 @@
             </div>
 
             @if($pendingProof)
-                <div class="mt-3 rounded-xl bg-amber-500/20 border border-amber-400/40 p-3 text-xs text-amber-200 backdrop-blur-xs">
+                <div class="mt-3 rounded-xl bg-amber-500/20 border border-amber-400/40 p-3 text-xs text-amber-200">
                     <span class="font-bold block text-white">⏳ Konfirmasi Pembayaran Diproses</span>
                     <span>Admin sedang mengonfirmasi bukti transfer DANA Anda. Akun akan otomatis aktif.</span>
                 </div>
@@ -69,16 +69,16 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         <!-- PRO PLAN CARD -->
-        <div class="rounded-2xl border-2 border-indigo-600 bg-white p-6 shadow-md space-y-4 relative flex flex-col justify-between">
-            <div class="absolute -top-3 right-6 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-0.5 text-[10px] font-extrabold text-white uppercase shadow-sm">
+        <div class="rounded-2xl border-2 border-indigo-600 bg-white p-6 space-y-4 relative flex flex-col justify-between">
+            <div class="absolute -top-3 right-6 rounded-full px-3 py-0.5 text-[10px] font-semibold text-white uppercase shadow-sm">
                 Spesial PRO
             </div>
 
             <div class="space-y-3">
                 <span class="inline-block rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-bold text-indigo-700 uppercase tracking-wider">Akses Penuh 1 Bulan</span>
-                <h3 class="text-2xl font-extrabold text-slate-900">PRO Bulanan</h3>
+                <h3 class="text-2xl font-semibold text-slate-900">PRO Bulanan</h3>
                 <div class="flex items-baseline gap-1">
-                    <span class="text-4xl font-black text-indigo-600">{{ $rpHarga }}</span>
+                    <span class="text-4xl font-semibold text-indigo-600">{{ $rpHarga }}</span>
                     <span class="text-xs text-slate-500 font-medium">/ bulan</span>
                 </div>
                 <p class="text-xs text-slate-500">Harga sangat terjangkau hanya {{ $rpHarga }}/bulan untuk kemudahan pengelolaan kelas.</p>
@@ -107,32 +107,32 @@
         </div>
 
         <!-- PAYMENT DETAILS & FORM (EXCLUSIVELY DANA) -->
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
+        <div class="rounded-2xl border border-slate-200/80 bg-white p-6 space-y-4">
             <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
                 <div>
                     <h3 class="text-base font-bold text-slate-900">Pembayaran Resmi DANA</h3>
                     <p class="text-xs text-slate-500">Transfer {{ $rpHarga }} ke nomor DANA resmi di bawah</p>
                 </div>
-                <span class="px-3 py-1 rounded-lg bg-sky-50 text-sky-700 font-black text-xs border border-sky-200">
+                <span class="px-3 py-1 rounded-lg bg-sky-50 text-sky-700 font-semibold text-xs border border-sky-200">
                     💙 ONLY DANA
                 </span>
             </div>
 
             <!-- DANA INFO BOX -->
-            <div class="rounded-xl bg-gradient-to-br from-sky-500 via-sky-600 to-indigo-700 p-5 text-white shadow-md space-y-3">
+            <div class="rounded-xl p-5 text-white space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-sky-200">Nomor Akun DANA Resmi</span>
-                    <span class="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-xs">Terverifikasi</span>
+                    <span class="text-[10px] font-semibold uppercase tracking-widest text-sky-200">Nomor Akun DANA Resmi</span>
+                    <span class="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">Terverifikasi</span>
                 </div>
 
                 <div>
                     <span class="text-xs text-sky-100 font-medium block">Nomor HP DANA:</span>
-                    <p class="text-2xl font-black tracking-wider text-white mt-0.5">0838-1720-3455</p>
+                    <p class="text-2xl font-semibold tracking-wider text-white mt-0.5">0838-1720-3455</p>
                 </div>
 
                 <div class="pt-2 border-t border-white/20 flex items-center justify-between text-xs">
                     <span class="text-sky-100">Jumlah Transfer:</span>
-                    <strong class="text-amber-300 font-black text-sm">{{ $rpHarga }}</strong>
+                    <strong class="text-amber-300 font-semibold text-sm">{{ $rpHarga }}</strong>
                 </div>
             </div>
 
@@ -162,7 +162,7 @@
                     <input type="file" name="proof_image" required accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100">
                 </div>
 
-                <button type="submit" class="h-10 w-full rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold transition-all shadow-md shadow-sky-500/20 active:scale-95">
+                <button type="submit" class="h-10 w-full rounded-xl hover: hover: text-white font-bold transition-colors">
                     📤 Unggah Bukti Transfer DANA ({{ $rpHarga }})
                 </button>
             </form>

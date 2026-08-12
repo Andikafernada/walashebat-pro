@@ -15,7 +15,7 @@
     @include('partials.flash')
 
     <!-- PENDING APPROVALS TABLE -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
                 <h3 class="text-sm font-bold text-slate-900">Menunggu Konfirmasi ({{ $pending->count() }} Pengajuan)</h3>
@@ -86,7 +86,7 @@
                                                    class="h-8 w-14 rounded-lg border border-slate-300 text-center text-xs font-bold text-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                                                    title="Berapa bulan yang diberikan">
                                             <span class="text-[10px] font-semibold text-slate-500">bln</span>
-                                            <button type="submit" onclick="return confirm('Setujui pembayaran & aktifkan akun PRO?')" class="h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 font-bold text-xs shadow-xs transition-colors">
+                                            <button type="submit" onclick="return confirm('Setujui pembayaran & aktifkan akun PRO?')" class="h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 font-bold text-xs transition-colors">
                                                 ✓ Setujui PRO
                                             </button>
                                         </form>
@@ -112,7 +112,7 @@
     </div>
 
     <!-- HISTORY TABLE -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
         <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">Riwayat Transaksi</h3>
         @if($history->isNotEmpty())
             <div class="overflow-x-auto rounded-xl border border-slate-200">

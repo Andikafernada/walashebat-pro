@@ -33,7 +33,7 @@
         <!-- LEFT COLUMN: Schedules List by Day (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
             @foreach (\App\Models\Schedule::DAYS as $num => $day)
-                <div class="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm space-y-3">
+                <div class="rounded-2xl border border-slate-200/80 bg-white p-4 space-y-3">
                     
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <div class="flex items-center gap-2">
@@ -85,10 +85,10 @@
 
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4">
-            <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+            <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
                 
                 <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl text-white">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     </div>
                     <div>
@@ -131,7 +131,7 @@
                     </div>
 
                     <button type="submit" :disabled="loading"
-                            class="h-10 w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-500/20">
+                            class="h-10 w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors flex items-center justify-center gap-2">
                         <template x-if="!loading">
                             <span class="flex items-center gap-1.5">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

@@ -22,7 +22,7 @@
 
         <div class="flex items-center gap-2">
             <a href="{{ route('classes.reports.full.pdf', array_merge(['class' => $classroom->id], request()->query())) }}" target="_blank"
-               class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition-all hover:bg-indigo-700 active:scale-95">
+               class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-indigo-700">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                 Cetak PDF Laporan
             </a>
@@ -41,7 +41,7 @@
     @endphp
 
     <!-- Filter & Section Selection Card -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
         <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">Pengaturan Filter &amp; Bagian Laporan</h3>
 
         <form method="GET" x-data="{ mode: '{{ $periode['mode'] ?? 'bulan' }}' }" class="space-y-4">
@@ -141,7 +141,7 @@
         @endif
 
         @if($ada('siswa'))
-            <div data-bagian="siswa" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-3">
+            <div data-bagian="siswa" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-3">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Data Siswa</h3>
                 <p class="text-xs text-slate-500">
                     Total {{ $ringkasanSiswa['total'] }} siswa &middot; {{ $ringkasanSiswa['lk'] }} L &middot; {{ $ringkasanSiswa['pr'] }} P
@@ -158,14 +158,14 @@
         @endif
 
         @if($ada('biodata'))
-            <div data-bagian="biodata" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+            <div data-bagian="biodata" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Buku Induk (Biodata)</h3>
                 <p class="text-xs text-slate-500">{{ $ringkasanSiswa['total'] }} siswa tercatat pada buku induk kelas ini.</p>
             </div>
         @endif
 
         @if($ada('kehadiran'))
-            <div data-bagian="kehadiran" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-3">
+            <div data-bagian="kehadiran" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-3">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Rekap Kehadiran</h3>
                 <p class="text-xs text-slate-500">
                     {{ $jumlahPertemuan }} pertemuan &middot; tingkat kehadiran kelas {{ $persenKelas }}%
@@ -182,7 +182,7 @@
         @endif
 
         @if($ada('poin'))
-            <div data-bagian="poin" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+            <div data-bagian="poin" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Rekap Poin per Siswa</h3>
                 <ul class="text-xs text-slate-700 space-y-1">
                     @foreach ($poin as $baris)
@@ -196,7 +196,7 @@
         @endif
 
         @if($ada('perhatian'))
-            <div data-bagian="perhatian" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+            <div data-bagian="perhatian" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Siswa Perlu Perhatian</h3>
                 @forelse ($perhatian as $baris)
                     <p class="text-xs text-slate-700">{{ $baris['siswa']->name }}</p>
@@ -207,14 +207,14 @@
         @endif
 
         @if($ada('pelanggaran'))
-            <div data-bagian="pelanggaran" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+            <div data-bagian="pelanggaran" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Catatan Pelanggaran</h3>
                 <p class="text-xs text-slate-500">{{ $pelanggaran->count() }} catatan pada periode ini.</p>
             </div>
         @endif
 
         @if($ada('struktur'))
-            <div data-bagian="struktur" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+            <div data-bagian="struktur" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Struktur Organisasi</h3>
                 @forelse ($struktur as $baris)
                     <p class="text-xs text-slate-700">{{ $baris->roleLabel() }}: {{ $baris->student->name ?? "—" }}</p>
@@ -225,21 +225,21 @@
         @endif
 
         @if($ada('jadwal'))
-            <div data-bagian="jadwal" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+            <div data-bagian="jadwal" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Jadwal Pelajaran</h3>
                 <p class="text-xs text-slate-500">{{ $jadwal->flatten()->count() }} entri jadwal.</p>
             </div>
         @endif
 
         @if($ada('denah'))
-            <div data-bagian="denah" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+            <div data-bagian="denah" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Denah Tempat Duduk</h3>
                 <p class="text-xs text-slate-500">Denah tersedia pada berkas PDF.</p>
             </div>
         @endif
 
         @if($ada('kas'))
-            <div data-bagian="kas" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+            <div data-bagian="kas" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Buku Kas</h3>
                 <p class="text-xs text-slate-500">Saldo akhir: {{ $rp($kas['saldo_akhir'] ?? 0) }}</p>
             </div>
@@ -250,7 +250,7 @@
              cara tercepat menghabiskan tinta orang. --}}
         @if($ada('profil'))
             @php $belumBerfoto = collect($lembarProfil)->filter(fn ($l) => ! $l['siswa']->foto_path)->count(); @endphp
-            <div data-bagian="profil" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-2">
+            <div data-bagian="profil" class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-2">
                 <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Profil &amp; Analisis Siswa</h3>
                 <p class="text-xs text-slate-500">
                     {{ count($lembarProfil) }} lembar — satu halaman penuh untuk tiap siswa aktif, tersedia pada berkas PDF.

@@ -8,7 +8,7 @@
 
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <h1 class="text-xl font-black tracking-tight text-slate-900">Analisis Kehadiran</h1>
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Analisis Kehadiran</h1>
             <p class="text-xs text-slate-500 mt-0.5">
                 {{ $classroom->name }} &middot; {{ $periode['label'] }} &middot; {{ $jumlahPertemuan }} pertemuan
                 @if ($mapelDipilih) &middot; <span class="font-semibold text-indigo-600">{{ $mapelDipilih }}</span> @endif
@@ -44,17 +44,17 @@
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <div class="rounded-2xl border border-slate-200 bg-white p-4">
                 <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Kehadiran kelas</p>
-                <p class="mt-1 text-2xl font-black text-slate-900">{{ $persenKelas }}%</p>
+                <p class="mt-1 text-2xl font-semibold text-slate-900">{{ $persenKelas }}%</p>
             </div>
             <div class="rounded-2xl border border-slate-200 bg-white p-4">
                 <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Di bawah {{ $ambangPerhatian }}%</p>
-                <p class="mt-1 text-2xl font-black text-rose-700">
+                <p class="mt-1 text-2xl font-semibold text-rose-700">
                     {{ $rekap->filter(fn ($r) => $r['total'] > 0 && $r['persen'] < $ambangPerhatian)->count() }}
                 </p>
             </div>
             <div class="rounded-2xl border border-slate-200 bg-white p-4">
                 <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Pertemuan</p>
-                <p class="mt-1 text-2xl font-black text-slate-900">{{ $jumlahPertemuan }}</p>
+                <p class="mt-1 text-2xl font-semibold text-slate-900">{{ $jumlahPertemuan }}</p>
             </div>
         </div>
 
@@ -91,7 +91,7 @@
                                          tuduhan yang keliru. --}}
                                     <span class="text-slate-400">belum ada data</span>
                                 @else
-                                    <span class="font-black tabular-nums {{ $rendah ? 'text-rose-700' : 'text-slate-800' }}">{{ $r['persen'] }}%</span>
+                                    <span class="font-semibold tabular-nums {{ $rendah ? 'text-rose-700' : 'text-slate-800' }}">{{ $r['persen'] }}%</span>
                                     <span class="block text-[10px] text-slate-400">{{ $r['total'] }} isian</span>
                                 @endif
                             </td>

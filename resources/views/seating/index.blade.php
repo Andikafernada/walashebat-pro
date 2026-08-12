@@ -38,7 +38,7 @@
     @endphp
 
     <!-- Seating Grid Canvas Card -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-5"
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-5"
          x-data="seating({
             saveUrl: '{{ route('classes.seating.save', $classroom) }}',
             csrf: '{{ csrf_token() }}',
@@ -67,7 +67,7 @@
                     ✓ <span x-text="savedMsg"></span>
                 </span>
                 <button type="button" @click="save()" :disabled="saving"
-                        class="h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-4 transition-all shadow-md shadow-indigo-500/20 flex items-center gap-1.5">
+                        class="h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 transition-colors flex items-center gap-1.5">
                     <template x-if="!saving">
                         <span>Simpan Denah Meja</span>
                     </template>
@@ -93,7 +93,7 @@
                 
                 <template x-for="r in rows" :key="`r-${r}`">
                     <template x-for="c in cols" :key="`r-${r}-c-${c}`">
-                        <div class="group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-2.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-sm"
+                        <div class="group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-2.5 transition-colors hover:border-indigo-300 hover:bg-white hover:shadow-sm"
                              :class="{ 'border-indigo-400 bg-indigo-50/30': seatAt(r-1, c-1).student_id }">
                             
                             <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">

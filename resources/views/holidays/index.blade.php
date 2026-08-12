@@ -31,7 +31,7 @@
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 </div>
             </div>
-            <p class="mt-2 text-2xl font-black tracking-tight text-slate-900">{{ $mine->count() }}</p>
+            <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ $mine->count() }}</p>
             <p class="mt-1 text-[11px] text-slate-400">Hari libur diinput mandiri</p>
         </div>
 
@@ -42,7 +42,7 @@
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
             </div>
-            <p class="mt-2 text-2xl font-black tracking-tight text-slate-900">{{ $national->count() }}</p>
+            <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ $national->count() }}</p>
             <p class="mt-1 text-[11px] text-slate-400">Libur resmi dari sistem</p>
         </div>
 
@@ -53,7 +53,7 @@
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
             </div>
-            <p class="mt-2 text-2xl font-black tracking-tight text-indigo-600">{{ $mine->count() + $national->count() }}</p>
+            <p class="mt-2 text-2xl font-semibold tracking-tight text-indigo-600">{{ $mine->count() + $national->count() }}</p>
             <p class="mt-1 text-[11px] text-slate-400">Gabungan seluruh libur</p>
         </div>
     </div>
@@ -69,11 +69,11 @@
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                     <div class="flex items-center gap-2">
                         <button type="button" @click="tab = 'mine'"
-                                :class="tab === 'mine' ? 'bg-indigo-600 text-white font-bold shadow-xs rounded-xl px-3.5 py-1.5 text-xs transition-all' : 'bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 rounded-xl px-3.5 py-1.5 text-xs transition-all'">
+                                :class="tab === 'mine' ? 'bg-indigo-600 text-white font-bold rounded-xl px-3.5 py-1.5 text-xs transition-colors' : 'bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 rounded-xl px-3.5 py-1.5 text-xs transition-colors'">
                             Libur Sekolah Mandiri ({{ $mine->count() }})
                         </button>
                         <button type="button" @click="tab = 'national'"
-                                :class="tab === 'national' ? 'bg-indigo-600 text-white font-bold shadow-xs rounded-xl px-3.5 py-1.5 text-xs transition-all' : 'bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 rounded-xl px-3.5 py-1.5 text-xs transition-all'">
+                                :class="tab === 'national' ? 'bg-indigo-600 text-white font-bold rounded-xl px-3.5 py-1.5 text-xs transition-colors' : 'bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 rounded-xl px-3.5 py-1.5 text-xs transition-colors'">
                             Libur Nasional Sistem ({{ $national->count() }})
                         </button>
                     </div>
@@ -84,10 +84,10 @@
                     @if ($mine->isNotEmpty())
                         <div class="space-y-3">
                             @foreach ($mine as $h)
-                                <div class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs hover:border-indigo-200 hover:shadow-md transition-all">
+                                <div class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 hover:border-indigo-200 hover: transition-colors">
                                     <div class="flex items-center gap-3.5">
                                         <!-- Date Icon -->
-                                        <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-700 font-bold border border-indigo-200/60 shadow-xs">
+                                        <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl text-indigo-700 font-bold border border-indigo-200/60 shadow-xs">
                                             <span class="text-xs leading-none">{{ $h->start_date->format('d') }}</span>
                                             <span class="text-[10px] uppercase tracking-wider text-indigo-500 font-semibold mt-0.5">{{ $h->start_date->isoFormat('MMM') }}</span>
                                         </div>
@@ -166,10 +166,10 @@
 
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4">
-            <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+            <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
                 
                 <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl text-white">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     </div>
                     <div>
@@ -201,7 +201,7 @@
                     </div>
 
                     <button type="submit" :disabled="loading"
-                            class="h-10 w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-500/20">
+                            class="h-10 w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors flex items-center justify-center gap-2">
                         <template x-if="!loading">
                             <span class="flex items-center gap-1.5">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

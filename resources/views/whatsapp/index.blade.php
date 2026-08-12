@@ -22,7 +22,7 @@
     @include('partials.flash')
 
     <!-- PAIRING / CONNECTION STATUS CARD -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-4">
             <div class="flex items-center gap-3">
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 font-bold text-2xl">
@@ -61,7 +61,7 @@
                         @csrf
                         <input type="hidden" name="metode" value="kode">
                         <button type="submit"
-                                class="h-auto py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95 text-left">
+                                class="h-auto py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors text-left">
                             <span class="block text-sm">📱 Saya memakai HP ini</span>
                             <span class="block font-medium text-emerald-50/90 mt-0.5 leading-snug">
                                 Dapatkan kode 8 karakter untuk diketik di WhatsApp. Tanpa memindai apa pun.
@@ -73,7 +73,7 @@
                         @csrf
                         <input type="hidden" name="metode" value="qr">
                         <button type="submit"
-                                class="h-auto py-3 px-4 rounded-xl border-2 border-emerald-600 bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs transition-all active:scale-95 text-left">
+                                class="h-auto py-3 px-4 rounded-xl border-2 border-emerald-600 bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs transition-colors text-left">
                             <span class="block text-sm">💻 Saya memakai laptop/komputer</span>
                             <span class="block font-medium text-slate-500 mt-0.5 leading-snug">
                                 Terbitkan Kode QR untuk dipindai dengan WhatsApp di HP Anda.
@@ -100,18 +100,18 @@
     <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
          x-show="status !== 'connected' && kodePairing" x-cloak>
         <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
-            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
             <span>Kode Penautan Berhasil Diterbitkan</span>
         </div>
 
-        <h3 class="text-xl font-black text-slate-900">Ketik Kode Ini di WhatsApp Anda</h3>
+        <h3 class="text-xl font-semibold text-slate-900">Ketik Kode Ini di WhatsApp Anda</h3>
 
         {{-- Dipecah per karakter: kode ini diketik ulang oleh guru sambil
              berpindah aplikasi, dan deretan 8 huruf-angka tanpa jeda paling
              mudah salah baca. --}}
         <div class="flex justify-center gap-1.5 sm:gap-2 py-1 flex-wrap">
             <template x-for="(huruf, i) in String(kodePairing).split('')" :key="i">
-                <span class="inline-flex h-12 w-9 sm:h-14 sm:w-11 items-center justify-center rounded-xl border-2 border-slate-900 bg-slate-50 text-xl sm:text-2xl font-black tracking-widest text-slate-900 shadow-sm"
+                <span class="inline-flex h-12 w-9 sm:h-14 sm:w-11 items-center justify-center rounded-xl border-2 border-slate-900 bg-slate-50 text-xl sm:text-2xl font-semibold tracking-widest text-slate-900 shadow-sm"
                       x-text="huruf"></span>
             </template>
         </div>
@@ -124,7 +124,7 @@
             <p>4. Masukkan kode di atas.</p>
         </div>
 
-        <p class="text-xs font-bold text-indigo-600 animate-pulse">
+        <p class="text-xs font-bold text-indigo-600">
             ⏳ Menunggu kode dimasukkan… Halaman akan otomatis terhubung.
         </p>
 
@@ -137,11 +137,11 @@
     <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
          x-show="status !== 'connected' && qr">
         <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
-            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
             <span>Kode QR WhatsApp Berhasil Diterbitkan</span>
         </div>
         
-        <h3 class="text-xl font-black text-slate-900">Pindai Kode QR Ini Menggunakan WhatsApp HP</h3>
+        <h3 class="text-xl font-semibold text-slate-900">Pindai Kode QR Ini Menggunakan WhatsApp HP</h3>
         
         <p class="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
             Buka aplikasi WhatsApp di HP Anda &rarr; Ketuk <strong>Setelan (atau Titik Tiga)</strong> &rarr; <strong>Perangkat Tertaut</strong> &rarr; <strong>Tautkan Perangkat</strong>.
@@ -154,14 +154,14 @@
             </div>
         </div>
 
-        <p class="text-xs font-bold text-indigo-600 animate-pulse">
+        <p class="text-xs font-bold text-indigo-600">
             ⏳ Menunggu pemindaian dari HP... Halaman akan otomatis terhubung begitu dipindai.
         </p>
     </div>
 
     <!-- AUTOREPLY GROUPS SELECTION & EDITING (IF WA CONNECTED) -->
     @if(auth()->user()->whatsappConnected())
-        <div class="rounded-2xl border-2 border-indigo-200 bg-white p-6 shadow-md space-y-5"
+        <div class="rounded-2xl border-2 border-indigo-200 bg-white p-6 space-y-5"
              x-data="autoreply({
                 grupUrl: '{{ route('whatsapp.groups') }}',
                 terpilih: {{ json_encode($autoreply['groups'] ?? []) }},
@@ -263,8 +263,7 @@
                     <span class="text-xs">
                         <span class="font-bold text-slate-800">Nyalakan balasan otomatis</span>
                         @if ($gatewayTerjangkau)
-                            <span class="ml-1.5 align-middle inline-block rounded-full px-2 py-0.5 text-[10px] font-bold
-                                  {{ ($autoreply['enabled'] ?? false) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
+                            <span class="ml-1.5 align-middle inline-block rounded-full px-2 py-0.5 text-[10px] font-bold {{ ($autoreply['enabled'] ?? false) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
                                 {{ ($autoreply['enabled'] ?? false) ? 'Sedang aktif' : 'Sedang mati' }}
                             </span>
                         @else
@@ -460,7 +459,7 @@
                     <span class="text-xs text-slate-500">
                         Total terpilih: <strong class="text-indigo-600" x-text="terpilih.length"></strong> grup.
                     </span>
-                    <button type="submit" class="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 transition-all shadow-md shadow-indigo-500/20 active:scale-95">
+                    <button type="submit" class="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 transition-colors">
                         💾 Simpan Perubahan Grup WA
                     </button>
                 </div>
@@ -469,7 +468,7 @@
     @endif
 
     <!-- CUSTOM KEYWORDS & TEMPLATE FORM -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-6">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 space-y-6">
         <div class="border-b border-slate-100 pb-3">
             <h3 class="text-base font-bold text-slate-900">🔤 Klasifikasi Kata Kunci &amp; Templat Balasan Guru</h3>
             <p class="text-xs text-slate-500 mt-0.5">Tentukan sendiri kata kunci yang dijadikan patokan balasan otomatis. Pesan di luar kata kunci ini <strong>TIDAK AKAN DIBALAS</strong>.</p>
@@ -566,7 +565,7 @@
             </div>
 
             <div class="flex items-center justify-end border-t border-slate-100 pt-4">
-                <button type="submit" class="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 text-xs transition-all shadow-md shadow-indigo-500/20">
+                <button type="submit" class="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 text-xs transition-colors">
                     ✓ Simpan Kata Kunci &amp; Templat WhatsApp
                 </button>
             </div>

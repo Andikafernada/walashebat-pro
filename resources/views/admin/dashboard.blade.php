@@ -30,7 +30,7 @@
             Kartu ini menjawab BERAPA. Pertanyaan yang selalu menyusul adalah
             SIAPA — dan sampai sekarang tidak ada jalan ke sana dari mana pun.
         --}}
-        <a href="{{ route('admin.teachers.index') }}" class="block rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-colors hover:border-indigo-300">
+        <a href="{{ route('admin.teachers.index') }}" class="block rounded-2xl border border-slate-200/80 bg-white p-5 transition-colors hover:border-indigo-300">
             <p class="text-xs font-semibold text-slate-500">Wali Kelas Terdaftar</p>
             <p class="mt-1 text-3xl font-bold text-slate-900">{{ number_format($ringkas['guru_aktif']) }}</p>
             <p class="mt-1 text-[11px] font-semibold {{ $ringkas['guru_baru_30h'] > 0 ? 'text-emerald-600' : 'text-slate-400' }}">
@@ -50,7 +50,7 @@
         {{-- Kartu ini satu-satunya yang bisa langsung dikerjakan, jadi ia
              berubah warna dan menjadi tautan begitu ada yang menunggu. --}}
         <a href="{{ route('admin.subscriptions.index') }}"
-           class="rounded-2xl border p-5 shadow-sm transition-shadow hover:shadow-md {{ $ringkas['pembayaran_pending'] > 0 ? 'border-amber-300 bg-amber-50' : 'border-slate-200/80 bg-white' }}">
+           class="rounded-2xl border p-5 transition-shadow hover: {{ $ringkas['pembayaran_pending'] > 0 ? 'border-amber-300 bg-amber-50' : 'border-slate-200/80 bg-white' }}">
             <p class="text-xs font-semibold {{ $ringkas['pembayaran_pending'] > 0 ? 'text-amber-700' : 'text-slate-500' }}">Bukti Menunggu Verifikasi</p>
             <p class="mt-1 text-3xl font-bold {{ $ringkas['pembayaran_pending'] > 0 ? 'text-amber-900' : 'text-slate-900' }}">
                 {{ number_format($ringkas['pembayaran_pending']) }}
@@ -104,7 +104,7 @@
     </div>
 
     <!-- Perlu ditagih -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
                 <h3 class="text-sm font-bold text-slate-900">Masa Aktif Habis / Segera Habis ({{ $perluDitagih->count() }})</h3>
@@ -172,7 +172,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- Gateway WhatsApp -->
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
             <div class="border-b border-slate-100 pb-3">
                 <h3 class="text-sm font-bold text-slate-900">Kesehatan Gateway WhatsApp</h3>
                 <p class="text-xs text-slate-500">Sesi per wali kelas — sumber keluhan "absensi saya tidak terkirim".</p>
@@ -180,11 +180,7 @@
 
             <div class="flex flex-wrap gap-2">
                 @foreach($gateway['per_status'] as $status => $jumlah)
-                    <span class="rounded-full px-2.5 py-0.5 text-[10px] font-bold {{ match($status) {
-                        'connected' => 'bg-emerald-100 text-emerald-800',
-                        'pairing'   => 'bg-amber-100 text-amber-800',
-                        default     => 'bg-slate-200 text-slate-700',
-                    } }}">
+                    <span class="rounded-full px-2.5 py-0.5 text-[10px] font-bold {{ match($status) { 'connected' => 'bg-emerald-100 text-emerald-800', 'pairing' => 'bg-amber-100 text-amber-800', default => 'bg-slate-200 text-slate-700', } }}">
                         {{ $status ?: 'tidak diketahui' }}: {{ $jumlah }}
                     </span>
                 @endforeach
@@ -213,7 +209,7 @@
         </div>
 
         <!-- Antrian -->
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
             <div class="border-b border-slate-100 pb-3">
                 <h3 class="text-sm font-bold text-slate-900">Antrian &amp; Pekerjaan Gagal</h3>
                 <p class="text-xs text-slate-500">Pengiriman WhatsApp berjalan lewat antrian; kegagalannya diam-diam.</p>

@@ -5,7 +5,7 @@
     @include('partials.class-nav')
 
     <div class="max-w-2xl mx-auto">
-        <div class="glass-card animate-in">
+        <div class="glass-card">
             <div class="flex items-center gap-4 mb-6">
                 <a href="{{ route('classes.character-portfolio.student', [$class, $student]) }}"
                    class="p-2 rounded-xl hover:bg-slate-100 transition-colors">

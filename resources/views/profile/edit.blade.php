@@ -5,7 +5,7 @@
     <div class="bento-grid max-w-2xl">
 
         <!-- User Avatar + Info → bento-wide bento-highlight -->
-        <div class="bento-item bento-wide bento-highlight bento-highlight--sky animate-in">
+        <div class="bento-item bento-wide bento-highlight bento-highlight--sky">
             <div class="flex items-center gap-5">
                 <!-- Avatar -->
                 <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-2xl font-bold text-slate-600 shadow-sm">
@@ -25,7 +25,7 @@
         </div>
 
         <!-- School Info Card → bento-medium -->
-        <div class="bento-item bento-medium animate-in stagger-1">
+        <div class="bento-item bento-medium stagger-1">
             <div class="card-elevated">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="bento-icon bento-icon--sm bento-icon--sky">
@@ -180,7 +180,7 @@
         </div>
 
         <!-- Security Settings → bento-item card -->
-        <div class="bento-item animate-in stagger-2">
+        <div class="bento-item stagger-2">
             <div class="card-elevated">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="bento-icon bento-icon--sm bento-icon--amber">

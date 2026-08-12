@@ -7,31 +7,34 @@
     $subAktif = $periode['sub_periode'] ?? '1_penuh';
     $paramSertifikat = ['sub_periode' => $subAktif, 'tahun' => $periode['tahun'], 'mode' => 'semester'];
 @endphp
-<div class="space-y-6 pb-12">
 
-    <!-- Header -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('classes.index') }}" class="hover:text-indigo-600 transition-colors">Kelas</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">Poin Kerajinan</span>
-            </nav>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Poin Kerajinan &amp; Siswa Terajin</h1>
-            <p class="text-sm text-slate-500 mt-1">
-                Otomatis dari kehadiran:
-                <span class="font-semibold text-emerald-600">+{{ \App\Support\PoinKerajinan::NILAI['hadir'] }} tiap hadir</span>,
-                <span class="font-semibold text-rose-600">{{ \App\Support\PoinKerajinan::NILAI['alfa'] }} tiap alfa</span>.
-            </p>
-        </div>
+<div class="space-y-5 pb-12">
+
+    <div class="border-b border-slate-200 pb-4">
+        <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+            <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ route('classes.show', $class) }}" class="hover:text-slate-600">{{ $class->name }}</a>
+            <span aria-hidden="true">/</span>
+            <span class="text-slate-500">Poin Kerajinan</span>
+        </nav>
+        <h1 class="mt-1 text-xl font-semibold tracking-tight text-slate-900">Poin Kerajinan &amp; Siswa Terajin</h1>
+        <p class="mt-1 text-sm text-slate-500">
+            Dihitung otomatis dari kehadiran:
+            <span class="kode kode--hadir">+{{ \App\Support\PoinKerajinan::NILAI['hadir'] }}</span> tiap hadir,
+            <span class="kode kode--alfa">{{ \App\Support\PoinKerajinan::NILAI['alfa'] }}</span> tiap alfa.
+            Sakit, izin, dan terlambat tidak menggeser poin.
+        </p>
     </div>
 
-    <!-- Pemilih periode -->
-    <form method="GET" class="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+    @include('partials.class-nav', ['classroom' => $class])
+
+    <form method="GET" class="flex flex-wrap items-end gap-2 rounded-lg border border-slate-200 bg-white p-3">
         <input type="hidden" name="mode" value="semester">
-        <label class="flex flex-col gap-1 text-xs font-semibold text-slate-600">
-            Periode
-            <select name="sub_periode" class="rounded-xl border-slate-300 text-sm">
+
+        <div class="form-group">
+            <label for="sub_periode" class="form-label">Periode</label>
+            <select id="sub_periode" name="sub_periode" class="form-select form-input--sm w-52">
                 <option value="1_penuh" @selected($subAktif==='1_penuh')>Semester 1 (Penuh)</option>
                 <option value="1_pts" @selected($subAktif==='1_pts')>Tengah Semester 1 (PTS)</option>
                 <option value="1_pas" @selected($subAktif==='1_pas')>Akhir Semester 1 (PAS)</option>
@@ -39,65 +42,72 @@
                 <option value="2_pts" @selected($subAktif==='2_pts')>Tengah Semester 2 (PTS)</option>
                 <option value="2_pas" @selected($subAktif==='2_pas')>Akhir Semester 2 (PAS)</option>
             </select>
-        </label>
-        <label class="flex flex-col gap-1 text-xs font-semibold text-slate-600">
-            Tahun Ajaran (awal)
-            <input type="number" name="tahun" value="{{ $periode['tahun'] }}" min="2000" max="2100" class="w-28 rounded-xl border-slate-300 text-sm">
-        </label>
-        <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Tampilkan</button>
+        </div>
+
+        <div class="form-group">
+            <label for="tahun" class="form-label">Tahun ajaran (awal)</label>
+            <input id="tahun" type="number" name="tahun" value="{{ $periode['tahun'] }}" min="2000" max="2100" class="form-input form-input--sm w-24">
+        </div>
+
+        <button type="submit" class="btn-secondary btn-secondary--sm">Tampilkan</button>
     </form>
 
-    <p class="text-sm font-semibold text-slate-700">{{ $periode['label'] }}</p>
-
     @if ($peringkat->isEmpty())
-        <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
-            <p class="text-sm text-slate-500">Belum ada data kehadiran pada periode ini, jadi peringkat belum bisa disusun.</p>
+        <div class="empty-state">
+            <p class="empty-state__title">Belum ada data kehadiran</p>
+            <p class="empty-state__description">Peringkat kerajinan disusun dari absensi pada {{ $periode['label'] }}, dan periode itu belum punya satu pun sesi terisi.</p>
         </div>
     @else
-        {{-- Juara --}}
         @php $juara = $peringkat->first(); @endphp
-        <div class="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-400 text-2xl">🏆</div>
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-amber-600">Siswa Terajin</p>
-                    <p class="text-lg font-bold text-slate-900">{{ $juara->name }}</p>
-                    <p class="text-sm text-slate-500">{{ $juara->poin }} poin kerajinan</p>
-                </div>
-            </div>
-            <a href="{{ route('classes.kerajinan.sertifikat', array_merge([$class, 'student_id' => $juara->student_id], $paramSertifikat)) }}"
-               class="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-600">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Cetak Sertifikat
-            </a>
-        </div>
 
-        {{-- Tabel peringkat --}}
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    <tr>
-                        <th class="px-4 py-3 w-16">#</th>
-                        <th class="px-4 py-3">Nama</th>
-                        <th class="px-4 py-3 text-right">Poin</th>
-                        <th class="px-4 py-3 text-right">Sertifikat</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @foreach ($peringkat as $i => $b)
-                        <tr class="{{ $i === 0 ? 'bg-amber-50/40' : '' }}">
-                            <td class="px-4 py-3 font-semibold text-slate-400">{{ $i + 1 }}</td>
-                            <td class="px-4 py-3 font-medium text-slate-900">{{ $b->name }}</td>
-                            <td class="px-4 py-3 text-right font-bold {{ $b->poin < 0 ? 'text-rose-600' : 'text-emerald-600' }}">{{ $b->poin }}</td>
-                            <td class="px-4 py-3 text-right">
-                                <a href="{{ route('classes.kerajinan.sertifikat', array_merge([$class, 'student_id' => $b->student_id], $paramSertifikat)) }}"
-                                   class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Cetak</a>
-                            </td>
+        <section class="blok">
+            <div class="blok__kepala">
+                <h2 class="blok__judul">Peringkat kerajinan</h2>
+                <span class="eyebrow">{{ $periode['label'] }}</span>
+            </div>
+
+            {{-- Juara diberi satu baris sendiri di atas tabel, bukan piala emas
+                 bergradien: yang perlu dibaca wali kelas adalah namanya dan
+                 tombol cetaknya. --}}
+            <div class="flex flex-col gap-3 border-b border-l-[3px] border-slate-200 border-l-slate-900 bg-slate-50 p-3.5 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="kode kode--aksen shrink-0">1</span>
+                    <div>
+                        <p class="eyebrow">Siswa terajin</p>
+                        <p class="text-sm font-semibold tracking-tight text-slate-900">{{ $juara->name }}</p>
+                        <p class="angka text-xs text-slate-500">{{ $juara->poin }} poin kerajinan</p>
+                    </div>
+                </div>
+                <a href="{{ route('classes.kerajinan.sertifikat', array_merge([$class, 'student_id' => $juara->student_id], $paramSertifikat)) }}"
+                   class="btn-primary btn-primary--sm shrink-0">Cetak Sertifikat</a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="w-10 text-right">#</th>
+                            <th scope="col">Nama</th>
+                            <th scope="col" class="text-right">Poin</th>
+                            <th scope="col" class="text-right">Sertifikat</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach ($peringkat as $i => $b)
+                            <tr>
+                                <td class="text-right font-mono text-xs text-slate-400">{{ $i + 1 }}</td>
+                                <td>{{ $b->name }}</td>
+                                <td class="angka text-right font-medium {{ $b->poin < 0 ? 'text-rose-700' : 'text-slate-900' }}">{{ $b->poin }}</td>
+                                <td class="text-right">
+                                    <a href="{{ route('classes.kerajinan.sertifikat', array_merge([$class, 'student_id' => $b->student_id], $paramSertifikat)) }}"
+                                       class="text-xs font-medium text-indigo-700 hover:underline">Cetak</a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
     @endif
 </div>
 @endsection

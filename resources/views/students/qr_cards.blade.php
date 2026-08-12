@@ -24,7 +24,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <button onclick="window.print()" class="h-10 px-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-all shadow-md shadow-indigo-500/20">
+            <button onclick="window.print()" class="h-10 px-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors">
                 🖨️ Cetak Kartu Sekarang
             </button>
         </div>
@@ -33,24 +33,24 @@
     <!-- CARDS GRID CONTAINER -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 print:grid-cols-2 print:gap-3">
         @foreach($students as $s)
-            <div class="relative overflow-hidden rounded-2xl border-2 border-slate-900 bg-white p-4 shadow-sm text-slate-900 flex flex-col justify-between h-56 print:h-48 print:border-slate-800">
+            <div class="relative overflow-hidden rounded-2xl border-2 border-slate-900 bg-white p-4 text-slate-900 flex flex-col justify-between h-56 print:h-48 print:border-slate-800">
                 
                 <!-- CARD HEADER -->
                 <div class="flex items-center justify-between border-b-2 border-slate-900 pb-2">
                     <div class="flex items-center gap-2">
                         <span class="text-lg">🏫</span>
                         <div>
-                            <p class="text-[9px] font-black uppercase tracking-wider text-slate-500 leading-tight">WALI KELAS HEBAT</p>
-                            <p class="text-xs font-black text-indigo-950 uppercase leading-tight">{{ $class->name }}</p>
+                            <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">WALI KELAS HEBAT</p>
+                            <p class="text-xs font-semibold text-indigo-950 uppercase leading-tight">{{ $class->name }}</p>
                         </div>
                     </div>
-                    <span class="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[9px] font-black text-emerald-800">PRESENSI</span>
+                    <span class="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-800">PRESENSI</span>
                 </div>
 
                 <!-- CARD BODY: QR & DATA -->
                 <div class="flex items-center justify-between gap-3 my-auto">
                     <div class="min-w-0 space-y-1">
-                        <p class="text-xs font-black text-slate-900 leading-tight uppercase truncate" title="{{ $s->name }}">{{ $s->name }}</p>
+                        <p class="text-xs font-semibold text-slate-900 leading-tight uppercase truncate" title="{{ $s->name }}">{{ $s->name }}</p>
                         <p class="text-[10px] text-slate-600 font-semibold">NIS: <span class="font-bold text-slate-900">{{ $s->nis ?: '-' }}</span></p>
                         <p class="text-[10px] text-slate-600 font-semibold">NISN: <span class="font-bold text-slate-900">{{ $s->nisn ?: '-' }}</span></p>
                     </div>

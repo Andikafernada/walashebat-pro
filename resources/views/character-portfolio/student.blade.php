@@ -23,12 +23,12 @@
 
         <div class="flex items-center gap-2">
             <button type="button" @click="showRecordModal = true" 
-                    class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-indigo-500/20 hover:bg-indigo-700 active:scale-95 transition-all">
+                    class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition-colors">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 + Catat Observasi Guru
             </button>
             <a href="{{ route('public.reflection.show', $class->tokenPublik()) }}" target="_blank"
-               class="inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3.5 py-2 text-xs font-bold text-purple-700 shadow-xs hover:bg-purple-100 transition-all">
+               class="inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3.5 py-2 text-xs font-bold text-purple-700 hover:bg-purple-100 transition-colors">
                 📲 Link Refleksi Siswa
             </a>
         </div>
@@ -41,16 +41,16 @@
     @include('partials.flash')
 
     <!-- Student Top Hero Card -->
-    <div class="rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 p-6 text-white shadow-xl relative overflow-hidden">
-        <div class="absolute right-0 top-0 -mr-10 -mt-10 h-48 w-48 rounded-full bg-purple-500/10 blur-3xl"></div>
+    <div class="rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute right-0 top-0 -mr-10 -mt-10 h-48 w-48 rounded-full bg-purple-500/10"></div>
         <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-                <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black text-2xl shadow-md">
+                <div class="flex h-16 w-16 items-center justify-center rounded-2xl text-white font-semibold text-2xl shadow-md">
                     {{ substr($student->name, 0, 1) }}
                 </div>
                 <div>
                     <span class="text-[10px] font-bold tracking-wider text-purple-300 uppercase block">Profil Pelajar Pancasila</span>
-                    <h2 class="text-2xl font-extrabold text-white">{{ $student->name }}</h2>
+                    <h2 class="text-2xl font-semibold text-white">{{ $student->name }}</h2>
                     <p class="text-xs text-slate-300">Catatan Karakter Terkumpul: <span class="font-bold text-white">{{ $records->total() }} Record</span></p>
                 </div>
             </div>
@@ -58,7 +58,7 @@
             <!-- Badges Summary -->
             <div class="flex items-center gap-2">
                 @forelse($badges as $sb)
-                    <div class="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-1.5 border border-white/10 backdrop-blur-xs text-xs">
+                    <div class="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-1.5 border border-white/10 text-xs">
                         <span>{{ $sb->badge->icon ?? '🏅' }}</span>
                         <span class="font-bold text-white text-[11px]">{{ $sb->badge->name }}</span>
                     </div>
@@ -73,9 +73,9 @@
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         @foreach($dimensions as $dim)
             @php $scoreData = $dimensionScores[$dim->id] ?? ['score' => 0, 'records_count' => 0]; @endphp
-            <div class="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-xs text-center space-y-1" style="border-top: 3px solid {{ $dim->color }};">
+            <div class="rounded-2xl border border-slate-200/80 bg-white p-3 text-center space-y-1" style="border-top: 3px solid {{ $dim->color }};">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block truncate">{{ $dim->name }}</span>
-                <span class="text-xl font-black {{ $scoreData['score'] >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
+                <span class="text-xl font-semibold {{ $scoreData['score'] >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
                     {{ $scoreData['score'] > 0 ? '+'.$scoreData['score'] : $scoreData['score'] }}
                 </span>
                 <span class="text-[10px] text-slate-400 block">{{ $scoreData['records_count'] }} Catatan</span>
@@ -87,7 +87,7 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
         <!-- LEFT COLUMN: CATATAN OBSERVASI GURU -->
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
                     <h3 class="text-sm font-bold text-slate-900">Catatan Observasi Wali Kelas</h3>
@@ -103,8 +103,7 @@
                     @foreach($records as $rec)
                         <div class="rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs space-y-1.5 hover:bg-slate-50 transition-colors">
                             <div class="flex items-center justify-between">
-                                <span class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold 
-                                      {{ $rec->type === 'positive' ? 'bg-emerald-100 text-emerald-800' : ($rec->type === 'achievement' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800') }}">
+                                <span class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold {{ $rec->type === 'positive' ? 'bg-emerald-100 text-emerald-800' : ($rec->type === 'achievement' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800') }}">
                                     {{ ucfirst($rec->type) }}
                                 </span>
                                 <span class="font-bold {{ $rec->score >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
@@ -134,7 +133,7 @@
         </div>
 
         <!-- RIGHT COLUMN: JURNAL REFLEKSI MANDIRI SISWA -->
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
+        <div class="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
                     <h3 class="text-sm font-bold text-slate-900">Jurnal Refleksi Mandiri (Siswa)</h3>
@@ -213,7 +212,7 @@
     </div>
 
     <!-- MODAL TAMBAH CATATAN OBSERVASI GURU -->
-    <div x-show="showRecordModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
+    <div x-show="showRecordModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
         <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-4" @click.away="showRecordModal = false">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 class="text-base font-bold text-slate-900">Tambah Catatan Observasi Guru</h3>
@@ -269,7 +268,7 @@
                     <button type="button" @click="showRecordModal = false" class="h-10 w-1/3 rounded-xl border border-slate-200 bg-slate-100 font-bold text-slate-700">
                         Batal
                     </button>
-                    <button type="submit" class="h-10 w-2/3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-md shadow-indigo-500/20">
+                    <button type="submit" class="h-10 w-2/3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors">
                         ✓ Simpan Catatan Observasi
                     </button>
                 </div>

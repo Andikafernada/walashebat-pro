@@ -8,7 +8,7 @@
 
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <h1 class="text-xl font-black tracking-tight text-slate-900">Jurnal Mengajar</h1>
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Jurnal Mengajar</h1>
             <p class="text-xs text-slate-500 mt-0.5">
                 {{ $classroom->name }} &middot; {{ $periode['label'] }}
                 @if ($mapelDipilih) &middot; <span class="font-semibold text-indigo-600">{{ $mapelDipilih }}</span> @endif
