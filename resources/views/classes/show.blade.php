@@ -28,8 +28,17 @@
              */
             $absen = \App\Models\Attendance::where('student_id', $s->id)
                 ->whereIn('status', ['alfa', 'izin', 'sakit'])
-                ->whereHas('session', fn ($q) => $q->where('class_id', $classroom->id))
-                ->where('created_at', '>=', now()->subDays(30))
+                ->whereHas('session', fn ($q) => $q
+                    ->where('class_id', $classroom->id)
+                    ->where('session_date', '>=', now()->subDays(30)))
+                /*
+                 * session_date, BUKAN created_at: yang dicari "berapa kali anak
+                 * ini tidak hadir dalam 30 hari terakhir", bukan "berapa banyak
+                 * baris yang DIKETIK petugas dalam 30 hari terakhir". Absensi
+                 * susulan lazim: di kelas 611 ada baris tanggal sesi 25 Juli
+                 * yang baru dientri 4 Agustus, sehingga jendela lamanya bergeser
+                 * mengikuti kapan orang sempat mengetik.
+                 */
                 ->count();
 
             $poin = $s->discipline_points ?? 100;
@@ -164,9 +173,10 @@
                     <h3 class="text-sm font-bold text-slate-900">Grafik Tren Kehadiran Kelas</h3>
                     <p class="text-xs text-slate-500">Pergerakan persentase kehadiran 7 sesi terakhir</p>
                 </div>
-                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
-                    📈 Tren Positif
-                </span>
+                {{-- Lencana "Tren Positif" dulu berdiri di sini sebagai teks
+                     tetap: tidak ada satu pun perhitungan naik/turun di
+                     belakangnya, dan ia tetap mengaku positif bahkan pada kelas
+                     yang tepat di bawahnya tertulis "Belum cukup data". --}}
             </div>
 
             <!-- SVG Visual Trend Chart -->

@@ -103,7 +103,12 @@
                 <p>_______________________</p>
             </td>
             <td style="width: 50%;">
-                <p>{{ $class->city ?? 'Kota' }}, {{ now()->format('d M Y') }}</p>
+                {{-- users.school_city, BUKAN $class->city: tabel classes tidak punya
+                     kolom kota sama sekali, sehingga keempat berkas ekspor selalu
+                     mencetak kata harfiah "Kota" — placeholder yang terkirim
+                     sebagai dokumen bertanda tangan. --}}
+                @php $kota = $user->school_city ?? $class->user->school_city; @endphp
+                <p>{{ $kota ? $kota.', ' : '' }}{{ now()->translatedFormat('d F Y') }}</p>
                 <p>Wali Kelas</p>
                 <div style="height: 60px;"></div>
                 <p>{{ ($user->name ?? $class->user->name ?? "Wali Kelas") }}</p>

@@ -34,7 +34,7 @@ class AttendanceReportExport implements FromCollection, WithHeadings, WithMappin
         return array_merge(
             ['No', 'Nama Siswa', 'NIS'],
             $dates,
-            ['H', 'S', 'I', 'A', 'Total']
+            ['H', 'T', 'S', 'I', 'A', 'Total']
         );
     }
 
@@ -52,9 +52,10 @@ class AttendanceReportExport implements FromCollection, WithHeadings, WithMappin
             $attendance,
             [
                 $row['hadir'] ?? 0,
+                $row['terlambat'] ?? 0,
                 $row['sakit'] ?? 0,
                 $row['izin'] ?? 0,
-                $row['alpha'] ?? 0,
+                $row['alfa'] ?? 0,
                 $row['total'] ?? 0,
             ]
         );
@@ -83,7 +84,9 @@ class AttendanceReportExport implements FromCollection, WithHeadings, WithMappin
             'hadir' => 'H',
             'sakit' => 'S',
             'izin' => 'I',
-            'alpha' => 'A',
+            // 'alfa', bukan 'alpha' — itu nilai enum yang sesungguhnya tersimpan.
+            'alfa' => 'A',
+            'terlambat' => 'T',
             default => '-',
         };
     }

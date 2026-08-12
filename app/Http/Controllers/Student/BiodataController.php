@@ -35,7 +35,9 @@ class BiodataController extends Controller
             'golongan_darah' => ['nullable', Rule::in(['A', 'B', 'AB', 'O', 'Tidak Tahu'])],
             'tinggi_badan_cm' => ['nullable', 'integer', 'min:50', 'max:250'],
             'berat_badan_kg' => ['nullable', 'integer', 'min:20', 'max:300'],
-            'alamat' => ['nullable', 'string', 'max:500'],
+            // Kolomnya bernama `address`. `alamat` tidak pernah ada di tabel,
+            // sehingga lolos validasi lalu dibuang mass-assignment tanpa jejak.
+            'address' => ['nullable', 'string', 'max:500'],
             'rt_rw' => ['nullable', 'string', 'max:10'],
             'kelurahan' => ['nullable', 'string', 'max:100'],
             'kecamatan' => ['nullable', 'string', 'max:100'],

@@ -301,7 +301,22 @@ class DashboardController extends Controller
 
         $biodataPercent = $totalPerwalian > 0 ? (int) round(($realBiodataCount / $totalPerwalian) * 100) : 0;
 
-        $characterStudentsCount = \App\Models\CharacterRecord::whereIn('student_id', (clone $siswaPerwalian)->pluck('id'))
+        /*
+         * character_reflections, BUKAN character_records.
+         *
+         * Kartu ini berlabel "Portofolio P5" dan yang ditunggu wali kelas
+         * setelah menyebar tautan formulir adalah berapa siswa yang sudah
+         * MENGISI — itu tabel refleksi. character_records berisi catatan
+         * pengamatan yang ditulis guru sendiri, dan di produksi tabel itu
+         * kosong sama sekali (0 baris) sementara refleksi sudah 35: kartunya
+         * karena itu selalu menunjukkan 0% bagi setiap wali kelas, berapa pun
+         * yang disetor siswanya.
+         *
+         * Kesalahan yang sama pernah membuat halaman Portofolio Karakter
+         * melaporkan 0 — sudah diperbaiki di CharacterPortfolioController,
+         * tetapi dashboard tidak ikut.
+         */
+        $characterStudentsCount = \App\Models\CharacterReflection::whereIn('student_id', (clone $siswaPerwalian)->pluck('id'))
             ->distinct('student_id')
             ->count('student_id');
         $characterPercent = $totalPerwalian > 0 ? (int) round(($characterStudentsCount / $totalPerwalian) * 100) : 0;

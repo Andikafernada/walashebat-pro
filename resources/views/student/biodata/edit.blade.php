@@ -93,7 +93,12 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
                     <label class="block text-sm font-medium mb-1">Alamat Lengkap</label>
-                    <textarea name="alamat" rows="2" class="w-full px-3 py-2 border rounded-lg">{{ old('alamat', $student->alamat) }}</textarea>
+                    {{-- `address`, BUKAN `alamat`: kolom itu tidak pernah ada di
+                         tabel students. Akibatnya isian ini tampil kosong walau
+                         alamatnya sudah tercatat, dan yang diketik siswa dibuang
+                         diam-diam oleh mass-assignment — halaman tetap menjawab
+                         "Biodata berhasil diperbarui". --}}
+                    <textarea name="address" rows="2" class="w-full px-3 py-2 border rounded-lg">{{ old('address', $student->address) }}</textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">RT/RW</label>

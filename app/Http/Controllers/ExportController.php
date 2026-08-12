@@ -142,8 +142,14 @@ class ExportController extends Controller
             'class' => $class,
             'transactions' => $transactions,
             'user' => $request->user(),
-            'totalIncome' => $transactions->where('type', 'income')->sum('amount'),
-            'totalExpense' => $transactions->where('type', 'expense')->sum('amount'),
+            /*
+             * 'in'/'out', BUKAN 'income'/'expense'. Enum kolomnya memang begitu
+             * (migrasi create_cash_books_table), sehingga pembanding lama tidak
+             * pernah cocok: kedua total selalu Rp 0 dan setiap setoran masuk
+             * ikut DIKURANGKAN dari saldo berjalan di bawah.
+             */
+            'totalIncome' => $transactions->where('type', 'in')->sum('amount'),
+            'totalExpense' => $transactions->where('type', 'out')->sum('amount'),
         ])->setPaper('a4', 'portrait');
 
         $filename = sprintf('Buku-Kas-%s.pdf', str($class->name)->slug());
@@ -209,7 +215,8 @@ class ExportController extends Controller
                 'hadir' => 0,
                 'sakit' => 0,
                 'izin' => 0,
-                'alpha' => 0,
+                'alfa' => 0,
+                'terlambat' => 0,
                 'total' => 0,
             ];
 
@@ -221,13 +228,23 @@ class ExportController extends Controller
                 $status = $att?->status ?? '-';
                 $row['attendance'][$dateKey] = $status;
 
+                /*
+                 * 'alfa', BUKAN 'alpha' — itu nilai enum yang sesungguhnya
+                 * tersimpan. Pembanding lama tidak pernah cocok, jadi setiap
+                 * alfa hilang dari rekap ekspor sekaligus dari kolom Total,
+                 * padahal PDF administrasi menghitungnya dengan benar.
+                 *
+                 * 'terlambat' dulu tidak ditangani sama sekali: siswa yang
+                 * datang terlambat lenyap dari keempat kolom.
+                 */
                 if ($status === 'hadir') $row['hadir']++;
+                elseif ($status === 'terlambat') $row['terlambat']++;
                 elseif ($status === 'sakit') $row['sakit']++;
                 elseif ($status === 'izin') $row['izin']++;
-                elseif ($status === 'alpha') $row['alpha']++;
+                elseif ($status === 'alfa') $row['alfa']++;
             }
 
-            $row['total'] = $row['hadir'] + $row['sakit'] + $row['izin'] + $row['alpha'];
+            $row['total'] = $row['hadir'] + $row['terlambat'] + $row['sakit'] + $row['izin'] + $row['alfa'];
             $result[] = $row;
         }
 
@@ -299,7 +316,7 @@ class ExportController extends Controller
 
         foreach ($transactions as $transaction) {
             $amount = $transaction->amount;
-            if ($transaction->type === 'income') {
+            if ($transaction->type === 'in') {
                 $runningBalance += $amount;
             } else {
                 $runningBalance -= $amount;

@@ -254,17 +254,24 @@
                                 </div>
 
                                 <div class="flex items-center justify-between sm:justify-end gap-3 pl-13 sm:pl-0">
-                                    <!-- Notes / Keterangan -->
-                                    @if ($attendance->notes)
-                                        <span class="text-xs italic text-slate-500 max-w-[180px] truncate" title="{{ $attendance->notes }}">
-                                            "{{ $attendance->notes }}"
+                                    {{--
+                                        `note` (tunggal), bukan `notes`; dan jamnya dari
+                                        `created_at`, bukan `filled_at` yang tidak pernah ada
+                                        di tabel attendances. Eloquent mengembalikan NULL
+                                        diam-diam untuk atribut yang tidak ada, jadi kedua blok
+                                        ini tidak pernah muncul sekali pun — keterangan yang
+                                        sudah susah payah diketik petugas ("Tidak ada kabar",
+                                        dsb.) tersimpan rapi lalu tak pernah terbaca siapa pun.
+                                    --}}
+                                    @if ($attendance->note)
+                                        <span class="text-xs italic text-slate-500 max-w-[180px] truncate" title="{{ $attendance->note }}">
+                                            "{{ $attendance->note }}"
                                         </span>
                                     @endif
 
-                                    <!-- Recorded Time -->
-                                    @if ($attendance->filled_at)
+                                    @if ($attendance->created_at)
                                         <span class="text-[11px] font-mono text-slate-400">
-                                            {{ $attendance->filled_at->format('H:i') }}
+                                            {{ $attendance->created_at->format('H:i') }}
                                         </span>
                                     @endif
 

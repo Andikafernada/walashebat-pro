@@ -41,10 +41,11 @@ class CashBookReportExport implements FromCollection, WithHeadings, WithMapping,
         return [
             $transaction['no'],
             $transaction['date']->format('d/m/Y'),
-            $transaction['type'] === 'income' ? 'Pemasukan' : 'Pengeluaran',
+            // 'in'/'out' — enum kolomnya memang itu, lihat migrasi cash_books.
+            $transaction['type'] === 'in' ? 'Pemasukan' : 'Pengeluaran',
             $transaction['description'],
-            $transaction['type'] === 'income' ? $transaction['amount_formatted'] : '-',
-            $transaction['type'] === 'expense' ? $transaction['amount_formatted'] : '-',
+            $transaction['type'] === 'in' ? $transaction['amount_formatted'] : '-',
+            $transaction['type'] === 'out' ? $transaction['amount_formatted'] : '-',
             $transaction['balance_formatted'],
         ];
     }

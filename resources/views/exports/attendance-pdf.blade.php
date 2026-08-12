@@ -57,6 +57,7 @@
                     <th style="width: 20px;">{{ $date->format('d') }}</th>
                 @endforeach
                 <th style="width: 25px;">H</th>
+                <th style="width: 25px;">T</th>
                 <th style="width: 25px;">S</th>
                 <th style="width: 25px;">I</th>
                 <th style="width: 25px;">A</th>
@@ -73,19 +74,22 @@
                             $dateKey = $date->format('Y-m-d');
                             $status = $row['attendance'][$dateKey] ?? '-';
                         ?>
-                        <td style="{{ $status === 'alpha' ? 'background: #fee2e2;' : '' }}">
+                        <td style="{{ $status === 'alfa' ? 'background: #fee2e2;' : '' }}">
                             @if($status === 'hadir') ✓
                             @elseif($status === 'sakit') S
                             @elseif($status === 'izin') I
-                            @elseif($status === 'alpha') A
+                            @elseif($status === 'alfa') A
+                            @elseif($status === 'terlambat') T
                             @else -
                             @endif
                         </td>
                     @endforeach
+                    {{-- Urutan WAJIB sama dengan judul kolom di atas (H T S I A). --}}
                     <td>{{ $row['hadir'] }}</td>
+                    <td>{{ $row['terlambat'] }}</td>
                     <td>{{ $row['sakit'] }}</td>
                     <td>{{ $row['izin'] }}</td>
-                    <td>{{ $row['alpha'] }}</td>
+                    <td>{{ $row['alfa'] }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -104,7 +108,12 @@
                 <p>_______________________</p>
             </td>
             <td style="width: 50%;">
-                <p>{{ $class->city ?? 'Kota' }}, {{ now()->format('d M Y') }}</p>
+                {{-- users.school_city, BUKAN $class->city: tabel classes tidak punya
+                     kolom kota sama sekali, sehingga keempat berkas ekspor selalu
+                     mencetak kata harfiah "Kota" — placeholder yang terkirim
+                     sebagai dokumen bertanda tangan. --}}
+                @php $kota = $user->school_city ?? $class->user->school_city; @endphp
+                <p>{{ $kota ? $kota.', ' : '' }}{{ now()->translatedFormat('d F Y') }}</p>
                 <p>Wali Kelas</p>
                 <div style="height: 60px;"></div>
                 <p>{{ ($user->name ?? $class->user->name ?? "Wali Kelas") }}</p>
