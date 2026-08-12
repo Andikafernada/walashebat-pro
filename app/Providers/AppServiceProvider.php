@@ -109,5 +109,13 @@ class AppServiceProvider extends ServiceProvider
                     ->get(['id', 'name'])
                 : collect());
         });
+
+        /*
+         * Poin kerajinan (akumulasi kehadiran) mengikuti absensi otomatis.
+         * Dua observer karena membatalkan sesi hanya mengubah status sesi,
+         * bukan baris absensinya.
+         */
+        \App\Models\Attendance::observe(\App\Observers\AttendanceObserver::class);
+        AttendanceSession::observe(\App\Observers\AttendanceSessionObserver::class);
     }
 }

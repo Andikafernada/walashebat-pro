@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\AttendanceSessionController;
 use App\Http\Controllers\CashBookController;
 use App\Http\Controllers\CharacterPortfolioController;
+use App\Http\Controllers\KerajinanController;
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
@@ -232,6 +233,10 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
         Route::post('karakter/catatan/{record}/konfirmasi', [CharacterPortfolioController::class, 'acknowledgeRecord'])->name('character-portfolio.record.acknowledge');
         Route::post('karakter/refleksi', [CharacterPortfolioController::class, 'storeReflection'])->name('character-portfolio.reflection.store');
         Route::post('karakter/refleksi/{reflection}/feedback', [CharacterPortfolioController::class, 'storeFeedback'])->name('character-portfolio.reflection.feedback');
+
+        // Poin kerajinan (akumulasi kehadiran) & sertifikat siswa terajin
+        Route::get('kerajinan', [KerajinanController::class, 'index'])->name('kerajinan.index');
+        Route::get('kerajinan/sertifikat', [KerajinanController::class, 'sertifikat'])->name('kerajinan.sertifikat');
 
         // Buku kas
         Route::get('cashbook', [CashBookController::class, 'index'])->name('cashbook.index');

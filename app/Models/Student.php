@@ -43,7 +43,7 @@ class Student extends Model implements AuthenticatableContract
     protected $fillable = [
         // Identitas inti
         'user_id', 'class_id', 'nis', 'nisn', 'name', 'gender',
-        'phone', 'parent_phone', 'address', 'discipline_points', 'is_active',
+        'phone', 'parent_phone', 'address', 'discipline_points', 'diligence_points', 'is_active',
 
         // Autentikasi siswa
         'password', 'must_change_password',
@@ -68,6 +68,7 @@ class Student extends Model implements AuthenticatableContract
 
     protected $attributes = [
         'discipline_points' => 100,
+        'diligence_points' => 0,
         'must_change_password' => true,
         'is_active' => true,
     ];
@@ -77,6 +78,7 @@ class Student extends Model implements AuthenticatableContract
         return [
             'is_active' => 'boolean',
             'discipline_points' => 'integer',
+            'diligence_points' => 'integer',
             'tanggal_lahir' => 'date',
             'anak_ke' => 'integer',
             'jumlah_saudara' => 'integer',
