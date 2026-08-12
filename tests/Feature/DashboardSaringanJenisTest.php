@@ -146,14 +146,14 @@ class DashboardSaringanJenisTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertDontSee('📚 Guru Mapel');
+            ->assertDontSee('Guru Mapel');
 
         $this->siswa($this->kelas('XII RPL', Classroom::JENIS_AJAR), 2);
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('📚 Guru Mapel')
-            ->assertSee('🏫 Perwalian');
+            ->assertSee('Guru Mapel')
+            ->assertSee('Perwalian');
     }
 
     // -- Kartu khas perwalian disembunyikan di mode ajar --------------------
@@ -167,11 +167,11 @@ class DashboardSaringanJenisTest extends TestCase
             ->assertOk()
             ->assertDontSee('Biodata Terisi')
             ->assertDontSee('Portofolio P5')
-            ->assertDontSee('Siswa Perlu Perhatian (EWS)')
+            ->assertDontSee('Siswa perlu perhatian')
             // Yang berlaku di kedua jenis tetap ada.
             ->assertSee('Total Siswa')
             ->assertSee('Presensi Hari Ini')
-            ->assertSee('Grafik Tren Kehadiran');
+            ->assertSee('Tren kehadiran');
     }
 
     public function test_mode_perwalian_tetap_menampilkan_kartu_itu(): void
@@ -183,7 +183,7 @@ class DashboardSaringanJenisTest extends TestCase
             ->assertOk()
             ->assertSee('Biodata Terisi')
             ->assertSee('Portofolio P5')
-            ->assertSee('Siswa Perlu Perhatian (EWS)');
+            ->assertSee('Siswa perlu perhatian');
     }
 
     /** Guru mapel murni tidak punya kelas perwalian sama sekali. */

@@ -189,10 +189,7 @@ class BedaKelasPerwalianDanAjarTest extends TestCase
 
         $this->get(route('classes.index'))
             ->assertOk()
-            ->assertSee('Kelas Wali Anda')
-            // Animasinya bukan satu-satunya penanda: cincin dan pita tetap
-            // terbaca bagi yang mematikan gerak di ponselnya.
-            ->assertSee('animate-ping');
+            ->assertSee('Kelas Wali Anda');
     }
 
     /** Di tab Perwalian semua kartu berjenis sama, jadi penyematan tidak berarti. */

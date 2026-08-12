@@ -3,7 +3,7 @@
 @section('title', 'Beranda Wali Kelas Hebat')
 
 @section('content')
-<div class="space-y-8 pb-16">
+<div class="space-y-5 pb-12">
 
     {{--
         Dulu di sini berdiri spanduk gradien setinggi ~180px: dua lingkaran
@@ -13,89 +13,96 @@
         membuka aplikasi — tetapi semuanya berteriak lebih keras daripada papan
         tugas di bawahnya, yang justru berisi jawabannya.
 
-        Tombol "Integrasi WA" dan "Buat Kelas Baru" sudah ada di sidebar. Yang
+        Tombol "Integrasi WA" dan "Buat Kelas Baru" sudah ada di menu akun. Yang
         kedua tetap disisakan di sini hanya untuk guru yang belum punya kelas
         sama sekali: baginya halaman ini kosong dan ia perlu satu jalan keluar
         yang jelas.
     --}}
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Halo, {{ auth()->user()->name }}</h1>
+    <div class="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-4">
+        <div>
+            <p class="eyebrow">{{ now()->translatedFormat('l, d F Y') }}</p>
+            <h1 class="mt-1 text-xl font-semibold tracking-tight text-slate-900">Halo, {{ auth()->user()->name }}</h1>
+        </div>
 
         @if (! ($stats['classes'] ?? 0))
-            <a href="{{ route('classes.create') }}" class="h-10 px-4 inline-flex items-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors">
-                Buat kelas pertama
-            </a>
+            <a href="{{ route('classes.create') }}" class="btn-primary">Buat kelas pertama</a>
         @endif
     </div>
 
     {{--
         PAPAN TUGAS HARI INI.
 
-        Ditaruh paling atas, sebelum kartu angka mana pun. Kartu angka menjawab
-        "bagaimana keadaannya"; pertanyaan yang sebenarnya dibawa wali kelas
-        saat membuka aplikasi jauh lebih sempit — "saya harus apa sekarang?" —
-        dan sebelumnya ia harus membaca enam kartu, satu grafik, lalu
-        menyimpulkan sendiri. Guru yang tidak terbiasa berhenti di langkah
-        menyimpulkan.
+        Ditaruh paling atas, sebelum angka mana pun. Angka menjawab "bagaimana
+        keadaannya"; pertanyaan yang sebenarnya dibawa wali kelas saat membuka
+        aplikasi jauh lebih sempit — "saya harus apa sekarang?" — dan sebelumnya
+        ia harus membaca enam kartu, satu grafik, lalu menyimpulkan sendiri.
+        Guru yang tidak terbiasa berhenti di langkah menyimpulkan.
 
         Saat tidak ada tugas, papannya TIDAK hilang. Ketiadaan tugas adalah
         kabar baik yang ingin dilihat, dan papan yang lenyap tanpa jejak
         membuat guru bertanya-tanya apakah ia melewatkan sesuatu.
     --}}
-    <section aria-labelledby="judul-tugas" class="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-        <div class="flex items-baseline justify-between gap-3 mb-4">
-            <h2 id="judul-tugas" class="text-base font-extrabold tracking-tight text-slate-900">Yang perlu Anda kerjakan hari ini</h2>
-            <span class="text-[11px] font-semibold text-slate-400">{{ now()->translatedFormat('l, d F') }}</span>
+    <section aria-labelledby="judul-tugas" class="blok">
+        <div class="blok__kepala">
+            <h2 id="judul-tugas" class="blok__judul">Yang perlu Anda kerjakan hari ini</h2>
+            {{-- array, bukan Collection: DashboardController::tugasHariIni()
+                 mengembalikan array biasa, jadi ->count() di sini akan 500. --}}
+            <span class="kode">{{ count($tugasHariIni) }}</span>
         </div>
 
-        @forelse ($tugasHariIni as $t)
-            @php
-                // Kelas ditulis utuh, bukan dirakit dari potongan: Tailwind
-                // memindai berkas ini sebagai teks dan tidak menjalankan PHP-nya.
-                $gaya = [
-                    'bahaya' => ['border-rose-200 bg-rose-50/60', 'text-rose-700', 'bg-rose-600 hover:bg-rose-700'],
-                    'penting' => ['border-amber-200 bg-amber-50/60', 'text-amber-800', 'bg-amber-600 hover:bg-amber-700'],
-                    'tenang' => ['border-slate-200 bg-slate-50/60', 'text-slate-600', 'bg-slate-700 hover:bg-slate-800'],
-                ][$t['nada']];
-            @endphp
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border {{ $gaya[0] }} p-4 mb-2.5 last:mb-0">
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-bold text-slate-900">{{ $t['judul'] }}</p>
-                    @if ($t['rinci'])
-                        <p class="mt-0.5 text-xs {{ $gaya[1] }}">{{ $t['rinci'] }}</p>
-                    @endif
+        <div class="blok__daftar">
+            @forelse ($tugasHariIni as $t)
+                @php
+                    // Kelas ditulis utuh, bukan dirakit dari potongan: Tailwind
+                    // memindai berkas ini sebagai teks dan tidak menjalankan PHP-nya.
+                    $gaya = [
+                        'bahaya' => ['border-l-rose-600 bg-rose-50/50', 'kode--alfa', '!'],
+                        'penting' => ['border-l-amber-600 bg-amber-50/50', 'kode--izin', '•'],
+                        'tenang' => ['border-l-slate-300', 'kode', '·'],
+                    ][$t['nada']];
+                @endphp
+                <div class="flex flex-col gap-3 border-l-[3px] {{ $gaya[0] }} p-3.5 sm:flex-row sm:items-center">
+                    <span class="kode {{ $gaya[1] }} shrink-0" aria-hidden="true">{{ $gaya[2] }}</span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-medium text-slate-900">{{ $t['judul'] }}</p>
+                        @if ($t['rinci'])
+                            <p class="mt-0.5 text-xs text-slate-500">{{ $t['rinci'] }}</p>
+                        @endif
+                    </div>
+                    <a href="{{ $t['tautan'] }}" class="btn-secondary btn-secondary--sm shrink-0 self-start sm:self-auto">{{ $t['aksi'] }}</a>
                 </div>
-                <a href="{{ $t['tautan'] }}" class="shrink-0 h-10 px-5 inline-flex items-center justify-center rounded-xl {{ $gaya[2] }} text-xs font-bold text-white transition-colors active:scale-95">
-                    {{ $t['aksi'] }}
-                </a>
-            </div>
-        @empty
-            <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 text-center">
-                <p class="text-sm font-bold text-emerald-800">Tidak ada yang tertunda.</p>
-                <p class="mt-1 text-xs text-emerald-700">Absensi hari ini sudah beres dan tidak ada siswa yang menunggu dibina.</p>
-            </div>
-        @endforelse
+            @empty
+                <div class="flex items-center gap-3 p-4">
+                    <span class="kode kode--hadir shrink-0" aria-hidden="true">✓</span>
+                    <div>
+                        <p class="text-sm font-medium text-slate-900">Tidak ada yang tertunda</p>
+                        <p class="mt-0.5 text-xs text-slate-500">Absensi hari ini sudah beres dan tidak ada siswa yang menunggu dibina.</p>
+                    </div>
+                </div>
+            @endforelse
+        </div>
     </section>
 
-    {{-- Saringan jenis kelas. Bentuk dan warnanya sengaja sama persis dengan
-         saringan di Daftar Kelas: guru yang sudah mengenalinya di sana tidak
-         perlu mempelajarinya lagi di sini. Baru muncul bila guru memang
-         memegang kedua-duanya. --}}
+    {{-- Saringan jenis kelas. Bentuknya sama persis dengan saringan di Daftar
+         Kelas: guru yang sudah mengenalinya di sana tidak perlu mempelajarinya
+         lagi di sini. Baru muncul bila guru memang memegang kedua-duanya. --}}
     @if ($jumlahPerwalian > 0 && $jumlahAjar > 0)
         @php
             $saringan = [
-                [null, 'Semua Kelas', $jumlahPerwalian + $jumlahAjar, 'border-slate-800 bg-slate-800 text-white'],
-                ['perwalian', '🏫 Perwalian', $jumlahPerwalian, 'border-indigo-300 bg-indigo-600 text-white'],
-                ['ajar', '📚 Guru Mapel', $jumlahAjar, 'border-teal-300 bg-teal-600 text-white'],
+                [null, 'Semua', $jumlahPerwalian + $jumlahAjar],
+                ['perwalian', 'Perwalian', $jumlahPerwalian],
+                ['ajar', 'Guru Mapel', $jumlahAjar],
             ];
         @endphp
-        <div class="flex flex-wrap gap-2">
-            @foreach ($saringan as [$nilai, $label, $jumlah, $kelasAktif])
+        <div class="inline-flex overflow-hidden rounded border border-slate-200 bg-white">
+            @foreach ($saringan as [$nilai, $label, $jumlah])
                 @php $ini = $jenisDipilih === $nilai; @endphp
                 <a href="{{ route('dashboard', $nilai ? ['jenis' => $nilai] : []) }}"
-                   class="inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-all {{ $ini ? $kelasAktif : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
+                   @if($ini) aria-current="page" @endif
+                   class="flex items-center gap-1.5 border-r border-slate-200 px-3 py-1.5 text-xs font-medium transition-colors last:border-r-0
+                          {{ $ini ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50' }}">
                     {{ $label }}
-                    <span class="rounded-full px-2 py-0.5 text-[10px] tabular-nums {{ $ini ? 'bg-white/20' : 'bg-slate-100 text-slate-600' }}">{{ $jumlah }}</span>
+                    <span class="font-mono text-[10px] {{ $ini ? 'text-slate-300' : 'text-slate-400' }}">{{ $jumlah }}</span>
                 </a>
             @endforeach
         </div>
@@ -107,159 +114,151 @@
         Dulu enam kartu terpisah, masing-masing dengan bingkai, bayangan, ubin
         ikon, dan warna aksen sendiri — indigo, emerald, teal, ungu, kuning,
         merah — berjajar berebut perhatian. Enam kotak yang sama menonjolnya
-        berarti tidak ada satu pun yang menonjol, dan guru harus membaca
-        keenamnya untuk tahu mana yang penting.
+        berarti tidak ada satu pun yang menonjol.
 
-        Kini satu kartu tenang berisi angka polos. Yang berhak berwarna cuma
-        Alfa: itulah satu-satunya angka di baris ini yang menuntut tindakan
-        hari ini.
+        Kini satu deret, dipisah garis tegak. Yang berhak berwarna cuma Alfa:
+        itulah satu-satunya angka di baris ini yang menuntut tindakan hari ini.
 
-        Kartu "EWS Riskan" dibuang seluruhnya — jumlah yang sama sudah
-        disebut papan tugas di atas ("N siswa perlu dibina") dan panel
-        "Siswa Perlu Perhatian" di bawah, lengkap dengan namanya.
+        Kartu "EWS Riskan" dibuang seluruhnya — jumlah yang sama sudah disebut
+        papan tugas di atas ("N siswa perlu dibina") dan panel "Siswa Perlu
+        Perhatian" di bawah, lengkap dengan namanya.
     --}}
-    <div class="rounded-2xl border border-slate-200 bg-white p-5">
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
-            <div>
-                <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Kelas Binaan</dt>
-                <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $stats['classes'] ?? 0 }}</dd>
-            </div>
+    @php($persenHariIni = $stats['persen'] ?? null)
+    <dl class="deret-angka">
+        <div>
+            <dt class="stat-label">Kelas Binaan</dt>
+            <dd class="stat-value">{{ $stats['classes'] ?? 0 }}</dd>
+        </div>
 
-            <div>
-                <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Siswa</dt>
-                <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $stats['students'] ?? 0 }}</dd>
-                <p class="text-[11px] text-slate-500 tabular-nums">{{ $stats['siswa_laki'] ?? 0 }} L &middot; {{ $stats['siswa_perempuan'] ?? 0 }} P</p>
-            </div>
+        <div>
+            <dt class="stat-label">Total Siswa</dt>
+            <dd class="stat-value">{{ $stats['students'] ?? 0 }}</dd>
+            <p class="stat-sub angka">{{ $stats['siswa_laki'] ?? 0 }} L &middot; {{ $stats['siswa_perempuan'] ?? 0 }} P</p>
+        </div>
 
-            @php($persenHariIni = $stats['persen'] ?? null)
-            <div>
-                <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Presensi Hari Ini</dt>
-                {{-- Tanpa data, tampilkan strip. Angka apa pun di sini — 100% maupun
-                     0% — adalah klaim tentang kehadiran yang belum pernah didata. --}}
-                <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $persenHariIni === null ? '—' : $persenHariIni.'%' }}</dd>
-                @if ($persenHariIni === null)
-                    <p class="text-[11px] text-slate-500">Belum ada absensi</p>
-                @else
-                    {{-- Persentase saja ambigu: cacah yang masuk harus ikut terbaca. --}}
-                    <p class="text-[11px] text-slate-500 tabular-nums">
-                        Hadir {{ $stats['masuk'] ?? 0 }} &middot; Sakit {{ $stats['sakit'] ?? 0 }} &middot; Izin {{ $stats['izin'] ?? 0 }} &middot;
-                        <strong class="{{ ($stats['alfa'] ?? 0) > 0 ? 'text-rose-600' : 'text-slate-500' }}">Alfa {{ $stats['alfa'] ?? 0 }}</strong>
-                    </p>
-                @endif
-            </div>
+        <div>
+            <dt class="stat-label">Presensi Hari Ini</dt>
+            {{-- Tanpa data, tampilkan strip. Angka apa pun di sini — 100% maupun
+                 0% — adalah klaim tentang kehadiran yang belum pernah didata. --}}
+            <dd class="stat-value">{{ $persenHariIni === null ? '—' : $persenHariIni.'%' }}</dd>
+            @if ($persenHariIni === null)
+                <p class="stat-sub">Belum ada absensi</p>
+            @else
+                {{-- Persentase saja ambigu: cacah yang masuk harus ikut terbaca.
 
-            {{--
-                Dua angka berikut khas perwalian dan tidak dirender di mode Guru
-                Mapel. Biodata orang tua dan refleksi P5 adalah pekerjaan wali
-                kelas; siswa kelas ajar bahkan tidak punya kolomnya terisi karena
-                template impornya sengaja hanya NIS dan nama. Penyebutnya pun
-                kelas perwalian saja — lihat DashboardController::angkaHariIni().
-            --}}
-            @if ($adaPerwalian)
-                <div>
-                    <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Biodata Terisi</dt>
-                    <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $stats['biodata_percent'] ?? 0 }}%</dd>
-                    {{-- Penyebutnya disebut terang-terangan. Persentase tanpa penyebut
-                         tidak bisa diperiksa, dan angka inilah yang dulu salah. --}}
-                    <p class="text-[11px] text-slate-500">dari {{ $stats['siswa_perwalian'] }} siswa perwalian</p>
-                </div>
-
-                <div>
-                    <dt class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Portofolio P5</dt>
-                    <dd class="mt-1 text-2xl font-black tabular-nums text-slate-900">{{ $stats['character_percent'] ?? 0 }}%</dd>
-                    <p class="text-[11px] text-slate-500">dari {{ $stats['siswa_perwalian'] }} siswa perwalian</p>
-                </div>
+                     Ditulis utuh, tidak disingkat H/S/I/A seperti di tabel
+                     absensi. Kode satu huruf terbaca karena ada kepala kolom
+                     tepat di atasnya; baris ini berdiri sendiri tanpa apa pun
+                     yang menjelaskan hurufnya. --}}
+                <p class="stat-sub angka">
+                    Hadir {{ $stats['masuk'] ?? 0 }} &middot; Sakit {{ $stats['sakit'] ?? 0 }} &middot; Izin {{ $stats['izin'] ?? 0 }} &middot;
+                    <strong class="{{ ($stats['alfa'] ?? 0) > 0 ? 'font-semibold text-rose-700' : '' }}">Alfa {{ $stats['alfa'] ?? 0 }}</strong>
+                </p>
             @endif
-        </dl>
-    </div>
+        </div>
 
-    <!-- INTERACTIVE CHART.JS ANALYTICS -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900">Grafik Tren Kehadiran 7 Hari Terakhir</h3>
+        {{--
+            Dua angka berikut khas perwalian dan tidak dirender di mode Guru
+            Mapel. Biodata orang tua dan refleksi P5 adalah pekerjaan wali
+            kelas; siswa kelas ajar bahkan tidak punya kolomnya terisi karena
+            template impornya sengaja hanya NIS dan nama. Penyebutnya pun
+            kelas perwalian saja — lihat DashboardController::angkaHariIni().
+        --}}
+        @if ($adaPerwalian)
+            <div>
+                <dt class="stat-label">Biodata Terisi</dt>
+                <dd class="stat-value">{{ $stats['biodata_percent'] ?? 0 }}%</dd>
+                {{-- Penyebutnya disebut terang-terangan. Persentase tanpa penyebut
+                     tidak bisa diperiksa, dan angka inilah yang dulu salah. --}}
+                <p class="stat-sub">dari {{ $stats['siswa_perwalian'] }} siswa perwalian</p>
+            </div>
+
+            <div>
+                <dt class="stat-label">Portofolio P5</dt>
+                <dd class="stat-value">{{ $stats['character_percent'] ?? 0 }}%</dd>
+                <p class="stat-sub">dari {{ $stats['siswa_perwalian'] }} siswa perwalian</p>
+            </div>
+        @endif
+    </dl>
+
+    <section class="blok">
+        <div class="blok__kepala">
+            <h2 class="blok__judul">Tren kehadiran</h2>
+            <span class="eyebrow">7 hari terakhir</span>
         </div>
-        <div class="h-64 relative">
-            <canvas id="attendanceChart"></canvas>
+        <div class="blok__isi">
+            <div class="relative h-56">
+                <canvas id="attendanceChart"></canvas>
+            </div>
         </div>
-    </div>
+    </section>
 
     {{-- Kedua panel ini membaca buku pembinaan wali kelas (EWS dan pelanggaran),
-         jadi ikut disembunyikan di mode Guru Mapel bersama tiga kartu di atas.
+         jadi ikut disembunyikan di mode Guru Mapel bersama dua angka di atas.
          Menampilkannya sebagai panel kosong justru mengesankan datanya belum
          diisi, padahal memang bukan urusannya. --}}
     @if ($adaPerwalian)
-    <!-- MAIN TWO-COLUMN SECTIONS -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 
         {{-- id dipakai papan tugas di atas untuk melompat ke sini. --}}
-        <!-- SECTION LEFT: SISWA PERLU PERHATIAN (EWS) -->
-        <div id="perlu-perhatian" class="scroll-mt-24 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <span class="text-rose-500">⚠️</span> Siswa Perlu Perhatian (EWS)
-                </h3>
-                <span class="text-xs font-semibold text-slate-400">{{ $perluPerhatian->count() }} Terdeteksi</span>
+        <section id="perlu-perhatian" class="blok scroll-mt-24">
+            <div class="blok__kepala">
+                <h2 class="blok__judul">Siswa perlu perhatian</h2>
+                <span class="kode {{ $perluPerhatian->isEmpty() ? '' : 'kode--alfa' }}">{{ $perluPerhatian->count() }}</span>
             </div>
 
             @if($perluPerhatian->isEmpty())
-                <div class="py-8 text-center bg-emerald-50/50 rounded-xl border border-emerald-100">
-                    <span class="text-3xl block mb-2">🎉</span>
-                    <p class="text-xs font-bold text-emerald-800">Semua Siswa Dalam Kondisi Baik</p>
-                    <p class="text-[11px] text-emerald-600 mt-0.5">Tidak ada indikasi siswa alfa >= 3x atau poin disiplin di bawah ambang batas.</p>
-                </div>
+                <p class="p-4 text-sm text-slate-500">
+                    Tidak ada siswa dengan alfa 3&times; atau lebih, maupun poin disiplin di bawah ambang.
+                </p>
             @else
-                <div class="divide-y divide-slate-100">
+                <div class="blok__daftar">
                     @foreach($perluPerhatian->take(5) as $item)
-                        <div class="py-3 flex items-center justify-between gap-3 text-xs">
+                        <div class="flex items-center justify-between gap-3 px-4 py-2.5">
                             <div class="min-w-0">
-                                <p class="font-bold text-slate-900 truncate">{{ $item['siswa']->name }}</p>
-                                <p class="text-[11px] text-slate-500 truncate">{{ $item['siswa']->classroom->name ?? '' }}</p>
+                                <p class="truncate text-sm font-medium text-slate-900">{{ $item['siswa']->name }}</p>
+                                <p class="truncate text-xs text-slate-500">{{ $item['siswa']->classroom->name ?? '' }}</p>
                             </div>
-                            <div class="flex flex-wrap gap-1 shrink-0">
+                            <div class="flex shrink-0 flex-wrap gap-1">
                                 @foreach($item['alasan'] as $alasan)
-                                    <span class="rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-bold text-rose-700">{{ $alasan }}</span>
+                                    <span class="badge badge--rose">{{ $alasan }}</span>
                                 @endforeach
                             </div>
                         </div>
                     @endforeach
                 </div>
             @endif
-        </div>
+        </section>
 
-        <!-- SECTION RIGHT: PELANGGARAN TERBARU -->
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <span class="text-indigo-600">📜</span> Catatan Disiplin &amp; Apresiasi Terbaru
-                </h3>
-                <a href="{{ route('violation-types.index') }}" class="text-xs font-bold text-indigo-600 hover:underline">Kelola Jenis →</a>
+        <section class="blok">
+            <div class="blok__kepala">
+                <h2 class="blok__judul">Catatan disiplin &amp; apresiasi</h2>
+                <a href="{{ route('violation-types.index') }}" class="text-xs font-medium text-indigo-600 hover:underline">Kelola jenis</a>
             </div>
 
             @if($pelanggaranTerbaru->isEmpty())
-                <div class="py-8 text-center bg-slate-50 rounded-xl border border-slate-100">
-                    <span class="text-3xl block mb-2">✨</span>
-                    <p class="text-xs font-bold text-slate-700">Belum Ada Catatan Disiplin</p>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Catatan poin pelanggaran &amp; apresiasi siswa akan muncul di sini.</p>
-                </div>
+                <p class="p-4 text-sm text-slate-500">
+                    Belum ada catatan. Poin pelanggaran dan apresiasi siswa akan muncul di sini.
+                </p>
             @else
-                <div class="divide-y divide-slate-100">
+                <div class="blok__daftar">
                     @foreach($pelanggaranTerbaru->take(5) as $v)
-                        <div class="py-3 flex items-center justify-between gap-3 text-xs">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg {{ $v->points >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700' }} font-black text-xs">
+                        <div class="flex items-center justify-between gap-3 px-4 py-2.5">
+                            <div class="flex min-w-0 items-center gap-2.5">
+                                <span class="kode {{ $v->points >= 0 ? 'kode--hadir' : 'kode--alfa' }} shrink-0">
                                     {{ $v->points >= 0 ? '+' : '' }}{{ $v->points }}
                                 </span>
                                 <div class="min-w-0">
-                                    <p class="font-bold text-slate-900 truncate">{{ $v->student->name ?? 'Siswa' }}</p>
-                                    <p class="text-[11px] text-slate-500 truncate">{{ $v->type->name ?? $v->note ?: 'Catatan Disiplin' }}</p>
+                                    <p class="truncate text-sm font-medium text-slate-900">{{ $v->student->name ?? 'Siswa' }}</p>
+                                    <p class="truncate text-xs text-slate-500">{{ $v->type->name ?? $v->note ?: 'Catatan disiplin' }}</p>
                                 </div>
                             </div>
-                            <span class="text-[11px] font-semibold text-slate-400 shrink-0">{{ $v->occurred_on?->format('d M Y') }}</span>
+                            <span class="shrink-0 font-mono text-[10px] text-slate-400">{{ $v->occurred_on?->format('d/m/y') }}</span>
                         </div>
                     @endforeach
                 </div>
             @endif
-        </div>
+        </section>
 
     </div>
     @endif
@@ -279,42 +278,49 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!ctx) return;
 
     const rawData = @json($chartTrend ?? []);
-    const labels = rawData.map(d => d.tanggal);
-    const values = rawData.map(d => d.persen);
 
+    /*
+     * Grafiknya ikut ditenangkan: garis tipis tinta, lengkung nyaris lurus,
+     * titik kecil. Lengkung 0.4 dengan titik radius 5 membuat naik-turun
+     * kehadiran tampak lebih dramatis daripada datanya — dan angka inilah yang
+     * dibaca guru untuk memutuskan siapa yang perlu ditelepon.
+     */
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: rawData.map(d => d.tanggal),
             datasets: [{
-                label: 'Persentase Kehadiran (%)',
-                data: values,
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                borderWidth: 3,
+                label: 'Kehadiran (%)',
+                data: rawData.map(d => d.persen),
+                borderColor: '#23486b',
+                backgroundColor: 'rgba(35, 72, 107, 0.06)',
+                borderWidth: 1.5,
                 fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#059669',
-                pointRadius: 5
+                tension: 0.15,
+                pointBackgroundColor: '#23486b',
+                pointRadius: 2,
+                pointHoverRadius: 4,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            font: { family: 'Instrument Sans' },
             scales: {
                 y: {
                     min: 0,
                     max: 100,
-                    grid: { color: '#f1f5f9' },
-                    ticks: { callback: v => v + '%' }
+                    border: { display: false },
+                    grid: { color: '#e3ded4' },
+                    ticks: { callback: v => v + '%', color: '#7c7466', font: { size: 10 } }
                 },
                 x: {
-                    grid: { display: false }
+                    border: { color: '#e3ded4' },
+                    grid: { display: false },
+                    ticks: { color: '#7c7466', font: { size: 10 } }
                 }
             },
-            plugins: {
-                legend: { display: false }
-            }
+            plugins: { legend: { display: false } }
         }
     });
 });
