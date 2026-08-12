@@ -121,6 +121,10 @@ class DimensiKarakterTersediaTest extends TestCase
             'what_went_well' => 'Rajin piket kelas.',
             'what_to_improve' => 'Kurangi mengobrol saat pelajaran.',
             'action_plan' => 'Duduk di barisan depan.',
+            // Seluruh isian formulir publik ini wajib sejak refleksi separuh
+            // kosong dianggap tidak terpakai.
+            'pesan_ortu' => 'Terima kasih Ayah Ibu sudah sabar menemani.',
+            'kesan_teman' => 'Kata Budi aku ramah tapi gampang tersinggung.',
         ])->assertSessionHasNoErrors();
 
         $this->assertSame(1, CharacterReflection::withoutTenant()->where('class_id', $class->id)->count());

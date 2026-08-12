@@ -22,6 +22,7 @@ class CharacterReflection extends Model
         'what_to_improve',
         'action_plan',
         'pesan_ortu',
+        'kesan_teman',
         'teacher_feedback',
         'teacher_rating',
         'feedback_by',

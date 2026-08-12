@@ -243,10 +243,35 @@ class PublicStudentFormController extends Controller
                 Rule::exists('character_dimensions', 'id')->where('user_id', $class->user_id),
             ],
             'self_rating' => ['required', 'integer', 'min:1', 'max:5'],
-            'what_went_well' => ['required', 'string'],
-            'what_to_improve' => ['required', 'string'],
-            'action_plan' => ['required', 'string'],
-            'pesan_ortu' => ['nullable', 'string', 'max:1000'],
+            /*
+             * min:10 pada ketiganya juga. `required` sendirian hanya melarang
+             * kolom kosong, bukan jawaban "-" atau "ok" — dan refleksi sepanjang
+             * satu huruf sama tidak berartinya dengan kolom kosong, bedanya ia
+             * lolos diam-diam dan ikut terhitung sebagai sudah mengisi.
+             */
+            'what_went_well' => ['required', 'string', 'min:10'],
+            'what_to_improve' => ['required', 'string', 'min:10'],
+            'action_plan' => ['required', 'string', 'min:10'],
+            /*
+             * Wajib, tidak seperti dua jalur pembuatan refleksi lainnya.
+             *
+             * Formulir ini dibagikan wali kelas sebagai tugas dengan tenggat,
+             * dan refleksi yang separuh kosong tidak bisa dipakai untuk apa
+             * pun — bukan untuk pembinaan, bukan untuk laporan. Sisi wali kelas
+             * dan portal siswa sengaja tetap boleh kosong: keduanya dipakai
+             * mencatat sambil jalan, bukan menyetor tugas.
+             *
+             * min:10 menutup lubang yang dibuka `required` sendiri: tanpa itu
+             * satu tanda hubung sudah lolos, dan yang tersimpan bukan jawaban
+             * melainkan bukti bahwa kolomnya diwajibkan.
+             */
+            'pesan_ortu' => ['required', 'string', 'min:10', 'max:1000'],
+            'kesan_teman' => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'kesan_teman.required' => 'Isian "Menurut temanmu, kamu itu seperti apa?" wajib diisi. Kalau belum sempat bertanya, tulis perkiraanmu sendiri.',
+            'kesan_teman.min' => 'Tulis jawabannya sedikit lebih panjang, minimal 10 huruf.',
+            'pesan_ortu.required' => 'Pesan untuk orang tua wajib diisi.',
+            'pesan_ortu.min' => 'Tulis pesannya sedikit lebih panjang, minimal 10 huruf.',
         ]);
 
         /*
@@ -280,6 +305,7 @@ class PublicStudentFormController extends Controller
             'what_to_improve' => $validated['what_to_improve'],
             'action_plan' => $validated['action_plan'],
             'pesan_ortu' => $validated['pesan_ortu'] ?? null,
+            'kesan_teman' => $validated['kesan_teman'] ?? null,
             'status' => 'submitted',
             'submitted_at' => Carbon::now(),
         ])->save();

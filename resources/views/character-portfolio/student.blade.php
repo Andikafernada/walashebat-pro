@@ -163,6 +163,18 @@
                                 <p><strong class="text-indigo-700">🎯 Rencana Aksi:</strong> {{ $ref->action_plan }}</p>
                             </div>
 
+                            {{-- Cermin dari luar. Jarak antara kotak ini dan tiga isian
+                                 di atasnya sering lebih memberi tahu daripada isinya
+                                 sendiri — anak yang menilai dirinya sempurna tetapi
+                                 menulis kesan teman yang pahit sedang jujur; yang
+                                 sebaliknya sedang menutupi sesuatu. --}}
+                            @if ($ref->kesan_teman)
+                                <div class="bg-sky-50 p-2.5 rounded-lg border border-sky-200 text-sky-900">
+                                    <span class="font-bold block text-[10px] uppercase text-sky-700">👥 Kata Temannya</span>
+                                    <p class="italic mt-0.5">"{{ $ref->kesan_teman }}"</p>
+                                </div>
+                            @endif
+
                             {{-- Ditujukan kepada orang tua, jadi dipisahkan dari tiga
                                  isian di atas yang ditujukan ke diri sendiri & wali kelas. --}}
                             @if ($ref->pesan_ortu)

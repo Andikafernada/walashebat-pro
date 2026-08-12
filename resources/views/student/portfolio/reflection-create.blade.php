@@ -73,6 +73,15 @@
                 <textarea name="action_plan" rows="3" class="w-full px-3 py-2 border rounded-lg"></textarea>
             </div>
 
+            {{-- Tiga isian di atas seluruhnya penilaian diri sendiri. Pertanyaan
+                 ini memaksa siswa melihat dirinya dari luar. Boleh dikosongkan:
+                 anak yang merasa tidak punya teman dekat tidak boleh terkunci
+                 gara-gara satu pertanyaan yang menyakitkan untuk dijawab. --}}
+            <div>
+                <label for="kesan_teman" class="block text-sm font-medium mb-1">Menurut temanmu, kamu itu seperti apa? <span class="font-normal text-gray-500">(boleh dikosongkan)</span></label>
+                <textarea id="kesan_teman" name="kesan_teman" rows="3" maxlength="1000" placeholder="cth: Kata Rina aku asyik dan suka bantu, tapi kadang suka memotong pembicaraan." class="w-full px-3 py-2 border rounded-lg">{{ old('kesan_teman') }}</textarea>
+            </div>
+
             <div class="flex gap-3 justify-end pt-2">
                 <a href="{{ route('student.portfolio') }}" class="btn btn-secondary">Batal</a>
                 <button type="submit" class="btn btn-primary">Simpan Refleksi</button>

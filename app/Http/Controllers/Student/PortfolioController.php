@@ -113,6 +113,9 @@ class PortfolioController extends Controller
             'what_went_well' => ['nullable', 'string', 'max:1000'],
             'what_to_improve' => ['nullable', 'string', 'max:1000'],
             'action_plan' => ['nullable', 'string', 'max:1000'],
+            // Pertanyaan yang sama ditanyakan formulir publik; tanpa ini refleksi
+            // yang ditulis lewat jalur ini menyimpan kolomnya kosong selamanya.
+            'kesan_teman' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $data['student_id'] = $student->id;

@@ -52,7 +52,7 @@
 
     <!-- Form Card -->
     <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-5">
-        <form method="POST" action="{{ route('public.reflection.store', $class) }}" class="space-y-4" x-data="{ rating: 5 }">
+        <form method="POST" action="{{ route('public.reflection.store', $class) }}" class="space-y-4" x-data="{ rating: {{ (int) old('self_rating', 5) }} }">
             @csrf
 
             <div>
@@ -60,7 +60,7 @@
                 <select name="student_id" required class="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-800 focus:border-indigo-500 focus:outline-none">
                     <option value="">-- Pilih Nama Anda --</option>
                     @foreach ($students as $st)
-                        <option value="{{ $st->id }}">{{ $st->name }} (NIS: {{ $st->nis ?: '-' }})</option>
+                        <option value="{{ $st->id }}" @selected(old('student_id') == $st->id)>{{ $st->name }} (NIS: {{ $st->nis ?: '-' }})</option>
                     @endforeach
                 </select>
             </div>
@@ -105,12 +105,12 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">1. Hal Baik yang Sudah Dilakukan *</label>
-                <textarea name="what_went_well" rows="2" required placeholder="cth: Saya selalu hadir tepat waktu dan membantu menyapu kelas..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none"></textarea>
+                <textarea name="what_went_well" rows="2" required placeholder="cth: Saya selalu hadir tepat waktu dan membantu menyapu kelas..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">{{ old('what_went_well') }}</textarea>
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">2. Hal yang Masih Perlu Ditingkatkan *</label>
-                <textarea name="what_to_improve" rows="2" required placeholder="cth: Saya masih suka mengobrol saat pelajaran berlangsung..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none"></textarea>
+                <textarea name="what_to_improve" rows="2" required placeholder="cth: Saya masih suka mengobrol saat pelajaran berlangsung..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">{{ old('what_to_improve') }}</textarea>
             </div>
 
             <div>
@@ -118,17 +118,41 @@
                 <textarea name="action_plan" rows="2" required placeholder="cth: Saya akan fokus mendengarkan penjelasan guru dan duduk di barisan depan..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">{{ old('action_plan') }}</textarea>
             </div>
 
+            {{-- Tiga isian di atas seluruhnya penilaian diri sendiri, dan
+                 penilaian diri sendiri punya titik buta yang sama pada setiap
+                 anak. Pertanyaan ini memaksa siswa melihat dirinya dari luar.
+
+                 Sengaja boleh dikosongkan: anak yang merasa tidak punya teman
+                 dekat tidak boleh terkunci di formulir ini gara-gara satu
+                 pertanyaan yang menyakitkan untuk dijawab. --}}
+            <div class="rounded-xl border border-sky-200 bg-sky-50/60 p-3 space-y-1.5">
+                <label for="kesan_teman" class="block text-xs font-bold uppercase tracking-wider text-sky-900">
+                    👥 Menurut Temanmu, Kamu Itu Seperti Apa? *
+                </label>
+                {{-- Kalimat kedua bukan basa-basi: pertanyaannya wajib, jadi ia
+                     harus bisa dijawab anak yang belum sempat bertanya maupun
+                     yang tidak punya teman dekat — kalau tidak, formulirnya
+                     mengunci justru anak yang paling perlu dibina. --}}
+                <p class="text-[10px] text-sky-800">
+                    Coba tanya 1–2 teman dekatmu, lalu tulis jawaban mereka apa adanya — yang enak didengar maupun yang tidak.
+                    Kalau belum sempat bertanya, tulis perkiraanmu sendiri.
+                </p>
+                <textarea id="kesan_teman" name="kesan_teman" rows="3" maxlength="1000" minlength="10" required
+                          placeholder="cth: Kata Rina aku orangnya asyik dan suka bantu, tapi kadang suka memotong pembicaraan orang."
+                          class="w-full rounded-xl border border-sky-200 bg-white p-2.5 text-xs text-slate-800 focus:border-sky-500 focus:outline-none">{{ old('kesan_teman') }}</textarea>
+            </div>
+
             {{-- Ditujukan kepada orang tua, bukan kepada diri sendiri maupun wali
                  kelas seperti tiga isian di atas. Karena itu disimpan dan
                  ditampilkan terpisah. --}}
             <div class="rounded-xl border border-amber-200 bg-amber-50/60 p-3 space-y-1.5">
-                <label class="block text-xs font-bold text-amber-900 uppercase tracking-wider">
-                    💌 Pesan untuk Orang Tua <span class="text-amber-700 font-normal lowercase">(boleh dikosongkan)</span>
+                <label for="pesan_ortu" class="block text-xs font-bold text-amber-900 uppercase tracking-wider">
+                    💌 Pesan untuk Orang Tua *
                 </label>
                 <p class="text-[10px] text-amber-800">
                     Tulis pesan, harapan, atau permintaan maaf untuk Ayah dan Ibu. Pesan ini akan dibaca wali kelas dan disampaikan kepada orang tuamu.
                 </p>
-                <textarea name="pesan_ortu" rows="3" maxlength="1000"
+                <textarea id="pesan_ortu" name="pesan_ortu" rows="3" maxlength="1000" minlength="10" required
                           placeholder="cth: Terima kasih Ayah Ibu sudah sabar. Aku janji akan lebih rajin belajar dan membantu di rumah."
                           class="w-full rounded-xl border border-amber-200 bg-white p-2.5 text-xs text-slate-800 focus:border-amber-500 focus:outline-none">{{ old('pesan_ortu') }}</textarea>
             </div>

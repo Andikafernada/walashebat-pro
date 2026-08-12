@@ -131,6 +131,11 @@
                     <label class="block text-sm font-medium mb-1">Apa yang perlu diperbaiki?</label>
                     <textarea name="what_to_improve" rows="3" class="w-full px-3 py-2 border rounded-lg"></textarea>
                 </div>
+                {{-- Cermin dari luar; boleh dikosongkan. --}}
+                <div>
+                    <label class="block text-sm font-medium mb-1">Menurut temanmu, kamu itu seperti apa? <span class="font-normal text-gray-500">(boleh dikosongkan)</span></label>
+                    <textarea name="kesan_teman" rows="3" maxlength="1000" placeholder="cth: Kata Rina aku asyik, tapi kadang suka memotong pembicaraan." class="w-full px-3 py-2 border rounded-lg"></textarea>
+                </div>
                 <div class="flex gap-2">
                     <button type="button" onclick="document.getElementById('modal-reflection').classList.add('hidden')" class="flex-1 px-4 py-2 border rounded-lg">Batal</button>
                     <button type="submit" class="flex-1 bg-emerald-600 text-white py-2 rounded-lg">Simpan</button>

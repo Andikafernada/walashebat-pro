@@ -55,6 +55,10 @@ class PesanOrangTuaRefleksiTest extends TestCase
             'what_went_well' => 'Saya piket tanpa disuruh',
             'what_to_improve' => 'Masih sering menunda PR',
             'action_plan' => 'Mengerjakan PR sebelum bermain',
+            // Keduanya wajib sejak formulir publik tidak lagi menerima isian
+            // kosong; tanpa ini setiap test di berkas ini gagal validasi.
+            'pesan_ortu' => 'Terima kasih Ayah Ibu sudah sabar menemani.',
+            'kesan_teman' => 'Kata Rina aku ramah tapi suka menunda.',
         ]);
     }
 
@@ -67,11 +71,22 @@ class PesanOrangTuaRefleksiTest extends TestCase
         $this->assertSame($pesan, CharacterReflection::withoutTenant()->sole()->pesan_ortu);
     }
 
-    public function test_pesan_boleh_dikosongkan(): void
+    /**
+     * Dulu boleh dikosongkan. Formulir publik ini dibagikan wali kelas sebagai
+     * tugas dengan tenggat, dan refleksi yang separuh kosong tidak bisa dipakai
+     * untuk apa pun — jadi seluruh isiannya kini wajib.
+     */
+    public function test_pesan_wajib_diisi(): void
     {
-        $this->kirim()->assertSessionHasNoErrors();
+        $this->kirim(['pesan_ortu' => ''])->assertSessionHasErrors('pesan_ortu');
 
-        $this->assertNull(CharacterReflection::withoutTenant()->sole()->pesan_ortu);
+        $this->assertSame(0, CharacterReflection::withoutTenant()->count());
+    }
+
+    /** `required` sendirian meloloskan "-", dan itu sama kosongnya. */
+    public function test_pesan_sekadar_tanda_hubung_ditolak(): void
+    {
+        $this->kirim(['pesan_ortu' => '-'])->assertSessionHasErrors('pesan_ortu');
     }
 
     public function test_pesan_terlalu_panjang_ditolak(): void
