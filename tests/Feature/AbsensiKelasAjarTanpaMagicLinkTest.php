@@ -65,7 +65,7 @@ class AbsensiKelasAjarTanpaMagicLinkTest extends TestCase
         $this->get(route('classes.attendance.index', $kelas))
             ->assertOk()
             ->assertDontSee('Buat Sesi Absensi Baru')
-            ->assertDontSee('Kirim Otomatis via WhatsApp')
+            ->assertDontSee('Kirim otomatis via WhatsApp')
             ->assertDontSee('Buat &amp; Terbitkan Link', false)
             ->assertDontSee('Nomor Tujuan WA')
             // Yang ditawarkan sebagai gantinya: mengisi kehadiran langsung.
@@ -80,7 +80,7 @@ class AbsensiKelasAjarTanpaMagicLinkTest extends TestCase
         $this->get(route('classes.attendance.index', $kelas))
             ->assertOk()
             ->assertSee('Buat Sesi Absensi Baru')
-            ->assertSee('Kirim Otomatis via WhatsApp');
+            ->assertSee('Kirim otomatis via WhatsApp');
     }
 
     // -- Penjagaan server ----------------------------------------------------
