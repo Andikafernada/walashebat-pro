@@ -75,6 +75,12 @@
                     <h2 class="text-2xl font-bold text-gray-900 mb-2">Login Siswa</h2>
                     <p class="text-gray-500 mb-6">Masuk dengan NIS dan password Anda</p>
 
+                    @if (session('error'))
+                        <div class="mb-4 p-4 rounded-lg bg-amber-50 text-amber-900 text-sm" role="alert">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
                     @if (session('status'))
                         <div class="mb-4 p-4 rounded-lg bg-green-50 text-green-700 text-sm">
                             {{ session('status') }}

@@ -95,6 +95,12 @@
         </span>
     </div>
 
+    @if (session('error'))
+        <div class="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3" role="alert">
+            <p class="text-sm font-medium text-amber-900">{{ session('error') }}</p>
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('login') }}" class="space-y-5" x-data="{
         loading: false,
         showPassword: false,

@@ -43,7 +43,40 @@ $app = Application::configure(basePath: dirname(__DIR__))
          */
     )
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        /*
+         * Tab yang ditinggal semalaman punya token CSRF yang sudah mati bersama
+         * sesinya. Halaman "419 Page Expired" bawaan Laravel adalah jalan buntu:
+         * tidak menjelaskan apa pun dan tidak menawarkan langkah berikutnya.
+         *
+         * Untuk "Keluar" tujuannya sudah jelas: sesinya memang sudah mati, jadi
+         * antar saja ke halaman masuk sambil menyebutkan sebabnya. Untuk form
+         * lain — termasuk tautan publik wali murid — pantulkan ke halaman asal
+         * beserta isian yang sudah diketik, supaya dirender ulang dengan token
+         * segar dan kiriman kedua berhasil tanpa mengetik ulang.
+         */
+        /*
+         * Type-hint-nya HttpException, bukan TokenMismatchException: Handler
+         * memetakan yang kedua menjadi HttpException(419) di prepareException()
+         * sebelum callback render dipanggil, sehingga type-hint aslinya tidak
+         * pernah cocok.
+         */
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {
+            if ($e->getStatusCode() !== 419 || $request->expectsJson()) {
+                return null;
+            }
+
+            $pesan = 'Sesi Anda sudah berakhir karena halaman terlalu lama dibiarkan terbuka. Silakan masuk lagi.';
+
+            if ($request->routeIs('logout', 'student.logout')) {
+                return redirect()
+                    ->route($request->routeIs('student.logout') ? 'student.login' : 'login')
+                    ->with('error', $pesan);
+            }
+
+            return redirect()->back()
+                ->withInput($request->except(['password', 'password_confirmation', 'pin']))
+                ->with('error', $pesan);
+        });
     })->create();
 
 return $app;
