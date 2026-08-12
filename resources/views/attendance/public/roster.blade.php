@@ -13,38 +13,27 @@
      * biasa: nama kelas yang baru terbentuk saat runtime tidak akan pernah
      * ikut ter-compile, dan tombolnya tampil tanpa warna sama sekali.
      */
+    /*
+     * Kode margin H T S I A — huruf yang sama dengan Attendance::KODE, rekap,
+     * dan cetakan. Yang terpilih jadi tinta pekat; sisanya diam.
+     *
+     * Sebelumnya tiap status punya warnanya sendiri (emerald, oranye, kuning,
+     * biru langit, merah). Pada layar ponsel selebar 340px, lima tombol
+     * berwarna dikali 32 baris berarti 160 kotak berwarna dalam satu daftar,
+     * dan yang harus dipindai petugas justru baris yang BELUM ditandai.
+     */
     $gaya = [
-        'hadir' => [
-            'label' => 'Hadir',
-            'aktif' => 'peer-checked:border-emerald-600 peer-checked:bg-emerald-600 peer-checked:text-white peer-focus-visible:ring-emerald-500/40',
-            'teks' => 'text-emerald-700',
-        ],
-        'terlambat' => [
-            'label' => 'Terlambat',
-            'aktif' => 'peer-checked:border-orange-500 peer-checked:bg-orange-500 peer-checked:text-white peer-focus-visible:ring-orange-500/40',
-            'teks' => 'text-orange-700',
-        ],
-        'sakit' => [
-            'label' => 'Sakit',
-            'aktif' => 'peer-checked:border-amber-500 peer-checked:bg-amber-500 peer-checked:text-white peer-focus-visible:ring-amber-500/40',
-            'teks' => 'text-amber-700',
-        ],
-        'izin' => [
-            'label' => 'Izin',
-            'aktif' => 'peer-checked:border-sky-600 peer-checked:bg-sky-600 peer-checked:text-white peer-focus-visible:ring-sky-500/40',
-            'teks' => 'text-sky-700',
-        ],
-        'alfa' => [
-            'label' => 'Alfa',
-            'aktif' => 'peer-checked:border-rose-600 peer-checked:bg-rose-600 peer-checked:text-white peer-focus-visible:ring-rose-500/40',
-            'teks' => 'text-rose-700',
-        ],
+        'hadir' => ['label' => 'Hadir', 'kode' => 'H', 'teks' => 'text-emerald-700'],
+        'terlambat' => ['label' => 'Terlambat', 'kode' => 'T', 'teks' => 'text-slate-700'],
+        'sakit' => ['label' => 'Sakit', 'kode' => 'S', 'teks' => 'text-amber-700'],
+        'izin' => ['label' => 'Izin', 'kode' => 'I', 'teks' => 'text-amber-700'],
+        'alfa' => ['label' => 'Alfa', 'kode' => 'A', 'teks' => 'text-rose-700'],
     ];
 @endphp
 
 @if ($students->isEmpty())
-    <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 class="text-lg font-bold text-slate-900">Belum ada data siswa</h1>
+    <div class="rounded-lg border border-slate-200 bg-white p-6 text-center">
+        <h1 class="text-lg font-semibold tracking-tight text-slate-900">Belum ada data siswa</h1>
         <p class="mt-2 text-sm leading-relaxed text-slate-600">
             Daftar siswa kelas {{ $session->classroom->name }} masih kosong, jadi absensi belum bisa diisi.
             Sampaikan ke wali kelas untuk melengkapi data siswa.
@@ -63,21 +52,21 @@
 
     {{-- Papan hitung. Angka inilah yang harus dilaporkan petugas, jadi ia
          menempel di atas dan ikut berubah setiap kali satu siswa ditandai. --}}
-    <div class="sticky top-0 z-20 -mx-4 mb-3 border-b border-slate-200 bg-slate-100/95 px-4 py-3 backdrop-blur">
+    <div class="sticky top-0 z-20 -mx-4 mb-3 border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur">
         <div class="grid grid-cols-5 gap-1.5 text-center">
             @foreach ($gaya as $key => $g)
-                <div class="rounded-xl border border-slate-200 bg-white py-2">
-                    <p class="text-xl font-extrabold tabular-nums leading-none {{ $g['teks'] }}" x-text="jumlah.{{ $key }}">0</p>
-                    <p class="mt-1 text-[9px] font-semibold uppercase tracking-wide text-slate-400">{{ $g['label'] }}</p>
+                <div class="rounded border border-slate-200 bg-white py-1.5">
+                    <p class="angka text-lg font-semibold leading-none {{ $g['teks'] }}" x-text="jumlah.{{ $key }}">0</p>
+                    <p class="mt-1 font-mono text-[9px] uppercase tracking-wider text-slate-400">{{ $g['kode'] }}</p>
                 </div>
             @endforeach
         </div>
 
         <p class="mt-2 text-center text-xs" x-cloak>
-            <span x-show="sisa > 0" class="font-semibold text-slate-600">
+            <span x-show="sisa > 0" class="font-medium text-slate-600">
                 <span x-text="sisa"></span> siswa belum ditandai
             </span>
-            <span x-show="sisa === 0" class="font-semibold text-emerald-700">
+            <span x-show="sisa === 0" class="font-medium text-emerald-700">
                 Semua {{ $students->count() }} siswa sudah ditandai
             </span>
         </p>
@@ -86,26 +75,17 @@
     {{-- Jalan cepat: tandai semua hadir, lalu ubah yang tidak masuk saja.
          Sengaja TIDAK ada nilai bawaan pada tiap baris — daftar yang otomatis
          terisi "hadir" adalah cara termudah absensi jadi asal-asalan. --}}
-    <div class="mb-4 flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3">
+    <div class="mb-3 flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2.5">
         <button type="button"
                 x-on:click="tandaiSemuaHadir()"
-                class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 transition hover:bg-emerald-100 active:bg-emerald-200">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-            </svg>
-            Tandai semua hadir
-        </button>
+                class="btn-secondary h-10 flex-1">Tandai semua hadir</button>
         <button type="button"
                 x-on:click="kosongkan()"
-                class="rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
-            Kosongkan
-        </button>
+                class="btn-ghost h-10">Kosongkan</button>
     </div>
 
     @error('attendance')
-        <p class="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700" role="alert">
-            {{ $message }}
-        </p>
+        <p class="alert alert--danger mb-3" role="alert">{{ $message }}</p>
     @enderror
 
     {{-- Daftar siswa, dibaca seperti buku absensi: nomor, nama, lalu kolom
@@ -113,18 +93,16 @@
     <ul class="space-y-2">
         @foreach ($students as $s)
             @php $terpilih = old('attendance.'.$s->id); @endphp
-            <li class="rounded-2xl border border-slate-200 bg-white p-3"
+            <li class="rounded-lg border border-slate-200 bg-white p-3"
                 x-data="{ status: @js($terpilih) }"
                 x-on:roster-isi.window="status = $event.detail">
 
                 <div class="flex items-start gap-3">
-                    <span class="mt-0.5 w-6 shrink-0 text-right text-xs font-bold tabular-nums text-slate-400">
-                        {{ $loop->iteration }}
-                    </span>
+                    <span class="mt-0.5 w-6 shrink-0 text-right font-mono text-xs text-slate-400">{{ $loop->iteration }}</span>
                     <div class="min-w-0 flex-1">
-                        <p class="text-sm font-semibold leading-snug text-slate-900">{{ $s->name }}</p>
+                        <p class="text-sm font-medium leading-snug text-slate-900">{{ $s->name }}</p>
                         @if ($s->nis)
-                            <p class="mt-0.5 text-[11px] tabular-nums text-slate-400">NIS {{ $s->nis }}</p>
+                            <p class="mt-0.5 font-mono text-[10px] text-slate-400">NIS {{ $s->nis }}</p>
                         @endif
                     </div>
                 </div>
@@ -144,8 +122,11 @@
                                        required
                                        x-model="status"
                                        @checked($terpilih === $key)>
-                                <span class="block rounded-xl border border-slate-200 px-0.5 py-2 text-center text-[10px] font-semibold leading-tight text-slate-500 transition peer-hover:border-slate-300 peer-hover:bg-slate-50 peer-focus-visible:ring-2 {{ $g['aktif'] }}">
-                                    {{ $g['label'] }}
+                                <span class="flex flex-col items-center gap-0.5 rounded border border-slate-200 px-0.5 py-1.5 text-center leading-tight text-slate-500 transition-colors
+                                             peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500
+                                             peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white">
+                                    <span class="font-mono text-xs font-medium">{{ $g['kode'] }}</span>
+                                    <span class="text-[10px] font-medium">{{ $g['label'] }}</span>
                                 </span>
                             </label>
                         @endforeach
@@ -162,7 +143,7 @@
                            maxlength="200"
                            value="{{ old('notes.'.$s->id) }}"
                            placeholder="Keterangan (opsional) — cth: surat dokter"
-                           class="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/15">
+                           class="form-input form-input--sm">
                 </div>
             </li>
         @endforeach
@@ -170,17 +151,12 @@
 
     {{-- Tombol kirim menempel di bawah supaya tidak perlu menggulir 30 baris
          ke bawah setelah selesai menandai. --}}
-    <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-slate-200 bg-slate-100/95 px-4 py-3 backdrop-blur">
+    <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur">
         <button type="submit"
-                class="btn-primary w-full py-4 text-base"
+                class="btn-primary h-11 w-full"
                 x-bind:disabled="mengirim"
                 x-bind:class="mengirim && 'pointer-events-none opacity-60'">
-            <span x-show="!mengirim" class="inline-flex items-center gap-2">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
-                Kirim absensi
-            </span>
+            <span x-show="!mengirim">Kirim absensi</span>
             <span x-show="mengirim" x-cloak class="inline-flex items-center gap-2">
                 <span class="spinner spinner--white"></span> Menyimpan…
             </span>

@@ -4,19 +4,27 @@
     @include('partials.class-nav')
 
 @php
+    /*
+      * Kode margin ikut ditampilkan di tombolnya (H T S I A) — huruf yang sama
+      * dengan Attendance::KODE, rekap, ekspor, dan cetakan. Yang terpilih
+      * menjadi tinta pekat; sisanya diam. Sebelumnya tiap status punya warna
+      * penuh sendiri (emerald, oranye, kuning, biru langit, merah), sehingga
+      * satu layar berisi 32 siswa menampilkan 32 kotak berwarna dan tidak ada
+      * satu pun yang bisa dipindai lebih cepat daripada dibaca.
+      */
     $gaya = [
-        'hadir' => ['label' => 'Hadir', 'aktif' => 'peer-checked:border-emerald-600 peer-checked:bg-emerald-600 peer-checked:text-white peer-focus-visible:ring-emerald-500/40'],
-        'terlambat' => ['label' => 'Terlambat', 'aktif' => 'peer-checked:border-orange-500 peer-checked:bg-orange-500 peer-checked:text-white peer-focus-visible:ring-orange-500/40'],
-        'sakit' => ['label' => 'Sakit', 'aktif' => 'peer-checked:border-amber-500 peer-checked:bg-amber-500 peer-checked:text-white peer-focus-visible:ring-amber-500/40'],
-        'izin' => ['label' => 'Izin', 'aktif' => 'peer-checked:border-sky-600 peer-checked:bg-sky-600 peer-checked:text-white peer-focus-visible:ring-sky-500/40'],
-        'alfa' => ['label' => 'Alfa', 'aktif' => 'peer-checked:border-rose-600 peer-checked:bg-rose-600 peer-checked:text-white peer-focus-visible:ring-rose-500/40'],
+        'hadir' => ['label' => 'Hadir', 'kode' => 'H'],
+        'terlambat' => ['label' => 'Terlambat', 'kode' => 'T'],
+        'sakit' => ['label' => 'Sakit', 'kode' => 'S'],
+        'izin' => ['label' => 'Izin', 'kode' => 'I'],
+        'alfa' => ['label' => 'Alfa', 'kode' => 'A'],
     ];
 @endphp
 
-<div class="page-header">
+<div class="page-header flex flex-wrap items-end justify-between gap-3">
     <div>
-        <h2 class="page-header__title">Koreksi Absensi</h2>
-        <p class="page-header__subtitle">
+        <h1 class="page-header__title">Koreksi Absensi</h1>
+        <p class="page-header__description">
             {{ $session->session_date->translatedFormat('l, d F Y') }}
             @if (($session->sequence ?? 1) > 1) · sesi ke-{{ $session->sequence }} @endif
         </p>
@@ -59,7 +67,7 @@
                 $baris = $absensi->get($s->id);
                 $terpilih = old('attendance.'.$s->id, $baris->status ?? null);
             @endphp
-            <li class="rounded-2xl border border-slate-200 bg-white p-3"
+            <li class="rounded-lg border border-slate-200 bg-white p-3"
                 x-data="{ status: @js($terpilih) }">
 
                 <div class="flex items-start justify-between gap-3">
@@ -87,8 +95,11 @@
                                 <input type="radio" class="peer sr-only"
                                        name="attendance[{{ $s->id }}]" value="{{ $key }}" required
                                        x-model="status" @checked($terpilih === $key)>
-                                <span class="block rounded-xl border border-slate-200 px-0.5 py-2 text-center text-[10px] font-semibold leading-tight text-slate-500 transition peer-hover:border-slate-300 peer-hover:bg-slate-50 peer-focus-visible:ring-2 {{ $g['aktif'] }}">
-                                    {{ $g['label'] }}
+                                <span class="flex flex-col items-center gap-0.5 rounded border border-slate-200 px-0.5 py-1.5 text-center leading-tight text-slate-500 transition-colors
+                                             peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500
+                                             peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white">
+                                    <span class="font-mono text-xs font-medium">{{ $g['kode'] }}</span>
+                                    <span class="text-[10px] font-medium">{{ $g['label'] }}</span>
                                 </span>
                             </label>
                         @endforeach
@@ -100,7 +111,7 @@
                     <input id="note-{{ $s->id }}" type="text" name="notes[{{ $s->id }}]" maxlength="200"
                            value="{{ old('notes.'.$s->id, $baris->note ?? '') }}"
                            placeholder="Keterangan (opsional)"
-                           class="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/15">
+                           class="form-input form-input--sm">
                 </div>
 
                 {{-- Riwayat koreksi ditampilkan di tempat, bukan di halaman
@@ -111,7 +122,7 @@
                         <summary class="cursor-pointer text-[11px] font-medium text-slate-500 hover:text-slate-700">
                             Riwayat koreksi
                         </summary>
-                        <ul class="mt-1.5 space-y-1 border-l-2 border-slate-100 pl-3">
+                        <ul class="mt-1.5 space-y-1 border-l border-slate-200 pl-3">
                             @foreach ($baris->revisions as $r)
                                 <li class="text-[11px] leading-relaxed text-slate-500">
                                     <span class="font-semibold text-slate-700">{{ $r->from_status }} → {{ $r->to_status }}</span>
@@ -132,15 +143,10 @@
             <p class="empty-state__title">Belum ada siswa aktif</p>
         </div>
     @else
-        <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border sm:px-4">
+        <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-lg sm:border sm:px-4">
             <button type="submit" class="btn-primary w-full py-3.5"
                     x-bind:disabled="mengirim" x-bind:class="mengirim && 'pointer-events-none opacity-60'">
-                <span x-show="!mengirim" class="inline-flex items-center gap-2">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    Simpan koreksi
-                </span>
+                <span x-show="!mengirim">Simpan koreksi</span>
                 <span x-show="mengirim" x-cloak class="inline-flex items-center gap-2">
                     <span class="spinner spinner--white"></span> Menyimpan…
                 </span>

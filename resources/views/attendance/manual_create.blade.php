@@ -3,49 +3,54 @@
 @section('title', 'Input Absensi Manual - ' . $class->name)
 
 @section('content')
-<div class="space-y-6 pb-12">
-    <!-- Header Bar -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('classes.index') }}" class="hover:text-indigo-600 transition-colors">Kelas</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <a href="{{ route('classes.attendance.index', $class) }}" class="hover:text-indigo-600 transition-colors">Absensi</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">Input Absensi Manual (Susulan)</span>
+@php
+    // Huruf yang sama dengan Attendance::KODE dan seluruh rekap.
+    $pilihan = [
+        'hadir' => 'H',
+        'terlambat' => 'T',
+        'sakit' => 'S',
+        'izin' => 'I',
+        'alfa' => 'A',
+    ];
+@endphp
+
+<div class="space-y-5 pb-12">
+
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="min-w-0">
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.attendance.index', $class) }}" class="hover:text-slate-600">Absensi</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Input Manual</span>
             </nav>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">
-                Input Absensi Manual / Susulan
-            </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Isi data presensi siswa secara langsung tanpa membuat magic link (untuk bulan-bulan kemarin).</p>
+            <h1 class="mt-1 text-xl font-semibold tracking-tight text-slate-900">Input Absensi Manual / Susulan</h1>
+            <p class="mt-1 text-sm text-slate-500">Isi presensi langsung tanpa magic link — untuk tanggal yang sudah lewat.</p>
         </div>
 
-        <a href="{{ route('classes.attendance.index', $class) }}" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50">
-            &larr; Kembali ke Daftar Absensi
-        </a>
+        <a href="{{ route('classes.attendance.index', $class) }}" class="btn-secondary btn-secondary--sm shrink-0">Kembali ke Daftar Absensi</a>
     </div>
 
-    <!-- Include Class Subnav -->
     @include('partials.class-nav', ['classroom' => $class])
 
-    <!-- Flash Messages -->
     @include('partials.flash')
 
-    <!-- Form Card -->
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-6">
-        <form method="POST" action="{{ route('classes.attendance.manual.store', $class) }}" class="space-y-6">
-            @csrf
+    <form method="POST" action="{{ route('classes.attendance.manual.store', $class) }}" class="space-y-4">
+        @csrf
 
-            <!-- Date & Title Header -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Pilih Tanggal Absensi *</label>
-                    <input type="date" name="session_date" required value="{{ date('Y-m-d') }}" class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
-                    <p class="text-[10px] text-slate-400 mt-1">Pilih tanggal lampau (misal: bulan Juli, Juni, dll).</p>
+        <section class="blok">
+            <div class="blok__kepala"><h2 class="blok__judul">Keterangan sesi</h2></div>
+            <div class="blok__isi grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div class="form-group">
+                    <label for="session_date" class="form-label form-label--required">Tanggal absensi</label>
+                    <input id="session_date" type="date" name="session_date" required value="{{ date('Y-m-d') }}" class="form-input">
+                    <p class="form-hint">Boleh tanggal lampau.</p>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Judul Sesi (opsional)</label>
-                    <input type="text" name="title" value="{{ old('title') }}" placeholder="cth: Absensi Susulan Juli" class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+
+                <div class="form-group">
+                    <label for="title" class="form-label">Judul sesi <span class="font-normal text-slate-400">(opsional)</span></label>
+                    <input id="title" type="text" name="title" value="{{ old('title') }}" placeholder="cth: Absensi Susulan Juli" class="form-input">
                 </div>
 
                 {{--
@@ -58,101 +63,86 @@
                 --}}
                 @if ($class->kelasAjar())
                     @php $mapelPilihan = $class->mapelDiampu(); @endphp
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Mata Pelajaran</label>
+                    <div class="form-group">
+                        <label for="mapel" class="form-label">Mata pelajaran</label>
                         @if (count($mapelPilihan) > 1)
-                            <select name="mapel" class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                            <select id="mapel" name="mapel" class="form-select">
                                 @foreach ($mapelPilihan as $m)
                                     <option value="{{ $m }}" @selected(old('mapel') === $m)>{{ $m }}</option>
                                 @endforeach
                             </select>
                         @else
-                            <input type="text" name="mapel" value="{{ old('mapel', $mapelPilihan[0] ?? '') }}"
-                                   placeholder="cth: Matematika"
-                                   class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
+                            <input id="mapel" type="text" name="mapel" value="{{ old('mapel', $mapelPilihan[0] ?? '') }}" placeholder="cth: Matematika" class="form-input">
                         @endif
-                        <p class="text-[10px] text-slate-400 mt-1">Atur daftar mapel di halaman Ubah Kelas.</p>
+                        <p class="form-hint">Atur daftar mapel di halaman Ubah Kelas.</p>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Materi Hari Ini (opsional)</label>
-                        <input type="text" name="materi" value="{{ old('materi') }}"
-                               placeholder="cth: Sistem bilangan biner"
-                               class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none">
-                        <p class="text-[10px] text-slate-400 mt-1">Dipakai untuk jurnal mengajar nanti.</p>
+                    <div class="form-group">
+                        <label for="materi" class="form-label">Materi hari ini <span class="font-normal text-slate-400">(opsional)</span></label>
+                        <input id="materi" type="text" name="materi" value="{{ old('materi') }}" placeholder="cth: Sistem bilangan biner" class="form-input">
+                        <p class="form-hint">Dipakai untuk jurnal mengajar.</p>
                     </div>
                 @endif
             </div>
+        </section>
 
-            <!-- Student Roster Table -->
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Roster Siswa Kelas ({{ $students->count() }} Siswa)</h3>
-                    <span class="text-[11px] text-slate-400">Default: Hadir 🟢</span>
-                </div>
+        <section class="blok">
+            <div class="blok__kepala">
+                <h2 class="blok__judul">Roster siswa</h2>
+                <span class="eyebrow">Bawaan: hadir</span>
+            </div>
 
-                <div class="overflow-x-auto rounded-xl border border-slate-200">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-200">
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="w-10 text-right">No</th>
+                            <th scope="col">Nama Siswa</th>
+                            <th scope="col" class="text-center">Status</th>
+                            <th scope="col">Catatan / Alasan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($students as $idx => $st)
                             <tr>
-                                <th scope="col" class="py-3 px-3 w-12 text-center">No</th>
-                                <th scope="col" class="py-3 px-3">Nama Siswa</th>
-                                <th scope="col" class="py-3 px-3 text-center">Status Kehadiran</th>
-                                <th scope="col" class="py-3 px-3">Catatan / Alasan</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 bg-white">
-                            @foreach($students as $idx => $st)
-                                <tr class="hover:bg-slate-50/80 transition-colors">
-                                    <td class="py-3 px-3 text-center font-bold text-slate-400">{{ $idx + 1 }}</td>
-                                    <td class="py-3 px-3 font-bold text-slate-900">
-                                        {{ $st->name }}
-                                        <span class="block text-[10px] text-slate-400 font-normal">NIS: {{ $st->nis ?: '-' }}</span>
-                                    </td>
-                                    <td class="py-3 px-3 text-center">
-                                        <div class="inline-flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
-                                            <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer hover:bg-emerald-100 transition-colors">
-                                                <input type="radio" name="attendance[{{ $st->id }}]" value="hadir" checked class="text-emerald-600 focus:ring-emerald-500">
-                                                <span class="text-emerald-800">Hadir</span>
-                                            </label>
-                                            <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer hover:bg-amber-100 transition-colors">
-                                                <input type="radio" name="attendance[{{ $st->id }}]" value="terlambat" class="text-amber-600 focus:ring-amber-500">
-                                                <span class="text-amber-800">Terlambat</span>
-                                            </label>
-                                            <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">
-                                                <input type="radio" name="attendance[{{ $st->id }}]" value="sakit" class="text-blue-600 focus:ring-blue-500">
-                                                <span class="text-blue-800">Sakit</span>
-                                            </label>
-                                            <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer hover:bg-purple-100 transition-colors">
-                                                <input type="radio" name="attendance[{{ $st->id }}]" value="izin" class="text-purple-600 focus:ring-purple-500">
-                                                <span class="text-purple-800">Izin</span>
-                                            </label>
-                                            <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer hover:bg-rose-100 transition-colors">
-                                                <input type="radio" name="attendance[{{ $st->id }}]" value="alfa" class="text-rose-600 focus:ring-rose-500">
-                                                <span class="text-rose-800">Alfa</span>
-                                            </label>
+                                <td class="text-right font-mono text-xs text-slate-400">{{ $idx + 1 }}</td>
+                                <td>
+                                    {{ $st->name }}
+                                    <span class="block font-mono text-[10px] font-normal text-slate-400">{{ $st->nis ?: '—' }}</span>
+                                </td>
+                                <td>
+                                    {{-- Lima tombol berdempet, satu ketuk, tanpa warna
+                                         berbeda-beda. Kepala kolomnya satu; huruf H T S I A
+                                         inilah yang dipakai di seluruh rekap dan cetakan. --}}
+                                    <fieldset class="flex justify-center">
+                                        <legend class="sr-only">Status kehadiran {{ $st->name }}</legend>
+                                        <div class="inline-flex overflow-hidden rounded border border-slate-200">
+                                            @foreach ($pilihan as $nilai => $huruf)
+                                                <label class="cursor-pointer border-r border-slate-200 last:border-r-0" title="{{ Str::title($nilai) }}">
+                                                    <input type="radio" class="peer sr-only" name="attendance[{{ $st->id }}]" value="{{ $nilai }}" @checked($nilai === 'hadir')>
+                                                    <span class="block px-2.5 py-1 font-mono text-xs text-slate-500 transition-colors peer-hover:bg-slate-50
+                                                                 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500
+                                                                 peer-checked:bg-slate-900 peer-checked:text-white">{{ $huruf }}</span>
+                                                </label>
+                                            @endforeach
                                         </div>
-                                    </td>
-                                    <td class="py-3 px-3">
-                                        <input type="text" name="notes[{{ $st->id }}]" placeholder="cth: Surat dokter..." class="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-xs text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none">
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                                    </fieldset>
+                                </td>
+                                <td>
+                                    <label for="note-{{ $st->id }}" class="sr-only">Catatan untuk {{ $st->name }}</label>
+                                    <input id="note-{{ $st->id }}" type="text" name="notes[{{ $st->id }}]" placeholder="cth: surat dokter" class="form-input form-input--sm">
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
+        </section>
 
-            <!-- Submit Button -->
-            <div class="flex items-center justify-end gap-3 pt-2">
-                <a href="{{ route('classes.attendance.index', $class) }}" class="h-10 rounded-xl border border-slate-200 bg-slate-100 px-4 text-xs font-bold text-slate-700 flex items-center">
-                    Batal
-                </a>
-                <button type="submit" class="h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-6 text-xs font-bold transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2">
-                    ✓ Simpan Absensi Manual Tanggal Ini
-                </button>
-            </div>
-        </form>
-    </div>
+        <div class="flex items-center justify-end gap-2">
+            <a href="{{ route('classes.attendance.index', $class) }}" class="btn-secondary">Batal</a>
+            <button type="submit" class="btn-primary">Simpan Absensi Manual Tanggal Ini</button>
+        </div>
+    </form>
 </div>
 @endsection
