@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "id.my.walas",
+      "sha256_cert_fingerprints": [
+        "3E:C2:3E:2E:AD:04:98:62:B3:00:C1:AB:FC:FB:39:09:18:B4:CB:C6:70:DA:4C:6A:33:0C:E2:48:F0:52:B3:6A"
+      ]
+    }
+  }
+]
