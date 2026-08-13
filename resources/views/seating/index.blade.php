@@ -82,7 +82,7 @@
         </div>
 
         <!-- Teacher's Blackboard Representation Header -->
-        <div class="mx-auto w-3/4 rounded bg-slate-800 py-2 text-center eyebrow">
+        <div class="mx-auto w-3/4 rounded bg-slate-800 py-2 text-center eyebrow text-slate-300">
              papan tulis / meja guru
         </div>
 
