@@ -77,7 +77,7 @@
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-sm text-slate-900">{{ $e->description }}</h4>
-                                        <p class="text-xs text-slate-500 mt-0.5">
+                                        <p class="mt-1 text-sm text-slate-500">
                                             <span class="font-mono text-slate-400">{{ $e->transaction_date->format('d/m/Y') }}</span>
                                             @if($e->student)
                                                 &middot; Siswa: {{ $e->student->name }}
@@ -246,7 +246,7 @@
                     </div>
 
                     <button type="submit" :disabled="loading"
-                            class="h-10 w-full rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2">
+                            class="btn-primary w-full">
                         <template x-if="!loading">
                             <span class="flex items-center gap-1.5">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

@@ -5,35 +5,30 @@
     @include('partials.class-nav')
 
     <div class="max-w-3xl mx-auto">
-        <div class="glass-card">
+        <div class="card">
             <!-- Header -->
-            <div class="flex items-start justify-between mb-6">
-                <div class="flex items-center gap-4">
+            <div class="flex items-start justify-between gap-3 border-b border-slate-200 pb-4 mb-6">
+                <div class="flex items-center gap-3">
                     <a href="{{ route('classes.character-portfolio.student', [$class, $student]) }}"
-                       class="p-2 rounded hover:bg-slate-100 transition-colors">
-                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                       class="btn-icon" aria-label="Kembali">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                         </svg>
                     </a>
                     <div>
-                        <h2 class="text-xl font-semibold text-slate-900">Detail Catatan Karakter</h2>
-                        <p class="text-sm text-slate-500">{{ $record->student->name }} - {{ $record->dimension->name }}</p>
+                        <h1 class="text-xl font-semibold tracking-tight text-slate-900">Detail Catatan Karakter</h1>
+                        <p class="mt-1 text-sm text-slate-500">{{ $record->student->name }} &middot; {{ $record->dimension->name }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
                     @if(!$record->is_acknowledged)
                         <form method="POST" action="{{ route('classes.character-portfolio.record.acknowledge', [$class, $record]) }}">
                             @csrf
-                            <button type="submit" class="btn btn-secondary btn-secondary--sm">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" strokeBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                Konfirmasi
-                            </button>
+                            <button type="submit" class="btn-secondary btn-secondary--sm">Konfirmasi</button>
                         </form>
                     @else
-                        <span class="badge badge--success">
-                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="badge badge--emerald">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
                             Dikonfirmasi
@@ -46,9 +41,8 @@
             <div class="grid gap-6">
                 <div class="flex items-center gap-4 p-4 rounded"
                      style="background-color: {{ $record->dimension->color }}15; border-left: 4px solid {{ $record->dimension->color }};">
-                    <div class="w-12 h-12 rounded flex items-center justify-center"
-                         style="background-color: {{ $record->dimension->color }}30; color: {{ $record->dimension->color }};">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <div class="stat-icon" style="background-color: {{ $record->dimension->color }}30; color: {{ $record->dimension->color }};">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="{{ $record->dimension->icon }}"/>
                         </svg>
                     </div>
@@ -97,9 +91,11 @@
                 </div>
 
                 @if($record->is_acknowledged && $record->acknowledged_at)
-                <div class="p-4 bg-emerald-50 rounded">
-                    <h4 class="font-medium text-emerald-800 mb-1">Dikonfirmasi pada</h4>
-                    <p class="text-emerald-700">{{ $record->acknowledged_at->format('d M Y, H:i') }} oleh {{ $record->acknowledger->name ?? 'Wali Kelas' }}</p>
+                <div class="alert alert--success">
+                    <div>
+                        <p class="alert__title">Dikonfirmasi pada</p>
+                        <p class="alert__body">{{ $record->acknowledged_at->format('d M Y, H:i') }} oleh {{ $record->acknowledger->name ?? 'Wali Kelas' }}</p>
+                    </div>
                 </div>
                 @endif
             </div>
@@ -109,12 +105,7 @@
                 <form method="POST" action="{{ route('classes.character-portfolio.record.destroy', [$class, $record]) }}"
                       onsubmit="return confirm('Hapus catatan ini?')">
                     @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-danger-ghost">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                        Hapus
-                    </button>
+                    <button type="submit" class="btn-danger-ghost">Hapus</button>
                 </form>
             </div>
         </div>

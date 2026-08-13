@@ -10,19 +10,19 @@
 
 <div class="space-y-6 pb-12">
     <!-- Header Bar -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('classes.index') }}" class="hover:text-indigo-600 transition-colors">Kelas</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-indigo-600 transition-colors">{{ $classroom->name }}</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">Struktur Organisasi</span>
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-slate-600">{{ $classroom->name }}</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Struktur Organisasi</span>
             </nav>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 Struktur Organisasi Kelas {{ $classroom->name }}
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Penunjukan jabatan pengurus kelas, Ketua Kelas, Bendahara, dan Seksi Absensi penanggung jawab WhatsApp.</p>
+            <p class="mt-1 text-sm text-slate-500">Penunjukan jabatan pengurus kelas, Ketua Kelas, Bendahara, dan Seksi Absensi penanggung jawab WhatsApp.</p>
         </div>
     </div>
 
@@ -60,7 +60,7 @@
                                             <h4 class="font-semibold text-sm text-slate-900">{{ $st->roleLabel() }}</h4>
                                             @if($st->role === 'seksi_absensi')
                                                 <span class="inline-flex items-center gap-1 rounded-sm bg-indigo-50 px-2.5 py-0.5 text-[10px] font-semibold text-indigo-700 border border-indigo-200">
- Penerima Magic Link WA
+                Penerima Magic Link WA
                                                 </span>
                                             @endif
                                         </div>
@@ -134,7 +134,7 @@
                     </div>
 
                     <button type="submit" :disabled="loading"
-                            class="h-10 w-full rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2">
+                            class="btn-primary w-full">
                         <template x-if="!loading">
                             <span class="flex items-center gap-1.5">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

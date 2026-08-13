@@ -13,7 +13,7 @@
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
             <h1 class="text-xl font-semibold tracking-tight text-slate-900">Leger Nilai</h1>
-            <p class="text-xs text-slate-500 mt-0.5">
+            <p class="mt-1 text-sm text-slate-500">
                 {{ $classroom->name }}
                 @if ($classroom->academic_year) &middot; T.A. {{ $classroom->academic_year }} @endif
                 &middot; <span class="font-semibold text-indigo-600">{{ $labelJenis }} — Semester {{ $semester }}</span>
@@ -67,7 +67,7 @@
              digulir. --}}
         <div class="rounded-lg border border-slate-200 bg-white overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-xs">
+                <table class="table">
                     <thead>
                         <tr class="bg-slate-50 text-left">
                             <th class="sticky left-0 z-10 bg-slate-50 px-3 py-2.5 font-semibold text-slate-700 whitespace-nowrap">Nama Siswa</th>
@@ -77,13 +77,13 @@
                             <th class="px-3 py-2.5 font-semibold text-slate-700 text-center whitespace-nowrap bg-indigo-50">Rata-rata</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200">
+                    <tbody>
                         @foreach ($students as $s)
                             @php
                                 $baris = collect($rekap[$s->id] ?? [])->filter();
                                 $rata = $baris->isEmpty() ? null : round($baris->avg('nilai'), 1);
                             @endphp
-                            <tr class="hover:bg-slate-50">
+                            <tr>
                                 <td class="sticky left-0 z-10 bg-white px-3 py-2 font-semibold text-slate-800 whitespace-nowrap">
                                     {{ $s->name }}
                                     <span class="block text-[10px] font-normal text-slate-400">{{ $s->nis }}</span>

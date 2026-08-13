@@ -5,17 +5,17 @@
 @section('content')
 <div class="space-y-6 pb-12">
     <!-- Header Bar -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('dashboard') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">Master Jenis Pelanggaran</span>
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('dashboard') }}" class="hover:text-slate-600">Dashboard</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Master Jenis Pelanggaran</span>
             </nav>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 Jenis &amp; Bobot Pelanggaran
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Kelola daftar master jenis pelanggaran siswa dan akumulasi poin bobot kedisiplinan.</p>
+            <p class="mt-1 text-sm text-slate-500">Kelola daftar master jenis pelanggaran siswa dan akumulasi poin bobot kedisiplinan.</p>
         </div>
     </div>
 
@@ -189,7 +189,7 @@
                         </div>
 
                         <button type="submit" :disabled="loading"
-                                class="h-10 w-full rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2">
+                                class="btn-primary w-full">
                             <template x-if="!loading">
                                 <span class="flex items-center gap-1.5">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

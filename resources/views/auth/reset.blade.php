@@ -74,12 +74,7 @@
                 class="btn-primary w-full justify-center py-3.5"
                 :disabled="loading"
                 :class="loading ? 'opacity-70 cursor-not-allowed' : ''">
-            <span x-show="!loading" class="inline-flex items-center gap-2">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                Simpan kata sandi baru
-            </span>
+            <span x-show="!loading">Simpan kata sandi baru</span>
             <span x-show="loading" x-cloak class="inline-flex items-center gap-2">
                 <span class="spinner spinner--white"></span>
                 Menyimpan...

@@ -16,7 +16,7 @@
                 <span>Paket Akun VIP PRO</span>
             </div>
             <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
-                Upgrade ke <span class="bg-clip-text text-transparent">Wali Kelas PRO</span>
+                Upgrade ke <span>Wali Kelas PRO</span>
             </h1>
             <p class="text-xs sm:text-sm text-slate-300 max-w-2xl">
                 Nikmati akses otomatisasi grup WhatsApp, pengisian biodata mandiri 33 field, rekapitulasi presensi, dan cetak PDF laporan tanpa batas.
@@ -114,7 +114,7 @@
                     <p class="text-xs text-slate-500">Transfer {{ $rpHarga }} ke nomor DANA resmi di bawah</p>
                 </div>
                 <span class="px-3 py-1 rounded-lg bg-sky-50 text-sky-700 font-semibold text-xs border border-sky-200">
- ONLY DANA
+                ONLY DANA
                 </span>
             </div>
 
@@ -163,7 +163,7 @@
                 </div>
 
                 <button type="submit" class="btn-primary w-full">
- Unggah Bukti Transfer DANA ({{ $rpHarga }})
+                Unggah Bukti Transfer DANA ({{ $rpHarga }})
                 </button>
             </form>
         </div>

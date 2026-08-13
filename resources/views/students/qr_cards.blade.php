@@ -10,23 +10,21 @@
     <!-- Header Bar -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between no-print">
         <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('classes.index') }}" class="hover:text-indigo-600 transition-colors">Kelas</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <a href="{{ route('classes.students.index', $class) }}" class="hover:text-indigo-600 transition-colors">{{ $class->name }}</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">Cetak Kartu QR Siswa</span>
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.students.index', $class) }}" class="hover:text-slate-600">{{ $class->name }}</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Cetak Kartu QR Siswa</span>
             </nav>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 Kartu QR Code Presensi Siswa — {{ $class->name }}
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Cetak kartu ID ber-QR Code untuk presensi kilat di kelas. 8 kartu per lembar A4.</p>
+            <p class="mt-1 text-sm text-slate-500">Cetak kartu ID ber-QR Code untuk presensi kilat di kelas. 8 kartu per lembar A4.</p>
         </div>
 
         <div class="flex items-center gap-2">
-            <button onclick="window.print()" class="h-10 px-5 inline-flex items-center gap-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors">
- Cetak Kartu Sekarang
-            </button>
+            <button onclick="window.print()" class="btn-primary">Cetak Kartu Sekarang</button>
         </div>
     </div>
 

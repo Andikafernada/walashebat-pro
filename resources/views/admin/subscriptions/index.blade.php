@@ -5,10 +5,10 @@
 @section('content')
 <div class="space-y-6 pb-12">
     <div>
-        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+        <h1 class="text-xl font-semibold tracking-tight text-slate-900">
             Panel Admin: Persetujuan Pembayaran PRO
         </h1>
-        <p class="text-xs text-slate-500 mt-0.5">Konfirmasi foto bukti transfer dari guru untuk mengaktifkan paket PRO.</p>
+        <p class="mt-1 text-sm text-slate-500">Konfirmasi foto bukti transfer dari guru untuk mengaktifkan paket PRO.</p>
     </div>
 
     <!-- Flash Messages -->
@@ -28,8 +28,8 @@
 
         @if($pending->isNotEmpty())
             <div class="overflow-x-auto rounded border border-slate-200">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-200">
+                <table class="table">
+                    <thead>
                         <tr>
                             <th scope="col" class="px-3 py-2">Guru &amp; Sekolah</th>
                             <th scope="col" class="px-3 py-2">Paket</th>
@@ -38,9 +38,9 @@
                             <th scope="col" class="px-3 py-2 text-center">Aksi Konfirmasi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200 bg-white">
+                    <tbody>
                         @foreach($pending as $p)
-                            <tr class="hover:bg-slate-50 transition-colors">
+                            <tr>
                                 <td class="px-3 py-2">
                                     <span class="font-semibold text-slate-900 block">{{ $p->user->name ?? 'User #'.$p->user_id }}</span>
                                     <span class="text-[10px] text-slate-400 block">{{ $p->user->email }} &middot; WA: {{ $p->user->whatsapp_number ?: '-' }}</span>
@@ -67,7 +67,7 @@
                                 </td>
                                 <td class="px-3 py-2 text-center">
                                     <a href="{{ route('subscription.proof', $p) }}" target="_blank" class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:underline">
- Lihat Foto Bukti
+                Lihat Foto Bukti
                                     </a>
                                 </td>
                                 <td class="px-3 py-2 text-center">
@@ -86,8 +86,7 @@
                                                    class="h-8 w-14 rounded-lg border border-slate-300 text-center text-xs font-semibold text-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                                                    title="Berapa bulan yang diberikan">
                                             <span class="text-[10px] font-semibold text-slate-500">bln</span>
-                                            <button type="submit" onclick="return confirm('Setujui pembayaran & aktifkan akun PRO?')" class="h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 font-semibold text-xs transition-colors">
-                                                ✓ Setujui PRO
+                                            <button type="submit" onclick="return confirm('Setujui pembayaran & aktifkan akun PRO?')" class="btn-success btn-success--sm">Setujui PRO
                                             </button>
                                         </form>
 
@@ -116,8 +115,8 @@
         <h3 class="text-sm font-semibold text-slate-900 border-b border-slate-200 pb-3">Riwayat Transaksi</h3>
         @if($history->isNotEmpty())
             <div class="overflow-x-auto rounded border border-slate-200">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-200">
+                <table class="table">
+                    <thead>
                         <tr>
                             <th scope="col" class="px-3 py-2">Tanggal</th>
                             <th scope="col" class="px-3 py-2">Guru</th>
@@ -126,9 +125,9 @@
                             <th scope="col" class="px-3 py-2">Diproses Oleh</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200 bg-white">
+                    <tbody>
                         @foreach($history as $h)
-                            <tr class="hover:bg-slate-50">
+                            <tr>
                                 <td class="px-3 py-2 text-slate-500">{{ $h->created_at->format('d M Y H:i') }}</td>
                                 <td class="px-3 py-2 font-semibold text-slate-900">{{ $h->user->name ?? '-' }}</td>
                                 <td class="px-3 py-2 text-slate-700 font-semibold">

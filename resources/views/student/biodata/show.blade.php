@@ -4,26 +4,26 @@
 @section('content')
 <div class="p-6 lg:p-8 space-y-6">
     <!-- Header -->
-    <div class="glass-card">
+    <div class="card">
         <h1 class="text-2xl font-semibold text-slate-900">Biodata Diri</h1>
         <p class="text-slate-500 mt-1">Data profil dan kontak orang tua</p>
     </div>
 
     <!-- Profile Card -->
-    <div class="glass-card">
+    <div class="card">
         <div class="flex items-center gap-4 mb-6">
-            <div class="avatar avatar--2xl avatar--primary">
-                <span class="avatar-initials">{{ substr($student->name, 0, 2) }}</span>
+            <div class="avatar-hero">
+                <span class="avatar-hero-initials">{{ substr($student->name, 0, 2) }}</span>
             </div>
             <div>
                 <h2 class="text-xl font-semibold">{{ $student->name }}</h2>
-                <p class="text-slate-500">NIS: {{ $student->nis }} • {{ $student->classroom->name }}</p>
+                <p class="text-slate-500">NIS: {{ $student->nis }} &bull; {{ $student->classroom->name }}</p>
             </div>
             <div class="ml-auto flex gap-2">
-                <a href="{{ route('student.biodata.password') }}" class="btn btn-secondary">
+                <a href="{{ route('student.biodata.password') }}" class="btn-secondary btn-secondary--sm">
                     Ubah Password
                 </a>
-                <a href="{{ route('student.biodata.edit') }}" class="btn btn-secondary">
+                <a href="{{ route('student.biodata.edit') }}" class="btn-secondary btn-secondary--sm">
                     Edit
                 </a>
             </div>

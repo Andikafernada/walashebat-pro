@@ -9,12 +9,12 @@
 
 <div class="space-y-6 pb-12" x-data="waSession({ connected: {{ auth()->user()->whatsappConnected() ? 'true' : 'false' }}, statusUrl: '{{ route('whatsapp.status') }}' })">
     <!-- Header -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 Integrasi WhatsApp &amp; Balasan Otomatis
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Tautkan nomor WhatsApp Anda, atur kata kunci patokan izin/sakit, dan tentukan grup mana yang dibalas otomatis.</p>
+            <p class="mt-1 text-sm text-slate-500">Tautkan nomor WhatsApp Anda, atur kata kunci patokan izin/sakit, dan tentukan grup mana yang dibalas otomatis.</p>
         </div>
     </div>
 
@@ -25,9 +25,6 @@
     <div class="card space-y-4">
         <div class="flex items-center justify-between border-b border-slate-200 pb-4">
             <div class="flex items-center gap-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 font-semibold text-2xl">
-
-                </div>
                 <div>
                     <h3 class="text-base font-semibold text-slate-900">Status Koneksi WhatsApp</h3>
                     <p class="text-xs text-slate-500">Nomor Guru: <strong class="text-slate-800">{{ auth()->user()->whatsapp_number ?: 'Belum diisi' }}</strong></p>
@@ -61,7 +58,7 @@
                         @csrf
                         <input type="hidden" name="metode" value="kode">
                         <button type="submit"
-                                class="h-auto py-3 px-4 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition-colors text-left">
+                                class="btn-success h-auto whitespace-normal py-3 text-left">
                             <span class="block text-sm">Saya memakai HP ini</span>
                             <span class="block font-medium text-emerald-50/90 mt-0.5 leading-snug">
                                 Dapatkan kode 8 karakter untuk diketik di WhatsApp. Tanpa memindai apa pun.
@@ -174,7 +171,7 @@
                     <h3 class="text-base font-semibold text-slate-900 flex items-center gap-2">
                         <span>Pilih &amp; Kelola Grup WhatsApp yang Dibalas Otomatis</span>
                     </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Centang grup WhatsApp orang tua yang ingin diaktifkan. Anda bisa menambah, mengurangi, atau mengedit kapan saja.</p>
+                    <p class="mt-1 text-sm text-slate-500">Centang grup WhatsApp orang tua yang ingin diaktifkan. Anda bisa menambah, mengurangi, atau mengedit kapan saja.</p>
                 </div>
 
                 <div class="shrink-0 flex items-center gap-2">
@@ -189,13 +186,13 @@
                     <template x-if="mode === 'ringkas'">
                         <button type="button" @click="bukaPemilih()"
                                 class="text-xs text-indigo-600 hover:underline font-semibold">
- Ubah pilihan grup
+                Ubah pilihan grup
                         </button>
                     </template>
                     <template x-if="mode === 'pilih'">
                         <button type="button" @click="muat(true)" :disabled="memuat"
                                 class="text-xs text-indigo-600 hover:underline font-semibold disabled:opacity-50">
- Refresh Grup
+                Refresh Grup
                         </button>
                     </template>
                 </div>
@@ -397,7 +394,7 @@
                     <p class="font-semibold">Daftar grup gagal dimuat.</p>
                     <p x-text="galat"></p>
                     <button type="button" @click="muat(true)"
-                            class="h-8 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold px-3 transition-colors">
+                            class="btn-danger btn-danger--sm">
                         Coba muat ulang
                     </button>
                 </div>
@@ -459,8 +456,8 @@
                     <span class="text-xs text-slate-500">
                         Total terpilih: <strong class="text-indigo-600" x-text="terpilih.length"></strong> grup.
                     </span>
-                    <button type="submit" class="h-10 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-6 transition-colors">
- Simpan Perubahan Grup WA
+                    <button type="submit" class="btn-primary w-full">
+                Simpan Perubahan Grup WA
                     </button>
                 </div>
             </form>
@@ -471,7 +468,7 @@
     <div class="card space-y-6">
         <div class="border-b border-slate-200 pb-3">
             <h3 class="text-base font-semibold text-slate-900">Klasifikasi Kata Kunci &amp; Templat Balasan Guru</h3>
-            <p class="text-xs text-slate-500 mt-0.5">Tentukan sendiri kata kunci yang dijadikan patokan balasan otomatis. Pesan di luar kata kunci ini <strong>TIDAK AKAN DIBALAS</strong>.</p>
+            <p class="mt-1 text-sm text-slate-500">Tentukan sendiri kata kunci yang dijadikan patokan balasan otomatis. Pesan di luar kata kunci ini <strong>TIDAK AKAN DIBALAS</strong>.</p>
         </div>
 
         <form method="POST" action="{{ route('whatsapp.template.save') }}" class="space-y-6 text-xs">
@@ -565,9 +562,7 @@
             </div>
 
             <div class="flex items-center justify-end border-t border-slate-200 pt-4">
-                <button type="submit" class="h-10 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 text-xs transition-colors">
-                    ✓ Simpan Kata Kunci &amp; Templat WhatsApp
-                </button>
+                <button type="submit" class="btn-primary">Simpan Kata Kunci &amp; Templat WhatsApp</button>
             </div>
         </form>
     </div>

@@ -19,8 +19,8 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Daftar Guru </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Siapa saja yang mendaftar, di sekolah mana, dan sedang di segmen apa.</p>
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Daftar Guru </h1>
+            <p class="mt-1 text-sm text-slate-500">Siapa saja yang mendaftar, di sekolah mana, dan sedang di segmen apa.</p>
         </div>
         <a href="{{ route('admin.dashboard') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">‹ Panel Operator</a>
     </div>
@@ -75,8 +75,8 @@
         </div>
     @else
         <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+            <table class="table">
+                <thead>
                     <tr>
                         <th class="px-4 py-3 font-semibold">Guru</th>
                         <th class="px-4 py-3 font-semibold">Sekolah</th>
@@ -86,7 +86,7 @@
                         <th class="px-4 py-3 font-semibold text-center">WhatsApp</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
+                <tbody>
                     @foreach ($guru as $g)
                         @php
                             $aktif = $g->subscription_ends_at && $g->subscription_ends_at->isFuture();

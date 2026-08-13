@@ -9,7 +9,7 @@
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
             <h1 class="text-xl font-semibold tracking-tight text-slate-900">Nilai Harian</h1>
-            <p class="text-xs text-slate-500 mt-0.5">
+            <p class="mt-1 text-sm text-slate-500">
                 {{ $classroom->name }} &middot; {{ $periode['label'] }}
                 @if ($mapelDipilih) &middot; <span class="font-semibold text-indigo-600">{{ $mapelDipilih }}</span> @endif
             </p>
@@ -20,7 +20,7 @@
                  yang satu tidak menggantikan yang lain. --}}
             <a href="{{ route('classes.nilai.rekap', $classroom) }}"
                class="inline-flex h-9 items-center rounded border border-indigo-200 bg-indigo-50 px-4 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
- Leger Nilai (PTS/PAS)
+                Leger Nilai (PTS/PAS)
             </a>
             <a href="{{ route('classes.nilai.create', $classroom) }}"
                class="inline-flex h-9 items-center rounded bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700">
@@ -72,8 +72,8 @@
         </div>
     @else
         <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+            <table class="table">
+                <thead>
                     <tr>
                         <th class="px-3 py-2.5 font-semibold">Tanggal</th>
                         @if (count($mapelDiampu) > 1)
@@ -86,10 +86,10 @@
                         <th class="px-3 py-2.5"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
+                <tbody>
                     @foreach ($penilaian as $p)
                         @php $rata = $p->rataRata(); $belum = $p->belumDinilai(); @endphp
-                        <tr class="hover:bg-slate-50">
+                        <tr>
                             <td class="px-3 py-2.5 whitespace-nowrap font-semibold text-slate-800">
                                 {{ $p->assessment_date->translatedFormat('d M Y') }}
                             </td>

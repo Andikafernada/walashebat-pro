@@ -9,14 +9,14 @@
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
             <h1 class="text-xl font-semibold tracking-tight text-slate-900">Analisis Kehadiran</h1>
-            <p class="text-xs text-slate-500 mt-0.5">
+            <p class="mt-1 text-sm text-slate-500">
                 {{ $classroom->name }} &middot; {{ $periode['label'] }} &middot; {{ $jumlahPertemuan }} pertemuan
                 @if ($mapelDipilih) &middot; <span class="font-semibold text-indigo-600">{{ $mapelDipilih }}</span> @endif
             </p>
         </div>
         <button type="button" onclick="window.print()"
                 class="h-9 rounded border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 print:hidden">
- Cetak
+                Cetak
         </button>
     </div>
 
@@ -59,8 +59,8 @@
         </div>
 
         <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+            <table class="table">
+                <thead>
                     <tr>
                         <th class="px-3 py-2.5 font-semibold">Siswa</th>
                         <th class="px-3 py-2.5 font-semibold text-center">Hadir</th>
@@ -71,7 +71,7 @@
                         <th class="px-3 py-2.5 font-semibold text-right">Kehadiran</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
+                <tbody>
                     @foreach ($rekap as $r)
                         @php
                             $belumAda = $r['total'] === 0;

@@ -348,7 +348,7 @@
                     <span class="data text-[11px] text-[color:var(--abu)]">Kelas 5A &middot; 11 Agu</span>
                 </div>
 
-                <table class="w-full data text-[13px]">
+                <table class="table">
                     <caption class="sr-only">Contoh daftar hadir kelas yang terisi lewat tautan presensi</caption>
                     <thead>
                         <tr class="text-[color:var(--abu)] border-b border-[color:var(--garis)]">

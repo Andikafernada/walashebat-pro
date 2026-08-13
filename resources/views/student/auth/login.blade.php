@@ -60,40 +60,42 @@
             <div class="w-full max-w-md">
                 <!-- Mobile logo -->
                 <div class="lg:hidden text-center mb-8">
-                    <div class="inline-flex items-center gap-2 text-white mb-4">
-                        <div class="w-10 h-10 rounded bg-white/10 flex items-center justify-center">
+                    <div class="inline-flex items-center gap-2 text-slate-900 mb-4">
+                        <div class="w-10 h-10 rounded border border-slate-200 bg-white flex items-center justify-center text-slate-500">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13.668m7.088-7.218c2.103-2.048 5.802-3.206 9.912-3.206H21v21m-7.088-7.218c-2.103 2.048-5.802 3.206-9.912 3.206H3m18-17.574V21M12 6.253V3"/>
                             </svg>
                         </div>
                         <span class="text-lg font-semibold">WaliKelas Pro</span>
                     </div>
-                    <h1 class="text-2xl font-semibold text-white">Portal Siswa</h1>
+                    <h1 class="text-2xl font-semibold text-slate-900">Portal Siswa</h1>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-2xl p-8">
-                    <h2 class="text-2xl font-semibold text-gray-900 mb-2">Login Siswa</h2>
-                    <p class="text-gray-500 mb-6">Masuk dengan NIS dan password Anda</p>
+                <div class="card p-8">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-2">Login Siswa</h2>
+                    <p class="text-slate-500 mb-6">Masuk dengan NIS dan password Anda</p>
 
                     @if (session('error'))
-                        <div class="mb-4 p-4 rounded-lg bg-amber-50 text-amber-900 text-sm" role="alert">
-                            {{ session('error') }}
+                        <div class="alert alert--warning mb-4">
+                            <p class="alert__body">{{ session('error') }}</p>
                         </div>
                     @endif
 
                     @if (session('status'))
-                        <div class="mb-4 p-4 rounded-lg bg-green-50 text-green-700 text-sm">
-                            {{ session('status') }}
+                        <div class="alert alert--success mb-4">
+                            <p class="alert__body">{{ session('status') }}</p>
                         </div>
                     @endif
 
                     @if ($errors->any())
-                        <div class="mb-4 p-4 rounded-lg bg-red-50 text-red-700 text-sm">
-                            <ul class="list-disc list-inside">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
+                        <div class="alert alert--danger mb-4">
+                            <div class="alert__body">
+                                <ul class="list-disc list-inside">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         </div>
                     @endif
 
@@ -101,18 +103,18 @@
                         @csrf
 
                         <div>
-                            <label for="nis" class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
+                            <label for="nis" class="form-label">NIS</label>
                             <input type="text" id="nis" name="nis" value="{{ old('nis') }}" required autofocus
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                   class="form-input">
                         </div>
 
                         <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <label for="password" class="form-label">Password</label>
                             <input type="password" id="password" name="password" required
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                   class="form-input">
                         </div>
 
-                        <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                        <button type="submit" class="btn-primary w-full justify-center">
                             Masuk
                         </button>
                     </form>
@@ -124,7 +126,7 @@
                     </div>
                 </div>
 
-                <p class="mt-6 text-center text-sm text-white/60 lg:text-gray-500">
+                <p class="mt-6 text-center text-sm text-slate-500">
                     <a href="{{ route('login') }}" class="underline">Login sebagai Wali Kelas</a>
                 </p>
             </div>

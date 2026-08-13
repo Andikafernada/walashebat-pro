@@ -5,31 +5,27 @@
 @section('content')
 <div class="space-y-6 pb-12">
     <!-- Header Bar -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('classes.index') }}" class="hover:text-indigo-600 transition-colors">Kelas</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <a href="{{ route('classes.show', $class) }}" class="hover:text-indigo-600 transition-colors">{{ $class->name }}</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">Catatan Pelanggaran</span>
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.show', $class) }}" class="hover:text-slate-600">{{ $class->name }}</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Catatan Pelanggaran</span>
             </nav>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 Catatan Pelanggaran Siswa {{ $class->name }}
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Pencatatan pelanggaran kedisiplinan siswa dan pemantauan akumulasi poin bobot.</p>
+            <p class="mt-1 text-sm text-slate-500">Pencatatan pelanggaran kedisiplinan siswa dan pemantauan akumulasi poin bobot.</p>
         </div>
 
         <div class="flex items-center gap-2">
             <a href="{{ route('classes.exports.violations.excel', $class) }}"
-               class="btn-secondary btn-secondary--sm">
-                <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                Excel
+               class="btn-secondary btn-secondary--sm">Excel
             </a>
             <a href="{{ route('classes.exports.violations.pdf', $class) }}" target="_blank"
-               class="inline-flex items-center gap-1.5 rounded border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
-                <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                Cetak PDF
+               class="btn-secondary btn-secondary--sm">Cetak PDF
             </a>
         </div>
     </div>
@@ -67,7 +63,7 @@
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-sm text-slate-900">{{ $v->student->name ?? 'Siswa' }}</h4>
-                                        <p class="text-xs text-slate-500 mt-0.5">
+                                        <p class="mt-1 text-sm text-slate-500">
                                             {{ $v->type->name ?? $v->note ?: 'Pelanggaran' }} &middot; <span class="font-mono text-slate-400">{{ $v->occurred_on->format('d/m/Y') }}</span>
                                         </p>
                                     </div>
@@ -166,7 +162,7 @@
                     </div>
 
                     <button type="submit" :disabled="loading"
-                            class="h-10 w-full rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2">
+                            class="btn-primary w-full">
                         <template x-if="!loading">
                             <span class="flex items-center gap-1.5">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

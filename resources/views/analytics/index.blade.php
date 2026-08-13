@@ -28,7 +28,8 @@
         transition: all 0.15s ease;
     }
     .heatmap-cell.today {
-        box-shadow: 0 0 0 2px #fff, 0 0 0 4px #6366f1;
+        outline: 2px solid #6366f1;
+        outline-offset: 2px;
     }
     .heatmap-cell.future {
         background-color: #f8fafc;
@@ -38,17 +39,24 @@
 @endpush
 
 @section('content')
-<div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div class="space-y-6 pb-12">
+    <!-- Header Bar -->
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <h2 class="text-2xl font-semibold text-slate-900">Analitik & Statistik</h2>
-            <p class="text-slate-500 mt-1">Visualisasi data kehadiran, pelanggaran, dan karakter siswa</p>
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('dashboard') }}" class="hover:text-slate-600">Dashboard</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Analitik &amp; Statistik</span>
+            </nav>
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
+                Analitik &amp; Statistik
+            </h1>
+            <p class="mt-1 text-sm text-slate-500">Visualisasi data kehadiran, pelanggaran, dan karakter siswa.</p>
         </div>
         <div>
             <form method="GET" class="flex items-center gap-2">
-                <label for="class_id" class="text-sm font-medium text-slate-600">Kelas:</label>
-                <select name="class_id" id="class_id" onchange="this.form.submit()" class="text-sm border-slate-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                <label for="class_id" class="form-label">Kelas</label>
+                <select name="class_id" id="class_id" onchange="this.form.submit()" class="form-input form-input--sm">
                     @foreach($classrooms as $class)
                         <option value="{{ $class->id }}" {{ $selectedClassId == $class->id ? 'selected' : '' }}>
                             {{ $class->name }}
@@ -62,27 +70,27 @@
     @if($selectedClass)
     <!-- Summary Stats -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div class="bg-white rounded p-4 border border-slate-200">
+        <div class="card">
             <p class="text-xs text-slate-500 mb-1">Total Siswa</p>
             <p class="text-2xl font-semibold text-slate-900">{{ $summaryStats['student_count'] }}</p>
         </div>
-        <div class="bg-white rounded p-4 border border-slate-200">
+        <div class="card">
             <p class="text-xs text-slate-500 mb-1">Kehadiran</p>
             <p class="text-2xl font-semibold text-emerald-600">{{ $summaryStats['attendance_rate'] }}%</p>
         </div>
-        <div class="bg-white rounded p-4 border border-slate-200">
+        <div class="card">
             <p class="text-xs text-slate-500 mb-1">Total Absensi</p>
             <p class="text-2xl font-semibold text-slate-900">{{ $summaryStats['total_attendance'] }}</p>
         </div>
-        <div class="bg-white rounded p-4 border border-slate-200">
+        <div class="card">
             <p class="text-xs text-slate-500 mb-1">Pelanggaran</p>
             <p class="text-2xl font-semibold text-rose-600">{{ $summaryStats['violations_count'] }}</p>
         </div>
-        <div class="bg-white rounded p-4 border border-slate-200">
+        <div class="card">
             <p class="text-xs text-slate-500 mb-1">Rata-rata Poin</p>
             <p class="text-2xl font-semibold text-indigo-600">{{ $summaryStats['avg_discipline_points'] }}</p>
         </div>
-        <div class="bg-white rounded p-4 border border-slate-200">
+        <div class="card">
             <p class="text-xs text-slate-500 mb-1">Poin Rendah</p>
             <p class="text-2xl font-semibold text-amber-600">{{ $summaryStats['low_points_students'] }}</p>
         </div>
@@ -91,9 +99,9 @@
     <!-- Charts Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Monthly Attendance Chart -->
-        <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-                <h3 class="font-semibold text-slate-900">Kehadiran Bulanan (12 Bulan)</h3>
+        <div class="blok">
+            <div class="blok__kepala">
+                <h3 class="blok__judul">Kehadiran Bulanan (12 Bulan)</h3>
                 <div class="flex items-center gap-4 text-xs">
                     <span class="flex items-center gap-1">
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Hadir
@@ -106,7 +114,7 @@
                     </span>
                 </div>
             </div>
-            <div class="p-6">
+            <div class="blok__isi">
                 <div class="chart-container">
                     <canvas id="attendanceChart"></canvas>
                 </div>
@@ -114,23 +122,23 @@
         </div>
 
         <!-- Violations by Category -->
-        <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200">
-                <h3 class="font-semibold text-slate-900">Pelanggaran per Kategori (Bulan Ini)</h3>
+        <div class="blok">
+            <div class="blok__kepala">
+                <h3 class="blok__judul">Pelanggaran per Kategori (Bulan Ini)</h3>
             </div>
-            <div class="p-6">
+            <div class="blok__isi">
                 @if(count($violationsByCategory) > 0)
                     <div class="chart-container">
                         <canvas id="violationsChart"></canvas>
                     </div>
                 @else
-                    <div class="h-64 flex items-center justify-center text-slate-400">
-                        <div class="text-center">
-                            <svg class="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <div class="empty-state empty-state--compact">
+                        <div class="empty-state__icon">
+                            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <p>Tidak ada pelanggaran bulan ini</p>
                         </div>
+                        <p class="empty-state__title">Tidak ada pelanggaran bulan ini</p>
                     </div>
                 @endif
             </div>
@@ -140,11 +148,11 @@
     <!-- Heatmap & Attendance Rate Trend -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Heatmap Kehadiran -->
-        <div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200">
-                <h3 class="font-semibold text-slate-900">Heatmap Kehadiran (4 Minggu Terakhir)</h3>
+        <div class="lg:col-span-2 blok">
+            <div class="blok__kepala">
+                <h3 class="blok__judul">Heatmap Kehadiran (4 Minggu Terakhir)</h3>
             </div>
-            <div class="p-6">
+            <div class="blok__isi">
                 <div class="space-y-2">
                     <!-- Day names header -->
                     <div class="grid grid-cols-8 gap-2 mb-2">
@@ -192,61 +200,47 @@
         </div>
 
         <!-- Quick Stats -->
-        <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200">
-                <h3 class="font-semibold text-slate-900">Butuh Perhatian</h3>
+        <div class="blok">
+            <div class="blok__kepala">
+                <h3 class="blok__judul">Butuh Perhatian</h3>
             </div>
-            <div class="p-6 space-y-4">
+            <div class="blok__isi space-y-3">
                 @if($summaryStats['repeat_alpha_students'] > 0)
-                    <div class="flex items-center gap-3 p-3 bg-rose-50 rounded">
-                        <div class="w-10 h-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                            </svg>
-                        </div>
+                    <div class="alert alert--danger">
                         <div>
-                            <p class="font-medium text-rose-900">{{ $summaryStats['repeat_alpha_students'] }} siswa</p>
-                            <p class="text-xs text-rose-600">Alfa ≥3× sebulan</p>
+                            <p class="alert__title">{{ $summaryStats['repeat_alpha_students'] }} siswa</p>
+                            <p class="alert__body">Alfa &ge;3&times; sebulan</p>
                         </div>
                     </div>
                 @endif
                 @if($summaryStats['low_points_students'] > 0)
-                    <div class="flex items-center gap-3 p-3 bg-amber-50 rounded">
-                        <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                            </svg>
-                        </div>
+                    <div class="alert alert--warning">
                         <div>
-                            <p class="font-medium text-amber-900">{{ $summaryStats['low_points_students'] }} siswa</p>
-                            <p class="text-xs text-amber-600">Poin karakter < 75</p>
+                            <p class="alert__title">{{ $summaryStats['low_points_students'] }} siswa</p>
+                            <p class="alert__body">Poin karakter &lt; 75</p>
                         </div>
                     </div>
                 @endif
                 @if($summaryStats['repeat_alpha_students'] == 0 && $summaryStats['low_points_students'] == 0)
-                    <div class="text-center py-8 text-slate-400">
-                        <svg class="w-12 h-12 mx-auto mb-3 text-emerald-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <p>Semua berjalan dengan baik!</p>
+                    <div class="empty-state empty-state--compact">
+                        <p class="empty-state__title">Semua berjalan dengan baik!</p>
                     </div>
                 @endif
             </div>
         </div>
     </div>
     @else
-    <div class="bg-white rounded-lg border border-slate-200 p-12 text-center">
-        <svg class="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-        </svg>
-        <h3 class="text-lg font-semibold text-slate-700 mb-2">Belum Ada Kelas</h3>
-        <p class="text-slate-500 mb-4">Silakan buat kelas terlebih dahulu untuk melihat analitik.</p>
-        <a href="{{ route('classes.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+    <div class="empty-state">
+        <div class="empty-state__icon">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
             </svg>
-            Buat Kelas Baru
-        </a>
+        </div>
+        <p class="empty-state__title">Belum Ada Kelas</p>
+        <p class="empty-state__description">Silakan buat kelas terlebih dahulu untuk melihat analitik.</p>
+        <div class="empty-state__action">
+            <a href="{{ route('classes.create') }}" class="btn-primary btn-primary--sm">Buat Kelas Baru</a>
+        </div>
     </div>
     @endif
 </div>

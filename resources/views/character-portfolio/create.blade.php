@@ -5,17 +5,17 @@
     @include('partials.class-nav')
 
     <div class="max-w-2xl mx-auto">
-        <div class="glass-card">
-            <div class="flex items-center gap-4 mb-6">
+        <div class="card">
+            <div class="flex items-center gap-3 border-b border-slate-200 pb-4 mb-6">
                 <a href="{{ route('classes.character-portfolio.student', [$class, $student]) }}"
-                   class="p-2 rounded hover:bg-slate-100 transition-colors">
-                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                   class="btn-icon" aria-label="Kembali">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                 </a>
                 <div>
-                    <h2 class="text-xl font-semibold text-slate-900">Tambah Catatan Karakter</h2>
-                    <p class="text-sm text-slate-500">{{ $student->name }}</p>
+                    <h1 class="text-xl font-semibold tracking-tight text-slate-900">Tambah Catatan Karakter</h1>
+                    <p class="mt-1 text-sm text-slate-500">{{ $student->name }}</p>
                 </div>
             </div>
 
@@ -92,10 +92,10 @@
 
                 <div class="flex items-center gap-3 pt-4">
                     <a href="{{ route('classes.character-portfolio.student', [$class, $student]) }}"
-                       class="btn btn-secondary flex-1 justify-center">
+                       class="btn-secondary flex-1 justify-center">
                         Batal
                     </a>
-                    <button type="submit" class="btn btn-primary flex-1 justify-center">
+                    <button type="submit" class="btn-primary flex-1 justify-center">
                         Simpan Catatan
                     </button>
                 </div>

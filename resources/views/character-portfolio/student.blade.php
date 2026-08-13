@@ -6,30 +6,28 @@
 <div class="space-y-6 pb-12" x-data="{ showRecordModal: false, showFeedbackModal: false, activeReflectionId: null }">
 
     <!-- Header Bar -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('classes.index') }}" class="hover:text-indigo-600 transition-colors">Kelas</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <a href="{{ route('classes.character-portfolio.index', $class) }}" class="hover:text-indigo-600 transition-colors">Portofolio Karakter</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">{{ $student->name }}</span>
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.character-portfolio.index', $class) }}" class="hover:text-slate-600">Portofolio Karakter</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">{{ $student->name }}</span>
             </nav>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 Portofolio Karakter: {{ $student->name }}
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">NIS: {{ $student->nis ?? '-' }} &middot; Kelas {{ $class->name }}</p>
+            <p class="mt-1 text-sm text-slate-500">NIS: {{ $student->nis ?? '-' }} &middot; Kelas {{ $class->name }}</p>
         </div>
 
         <div class="flex items-center gap-2">
             <button type="button" @click="showRecordModal = true"
-                    class="btn-primary btn-primary--sm">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                + Catat Observasi Guru
+                    class="btn-primary btn-primary--sm">+ Catat Observasi Guru
             </button>
             <a href="{{ route('public.reflection.show', $class->tokenPublik()) }}" target="_blank"
-               class="inline-flex items-center gap-1.5 rounded border border-purple-200 bg-purple-50 px-3.5 py-2 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors">
- Link Refleksi Siswa
+               class="btn-primary btn-primary--sm">
+                Link Refleksi Siswa
             </a>
         </div>
     </div>
@@ -42,8 +40,7 @@
 
     <!-- Student Top Hero Card -->
     <div class="rounded-lg border border-slate-800 bg-slate-900 p-5 text-white">
-        <div class="absolute right-0 top-0 -mr-10 -mt-10 h-48 w-48 rounded-full bg-purple-500/10"></div>
-        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div class="flex h-14 w-14 items-center justify-center rounded border border-white/20 font-mono text-xl font-medium text-white">
                     {{ substr($student->name, 0, 1) }}
@@ -93,9 +90,7 @@
                     <h3 class="text-sm font-semibold text-slate-900">Catatan Observasi Wali Kelas</h3>
                     <p class="text-xs text-slate-500">Rekam catatan positif, evaluasi, &amp; prestasi</p>
                 </div>
-                <button type="button" @click="showRecordModal = true" class="h-8 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 text-xs font-semibold transition-colors">
-                    + Tambah
-                </button>
+                <button type="button" @click="showRecordModal = true" class="btn-secondary btn-secondary--sm">+ Tambah</button>
             </div>
 
             @if($records->isNotEmpty())
@@ -103,7 +98,7 @@
                     @foreach($records as $rec)
                         <div class="rounded border border-slate-200 bg-slate-50/70 p-3 text-xs space-y-1.5 hover:bg-slate-50 transition-colors">
                             <div class="flex items-center justify-between">
-                                <span class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold {{ $rec->type === 'positive' ? 'bg-emerald-100 text-emerald-800' : ($rec->type === 'achievement' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800') }}">
+                                <span class="badge {{ $rec->type === 'positive' ? 'badge--emerald' : ($rec->type === 'achievement' ? 'badge--amber' : 'badge--rose') }}">
                                     {{ ucfirst($rec->type) }}
                                 </span>
                                 <span class="font-semibold {{ $rec->score >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
@@ -139,7 +134,7 @@
                     <h3 class="text-sm font-semibold text-slate-900">Jurnal Refleksi Mandiri (Siswa)</h3>
                     <p class="text-xs text-slate-500">Diisi sendiri oleh {{ $student->name }} dari HP</p>
                 </div>
-                <span class="rounded-sm bg-purple-100 px-2.5 py-0.5 text-[10px] font-semibold text-purple-800">
+                <span class="badge badge--sky">
                     Mandiri Siswa
                 </span>
             </div>
@@ -157,7 +152,7 @@
                             </div>
 
                             <div class="space-y-1 text-slate-700 bg-white p-2.5 rounded-lg border border-purple-100">
-                                <p><strong class="text-emerald-700">✓ Hal Baik:</strong> {{ $ref->what_went_well }}</p>
+                                <p><strong class="text-emerald-700">Hal Baik:</strong> {{ $ref->what_went_well }}</p>
                                 <p><strong class="text-rose-700">Perlu Ditingkatkan:</strong> {{ $ref->what_to_improve }}</p>
                                 <p><strong class="text-indigo-700">Rencana Aksi:</strong> {{ $ref->action_plan }}</p>
                             </div>
@@ -192,9 +187,8 @@
                             @else
                                 <form method="POST" action="{{ route('classes.character-portfolio.reflection.feedback', [$class, $ref]) }}" class="flex gap-2 pt-1">
                                     @csrf
-                                    <input type="text" name="teacher_feedback" value="{{ old('teacher_feedback') }}" placeholder="Beri umpan balik / motivasi singkat..." required class="h-8 flex-1 rounded-lg border border-slate-200 px-2.5 text-xs text-slate-800 focus:outline-none">
-                                    <button type="submit" class="h-8 rounded-lg bg-purple-600 hover:bg-purple-700 text-white px-3 font-semibold text-xs shrink-0">
-                                        ✓ Respon
+                                    <input type="text" name="teacher_feedback" value="{{ old('teacher_feedback') }}" placeholder="Beri umpan balik / motivasi singkat..." required class="form-input form-input--sm flex-1">
+                                    <button type="submit" class="btn-primary btn-primary--sm shrink-0">Respon
                                     </button>
                                 </form>
                             @endif
@@ -212,20 +206,20 @@
     </div>
 
     <!-- MODAL TAMBAH CATATAN OBSERVASI GURU -->
-    <div x-show="showRecordModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
-        <div class="w-full max-w-lg rounded-lg bg-white p-6 shadow-2xl space-y-4" @click.away="showRecordModal = false">
-            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-                <h3 class="text-base font-semibold text-slate-900">Tambah Catatan Observasi Guru</h3>
-                <button type="button" @click="showRecordModal = false" class="text-slate-400 hover:text-slate-600 font-semibold text-xl">×</button>
+    <div x-show="showRecordModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+        <div class="w-full max-w-lg rounded-lg border border-slate-300 bg-white shadow-xl" @click.away="showRecordModal = false">
+            <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+                <h2 class="text-sm font-semibold tracking-tight text-slate-900">Tambah Catatan Observasi Guru</h2>
+                <button type="button" @click="showRecordModal = false" class="btn-icon" aria-label="Tutup">&times;</button>
             </div>
 
-            <form method="POST" action="{{ route('classes.character-portfolio.record.store', [$class, $student]) }}" class="space-y-3 text-xs">
+            <form method="POST" action="{{ route('classes.character-portfolio.record.store', [$class, $student]) }}" class="space-y-3 p-4 text-xs">
                 @csrf
                 <input type="hidden" name="student_id" value="{{ $student->id }}">
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Tipe Catatan *</label>
+                        <label class="form-label form-label--required">Tipe Catatan</label>
                         <select name="type" required class="form-input form-input--sm">
                             <option value="positive">Catatan Positif</option>
                             <option value="negative">Catatan Evaluasi (Negatif)</option>
@@ -234,13 +228,13 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Skor Poin (-10 s/d +10) *</label>
+                        <label class="form-label form-label--required">Skor Poin (-10 s/d +10)</label>
                         <input type="number" name="score" required min="-10" max="10" value="1" class="form-input form-input--sm">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Dimensi Profil Pelajar Pancasila *</label>
+                    <label class="form-label form-label--required">Dimensi Profil Pelajar Pancasila</label>
                     <select name="character_dimension_id" required class="form-input form-input--sm">
                         <option value="">-- Pilih Dimensi --</option>
                         @foreach($dimensions as $d)
@@ -250,27 +244,23 @@
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Judul Catatan *</label>
+                    <label class="form-label form-label--required">Judul Catatan</label>
                     <input type="text" name="title" value="{{ old('title') }}" required placeholder="cth: Membantu merapikan bangku kelas" class="form-input form-input--sm">
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Deskripsi Detail</label>
+                    <label class="form-label">Deskripsi Detail</label>
                     <textarea name="description" rows="2" placeholder="Jelaskan detail kejadian..." class="form-input form-input--sm"></textarea>
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Tanggal Observasi *</label>
+                    <label class="form-label form-label--required">Tanggal Observasi</label>
                     <input type="date" name="record_date" required value="{{ date('Y-m-d') }}" class="form-input form-input--sm">
                 </div>
 
-                <div class="flex items-center gap-2 pt-2">
-                    <button type="button" @click="showRecordModal = false" class="h-10 w-1/3 rounded border border-slate-200 bg-slate-100 font-semibold text-slate-700">
-                        Batal
-                    </button>
-                    <button type="submit" class="h-10 w-2/3 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors">
-                        ✓ Simpan Catatan Observasi
-                    </button>
+                <div class="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center">
+                    <button type="button" @click="showRecordModal = false" class="btn-secondary sm:w-1/3">Batal</button>
+                    <button type="submit" class="btn-primary sm:w-2/3">Simpan Catatan Observasi</button>
                 </div>
             </form>
         </div>

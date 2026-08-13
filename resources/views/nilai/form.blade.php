@@ -10,7 +10,7 @@
         <h1 class="text-xl font-semibold tracking-tight text-slate-900">
             {{ $assessment ? 'Isi / Ubah Nilai' : 'Penilaian Baru' }}
         </h1>
-        <p class="text-xs text-slate-500 mt-0.5">{{ $classroom->name }} &middot; {{ $students->count() }} siswa</p>
+        <p class="mt-1 text-sm text-slate-500">{{ $classroom->name }} &middot; {{ $students->count() }} siswa</p>
     </div>
 
     @include('partials.flash')
@@ -123,8 +123,8 @@
             </div>
         @else
             <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+                <table class="table">
+                    <thead>
                         <tr>
                             <th class="px-3 py-2.5 font-semibold w-10">#</th>
                             <th class="px-3 py-2.5 font-semibold">Nama</th>
@@ -132,10 +132,10 @@
                             <th class="px-3 py-2.5 font-semibold">Catatan (opsional)</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200">
+                    <tbody>
                         @foreach ($students as $i => $st)
                             @php $tersimpan = $nilaiTersimpan[$st->id] ?? null; @endphp
-                            <tr class="hover:bg-slate-50">
+                            <tr>
                                 <td class="px-3 py-2 text-slate-400 tabular-nums">{{ $i + 1 }}</td>
                                 <td class="px-3 py-2">
                                     <span class="font-semibold text-slate-800">{{ $st->name }}</span>

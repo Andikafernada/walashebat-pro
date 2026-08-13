@@ -5,26 +5,24 @@
 @section('content')
 <div class="space-y-6 pb-12" x-data="{ showShareModal: false }">
     <!-- Header Bar -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('classes.index') }}" class="hover:text-indigo-600 transition-colors">Kelas</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">{{ $class->name }}</span>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">Jurnal &amp; Portofolio Karakter</span>
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">{{ $class->name }}</span>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Jurnal &amp; Portofolio Karakter</span>
             </nav>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 Jurnal &amp; Portofolio Karakter Siswa
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Observasi 6 Dimensi Profil Pelajar Pancasila untuk Kelas {{ $class->name }}</p>
+            <p class="mt-1 text-sm text-slate-500">Observasi 6 Dimensi Profil Pelajar Pancasila untuk Kelas {{ $class->name }}</p>
         </div>
 
         <div>
-            <button type="button" @click="showShareModal = true"
-                    class="inline-flex items-center gap-1.5 rounded border border-purple-200 bg-purple-50 px-3.5 py-2 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors">
-                <svg class="h-4 w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
- Bagikan Form Refleksi Siswa
+            <button type="button" @click="showShareModal = true" class="btn-primary btn-primary--sm">
+                Bagikan Form Refleksi Siswa
             </button>
         </div>
     </div>
@@ -136,23 +134,23 @@
     </div>
 
     <!-- Share Modal -->
-    <div x-show="showShareModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
-        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl space-y-4" @click.away="showShareModal = false">
-            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-                <h3 class="text-base font-semibold text-slate-900">Bagikan Form Refleksi Karakter Siswa</h3>
-                <button type="button" @click="showShareModal = false" class="text-slate-400 hover:text-slate-600 font-semibold">×</button>
+    <div x-show="showShareModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+        <div class="w-full max-w-md rounded-lg border border-slate-300 bg-white shadow-xl" @click.away="showShareModal = false">
+            <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+                <h2 class="text-sm font-semibold tracking-tight text-slate-900">Bagikan Form Refleksi Karakter Siswa</h2>
+                <button type="button" @click="showShareModal = false" class="btn-icon" aria-label="Tutup">&times;</button>
             </div>
 
-            <p class="text-xs text-slate-600">
-                Kirimkan tautan di bawah ini ke WhatsApp siswa agar mereka dapat mengisi Refleksi Karakter P5 (Rating Diri &amp; Rencana Perubahan Sikap) langsung dari HP:
-            </p>
+            <div class="space-y-3 p-4">
+                <p class="text-xs text-slate-600">
+                    Kirimkan tautan di bawah ini ke WhatsApp siswa agar mereka dapat mengisi Refleksi Karakter P5 (Rating Diri &amp; Rencana Perubahan Sikap) langsung dari HP:
+                </p>
 
-            <div class="space-y-2">
                 <input type="text" readonly value="{{ route('public.reflection.show', $class->tokenPublik()) }}"
-                       class="h-10 w-full rounded border border-purple-200 bg-purple-50/50 px-3 text-xs font-mono text-purple-900 focus:outline-none select-all">
+                       class="form-input select-all font-mono text-xs">
+
                 <button type="button" onclick="navigator.clipboard.writeText('{{ route('public.reflection.show', $class->tokenPublik()) }}'); alert('Tautan Refleksi disalin!');"
-                        class="h-10 w-full rounded bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5">
- Salin Tautan Ke Clipboard
+                        class="btn-primary w-full">Salin Tautan Ke Clipboard
                 </button>
             </div>
         </div>

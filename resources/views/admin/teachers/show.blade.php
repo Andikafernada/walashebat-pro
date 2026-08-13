@@ -32,7 +32,7 @@
                     <span class="align-middle rounded bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600">nonaktif</span>
                 @endunless
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">
+            <p class="mt-1 text-sm text-slate-500">
                 {{ $guru->school_name ?: 'Sekolah belum diisi' }}
                 @if ($guru->school_npsn) &middot; NPSN {{ $guru->school_npsn }} @endif
             </p>
@@ -122,8 +122,8 @@
         @if ($kelas->isEmpty())
             <p class="px-5 py-6 text-center text-xs font-semibold text-slate-500">Guru ini belum membuat kelas satu pun.</p>
         @else
-            <table class="w-full text-left text-xs">
-                <tbody class="divide-y divide-slate-200">
+            <table class="table">
+                <tbody>
                     @foreach ($kelas as $k)
                         <tr class="{{ $k->is_active ? '' : 'bg-slate-50' }}">
                             <td class="px-5 py-3 font-semibold text-slate-800">
@@ -155,8 +155,8 @@
             <p class="px-5 py-6 text-center text-xs font-semibold text-slate-500">Belum pernah menerbitkan sesi absensi.</p>
         @else
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+                <table class="table">
+                    <thead>
                         <tr>
                             <th class="px-5 py-2.5 font-semibold">Tanggal</th>
                             <th class="px-5 py-2.5 font-semibold">Kelas</th>
@@ -164,7 +164,7 @@
                             <th class="px-5 py-2.5 font-semibold">Pengiriman</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200">
+                    <tbody>
                         @foreach ($sesiTerakhir as $s)
                             <tr class="{{ $s->delivery_status === 'failed' ? 'bg-rose-50/50' : '' }}">
                                 <td class="px-5 py-2.5 whitespace-nowrap text-slate-700">{{ $s->session_date->translatedFormat('d M Y') }}</td>
@@ -202,8 +202,8 @@
         @if ($pembayaran->isEmpty())
             <p class="px-5 py-6 text-center text-xs font-semibold text-slate-500">Belum pernah mengirim bukti pembayaran.</p>
         @else
-            <table class="w-full text-left text-xs">
-                <tbody class="divide-y divide-slate-200">
+            <table class="table">
+                <tbody>
                     @foreach ($pembayaran as $p)
                         <tr>
                             <td class="px-5 py-3 whitespace-nowrap text-slate-700">{{ $p->created_at->translatedFormat('d M Y') }}</td>

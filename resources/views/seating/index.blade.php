@@ -5,19 +5,19 @@
 @section('content')
 <div class="space-y-6 pb-12">
     <!-- Header Bar -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <a href="{{ route('classes.index') }}" class="hover:text-indigo-600 transition-colors">Kelas</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-indigo-600 transition-colors">{{ $classroom->name }}</a>
-                <svg class="h-3 w-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                <span class="text-slate-700 font-semibold">Denah Tempat Duduk</span>
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-slate-600">{{ $classroom->name }}</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Denah Tempat Duduk</span>
             </nav>
-            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 Denah Tempat Duduk Kelas {{ $classroom->name }}
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">Atur posisi meja dan bangku siswa secara visual interaktif.</p>
+            <p class="mt-1 text-sm text-slate-500">Atur posisi meja dan bangku siswa secara visual interaktif.</p>
         </div>
     </div>
 
@@ -67,7 +67,7 @@
                     ✓ <span x-text="savedMsg"></span>
                 </span>
                 <button type="button" @click="save()" :disabled="saving"
-                        class="h-9 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 transition-colors flex items-center gap-1.5">
+                        class="btn-primary">
                     <template x-if="!saving">
                         <span>Simpan Denah Meja</span>
                     </template>

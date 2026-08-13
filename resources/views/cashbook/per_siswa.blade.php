@@ -9,7 +9,7 @@
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
             <h1 class="text-xl font-semibold tracking-tight text-slate-900">Kas per Siswa</h1>
-            <p class="text-xs text-slate-500 mt-0.5">
+            <p class="mt-1 text-sm text-slate-500">
                 {{ $classroom->name }} &middot; {{ $periode['label'] }}
             </p>
         </div>
@@ -119,8 +119,8 @@
         </div>
 
         <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+            <table class="table">
+                <thead>
                     <tr>
                         <th class="px-3 py-2.5 font-semibold w-10"></th>
                         <th class="px-3 py-2.5 font-semibold">Nama Siswa</th>
@@ -130,7 +130,7 @@
                         <th class="px-3 py-2.5 font-semibold">Terakhir</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
+                <tbody>
                     @foreach ($baris as $b)
                         <tr class="{{ $b['jumlah'] === 0 ? 'bg-rose-50/40' : '' }} hover:bg-slate-50">
                             <td class="px-3 py-2.5">

@@ -23,25 +23,27 @@
                 </a>
             </div>
 
-            <div class="bg-white rounded-lg shadow-2xl p-8">
-                <h2 class="text-2xl font-semibold text-gray-900 mb-2">Lupa Password?</h2>
-                <p class="text-gray-500 mb-6">
+            <div class="card p-8">
+                <h2 class="text-2xl font-semibold text-slate-900 mb-2">Lupa Password?</h2>
+                <p class="text-slate-500 mb-6">
                     Masukkan NIS Anda. Kami akan mengirim kode OTP ke WhatsApp orang tua Anda.
                 </p>
 
                 @if (session('status'))
-                    <div class="mb-4 p-4 rounded-lg bg-green-50 text-green-700 text-sm">
-                        {{ session('status') }}
+                    <div class="alert alert--success mb-4">
+                        <p class="alert__body">{{ session('status') }}</p>
                     </div>
                 @endif
 
                 @if ($errors->any())
-                    <div class="mb-4 p-4 rounded-lg bg-red-50 text-red-700 text-sm">
-                        <ul class="list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+                    <div class="alert alert--danger mb-4">
+                        <div class="alert__body">
+                            <ul class="list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </div>
                 @endif
 
@@ -49,20 +51,20 @@
                     @csrf
 
                     <div>
-                        <label for="nis" class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
+                        <label for="nis" class="form-label">NIS</label>
                         <input type="text" id="nis" name="nis" required autofocus
                                value="{{ old('nis') }}"
-                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                               class="form-input">
                     </div>
 
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                    <button type="submit" class="btn-primary w-full justify-center">
                         Kirim Kode OTP
                     </button>
                 </form>
 
                 <div class="mt-6 text-center">
                     <a href="{{ route('student.login') }}" class="text-sm text-indigo-600 hover:text-indigo-700">
-                        ← Kembali ke halaman login
+                        &larr; Kembali ke halaman login
                     </a>
                 </div>
             </div>

@@ -12,7 +12,7 @@
     </label>
 
     <div x-show="memuat" class="mt-1 text-sm text-slate-500 flex items-center gap-2">
-        <span class="spinner spinner--indigo"></span> Mengambil daftar grup…
+        <span class="spinner"></span> Mengambil daftar grup…
     </div>
 
     {{-- Hanya setelah benar-benar memindai kita tahu WA tersambung atau tidak.
@@ -58,7 +58,7 @@
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-semibold text-indigo-900" x-text="namaGrupTerpilih()"></span>
                         <span class="inline-flex items-center gap-1 rounded-sm bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
- Terkunci
+                Terkunci
                         </span>
                     </div>
                     <p class="text-[11px] text-indigo-600/80">Pesan rekap absensi otomatis dikirim ke grup ini.</p>

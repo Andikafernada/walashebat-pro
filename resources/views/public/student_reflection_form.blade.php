@@ -31,22 +31,23 @@
     </div>
 
     @if (session('success_public'))
-        <div class="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-xs font-semibold text-emerald-900 flex items-center gap-3">
-            <div class="flex h-8 w-8 items-center justify-center rounded bg-emerald-500 text-white font-semibold shrink-0">✓</div>
-            <div>{{ session('success_public') }}</div>
+        <div class="alert alert--success">
+            <p class="alert__body font-semibold">{{ session('success_public') }}</p>
         </div>
     @endif
 
     {{-- Halaman berdiri sendiri, tanpa blok ini kegagalan validasi tidak terlihat
          sama sekali: halaman hanya termuat ulang seolah tidak terjadi apa-apa. --}}
     @if ($errors->any())
-        <div class="rounded-lg border border-rose-300 bg-rose-50 p-4" role="alert">
-            <p class="text-xs font-semibold text-rose-900">Refleksi belum bisa dikirim:</p>
-            <ul class="mt-1.5 space-y-1 text-xs text-rose-800">
-                @foreach ($errors->all() as $pesan)
-                    <li>{{ $pesan }}</li>
-                @endforeach
-            </ul>
+        <div class="alert alert--danger" role="alert">
+            <div>
+                <p class="alert__title">Refleksi belum bisa dikirim:</p>
+                <ul class="alert__body mt-1.5 space-y-1">
+                    @foreach ($errors->all() as $pesan)
+                        <li>{{ $pesan }}</li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
     @endif
 
@@ -57,7 +58,7 @@
 
             <div>
                 <label class="form-label">Pilih Nama Siswa *</label>
-                <select name="student_id" required class="form-input form-input--sm">
+                <select name="student_id" required class="form-input">
                     <option value="">-- Pilih Nama Anda --</option>
                     @foreach ($students as $st)
                         <option value="{{ $st->id }}" @selected(old('student_id') == $st->id)>{{ $st->name }} (NIS: {{ $st->nis ?: '-' }})</option>
@@ -71,17 +72,19 @@
                     {{-- Tanpa blok ini isiannya hanya kotak kosong: siswa tidak bisa
                          mengirim dan tidak tahu mengapa, padahal penyebabnya ada di
                          sisi wali kelas. --}}
-                    <p class="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-                        Daftar dimensi karakter belum disiapkan wali kelas, sehingga refleksi belum bisa dikirim.
-                        Mohon hubungi wali kelas Anda.
-                    </p>
+                    <div class="alert alert--warning">
+                        <p class="alert__body">
+                            Daftar dimensi karakter belum disiapkan wali kelas, sehingga refleksi belum bisa dikirim.
+                            Mohon hubungi wali kelas Anda.
+                        </p>
+                    </div>
                 @else
                     {{-- Pilihan kosong di baris pertama, dan nilai lama dipertahankan.
                          Tanpa keduanya peramban otomatis menyorot dimensi pertama:
                          atribut required jadi tidak berarti, siswa yang melewati isian
                          ini terkirim dengan dimensi yang tidak pernah ia pilih, dan
                          setiap kegagalan validasi mengembalikannya ke pilihan itu lagi. --}}
-                    <select name="character_dimension_id" required class="form-input form-input--sm">
+                    <select name="character_dimension_id" required class="form-input">
                         <option value="">-- Pilih Dimensi Karakter --</option>
                         @foreach ($dimensions as $dim)
                             <option value="{{ $dim->id }}" @selected(old('character_dimension_id') == $dim->id)>{{ $dim->name }} ({{ $dim->code }})</option>
@@ -105,17 +108,17 @@
 
             <div>
                 <label class="form-label">1. Hal Baik yang Sudah Dilakukan *</label>
-                <textarea name="what_went_well" rows="2" required placeholder="cth: Saya selalu hadir tepat waktu dan membantu menyapu kelas..." class="form-input form-input--sm">{{ old('what_went_well') }}</textarea>
+                <textarea name="what_went_well" rows="2" required placeholder="cth: Saya selalu hadir tepat waktu dan membantu menyapu kelas..." class="form-input">{{ old('what_went_well') }}</textarea>
             </div>
 
             <div>
                 <label class="form-label">2. Hal yang Masih Perlu Ditingkatkan *</label>
-                <textarea name="what_to_improve" rows="2" required placeholder="cth: Saya masih suka mengobrol saat pelajaran berlangsung..." class="form-input form-input--sm">{{ old('what_to_improve') }}</textarea>
+                <textarea name="what_to_improve" rows="2" required placeholder="cth: Saya masih suka mengobrol saat pelajaran berlangsung..." class="form-input">{{ old('what_to_improve') }}</textarea>
             </div>
 
             <div>
                 <label class="form-label">3. Rencana Aksi Perubahan Sikap *</label>
-                <textarea name="action_plan" rows="2" required placeholder="cth: Saya akan fokus mendengarkan penjelasan guru dan duduk di barisan depan..." class="form-input form-input--sm">{{ old('action_plan') }}</textarea>
+                <textarea name="action_plan" rows="2" required placeholder="cth: Saya akan fokus mendengarkan penjelasan guru dan duduk di barisan depan..." class="form-input">{{ old('action_plan') }}</textarea>
             </div>
 
             {{-- Tiga isian di atas seluruhnya penilaian diri sendiri, dan
@@ -127,7 +130,7 @@
                  pertanyaan yang menyakitkan untuk dijawab. --}}
             <div class="rounded border border-sky-200 bg-sky-50/60 p-3 space-y-1.5">
                 <label for="kesan_teman" class="block text-xs font-semibold uppercase tracking-wider text-sky-900">
- Menurut Temanmu, Kamu Itu Seperti Apa? *
+                Menurut Temanmu, Kamu Itu Seperti Apa? *
                 </label>
                 {{-- Kalimat kedua bukan basa-basi: pertanyaannya wajib, jadi ia
                      harus bisa dijawab anak yang belum sempat bertanya maupun
@@ -139,7 +142,7 @@
                 </p>
                 <textarea id="kesan_teman" name="kesan_teman" rows="3" maxlength="1000" minlength="10" required
                           placeholder="cth: Kata Rina aku orangnya asyik dan suka bantu, tapi kadang suka memotong pembicaraan orang."
-                          class="w-full rounded border border-sky-200 bg-white p-2.5 text-xs text-slate-800 focus:border-sky-500 focus:outline-none">{{ old('kesan_teman') }}</textarea>
+                          class="form-input">{{ old('kesan_teman') }}</textarea>
             </div>
 
             {{-- Ditujukan kepada orang tua, bukan kepada diri sendiri maupun wali
@@ -147,18 +150,18 @@
                  ditampilkan terpisah. --}}
             <div class="rounded border border-amber-200 bg-amber-50/60 p-3 space-y-1.5">
                 <label for="pesan_ortu" class="block text-xs font-semibold text-amber-900 uppercase tracking-wider">
- Pesan untuk Orang Tua *
+                Pesan untuk Orang Tua *
                 </label>
                 <p class="text-[10px] text-amber-800">
                     Tulis pesan, harapan, atau permintaan maaf untuk Ayah dan Ibu. Pesan ini akan dibaca wali kelas dan disampaikan kepada orang tuamu.
                 </p>
                 <textarea id="pesan_ortu" name="pesan_ortu" rows="3" maxlength="1000" minlength="10" required
                           placeholder="cth: Terima kasih Ayah Ibu sudah sabar. Aku janji akan lebih rajin belajar dan membantu di rumah."
-                          class="w-full rounded border border-amber-200 bg-white p-2.5 text-xs text-slate-800 focus:border-amber-500 focus:outline-none">{{ old('pesan_ortu') }}</textarea>
+                          class="form-input">{{ old('pesan_ortu') }}</textarea>
             </div>
 
-            <button type="submit" class="h-10 w-full rounded bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-colors">
-                ✓ Kirim Refleksi Karakter ke Wali Kelas
+            <button type="submit" class="btn-primary w-full justify-center">
+                Kirim Refleksi Karakter ke Wali Kelas
             </button>
         </form>
     </div>
