@@ -39,33 +39,17 @@
     <!-- Quick Actions -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <a href="{{ route('student.portfolio') }}" class="card flex items-center gap-4 transition-colors hover:border-slate-300">
-            <div class="stat-icon stat-icon--indigo">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13.668m7.088-7.218c2.103-2.048 5.802-3.206 9.912-3.206H21v21m-7.088-7.218c-2.103 2.048-5.802 3.206-9.912 3.206H3m18-17.574V21M12 6.253V3"/>
-                </svg>
-            </div>
             <div>
                 <h3 class="font-semibold text-slate-900">Portofolio Karakter</h3>
                 <p class="text-sm text-slate-500">Catat pencapaian dan refleksi</p>
             </div>
-            <svg class="w-5 h-5 text-slate-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7 7-7"/>
-            </svg>
         </a>
 
         <a href="{{ route('student.biodata') }}" class="card flex items-center gap-4 transition-colors hover:border-slate-300">
-            <div class="stat-icon stat-icon--emerald">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0a4 4 0 018 0zM12 14a9 9 0 100-18 9 9 0 0018 0zm9-4.5v4.5l3 3l-3 3m-4.5-10.5h-4.5"/>
-                </svg>
-            </div>
             <div>
                 <h3 class="font-semibold text-slate-900">Biodata Diri</h3>
                 <p class="text-sm text-slate-500">Lihat dan perbarui data Anda</p>
             </div>
-            <svg class="w-5 h-5 text-slate-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7 7-7"/>
-            </svg>
         </a>
     </div>
 

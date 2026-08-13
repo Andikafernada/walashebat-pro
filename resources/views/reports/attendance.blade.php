@@ -61,7 +61,7 @@
                class="btn-secondary btn-secondary--sm">Excel
             </a>
             <a href="{{ route('classes.exports.attendance.pdf', $classroom) }}?bulan={{ $bulan->format('Y-m') }}"
-               class="btn-primary btn-primary--sm">Unduh PDF
+               class="btn-secondary btn-secondary--sm">Unduh PDF
             </a>
             <button onclick="window.print()" class="btn-primary btn-primary--sm">Cetak
             </button>

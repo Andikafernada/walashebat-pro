@@ -26,7 +26,7 @@
                     class="btn-primary btn-primary--sm">+ Catat Observasi Guru
             </button>
             <a href="{{ route('public.reflection.show', $class->tokenPublik()) }}" target="_blank"
-               class="btn-primary btn-primary--sm">
+               class="btn-secondary btn-secondary--sm">
                 Link Refleksi Siswa
             </a>
         </div>

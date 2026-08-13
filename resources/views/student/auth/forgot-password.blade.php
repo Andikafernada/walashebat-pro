@@ -14,11 +14,6 @@
             <!-- Logo -->
             <div class="text-center mb-8">
                 <a href="{{ route('student.login') }}" class="inline-flex items-center gap-2 text-white">
-                    <div class="w-10 h-10 rounded bg-white/10 flex items-center justify-center">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13.668m7.088-7.218c2.103-2.048 5.802-3.206 9.912-3.206H21v21m-7.088-7.218c-2.103 2.048-5.802 3.206-9.912 3.206H3m18-17.574V21M12 6.253V3"/>
-                        </svg>
-                    </div>
                     <span class="text-lg font-semibold">WaliKelas Pro</span>
                 </a>
             </div>
