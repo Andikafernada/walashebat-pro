@@ -27,3 +27,6 @@ yarn-error.log
 
 # Cadangan manual yang tertinggal saat menyunting langsung di server.
 *.bak*
+
+# Worktree agen — sementara, tidak pernah ikut ke riwayat.
+/.claude/worktrees/

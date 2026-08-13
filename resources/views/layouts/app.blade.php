@@ -18,10 +18,11 @@
         tidak berlagak. IBM Plex Mono khusus untuk yang berkolom — kode absensi,
         kepala tabel, label bagian, nomor urut. Angka administrasi harus lurus
         ke bawah, dan itu pekerjaan rupa monospasi, bukan hiasan.
+
+        Berkasnya dilayani sendiri dari public/fonts/ dan dideklarasikan di
+        resources/css/app.css — tidak ada lagi <link> ke fonts.googleapis.com
+        di sini. Alasannya ditulis panjang di app.css.
     --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

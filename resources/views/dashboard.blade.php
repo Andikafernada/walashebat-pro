@@ -265,11 +265,19 @@
 </div>
 
 {{-- Chart.js dimuat di sini, bukan di layout: hanya halaman ini dan
-     analitik yang punya grafik. Versi terpaku + integrity supaya isi
-     yang berubah di CDN ditolak peramban, bukan dijalankan. --}}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
-        integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+     analitik yang punya grafik. 205 KB tidak boleh ikut terunduh di
+     halaman absensi yang dibuka tiap pagi.
+
+     Dilayani sendiri dari /vendor/, bukan cdn.jsdelivr.net. Berkasnya
+     byte-identik dengan yang dulu diambil dari CDN (sha384 dicocokkan
+     dengan integrity lama saat disalin). Alasan pindahnya sama dengan
+     rupa huruf: host asing = DNS + TLS baru sebelum grafik bisa muncul.
+
+     Versinya di query string, bukan di nama berkas — nginx menyimpan
+     seluruh .js 30 hari immutable, jadi naik versi TANPA mengubah ?v=
+     berarti guru yang sudah pernah membuka halaman ini tetap memakai
+     yang lama sampai cache-nya kedaluwarsa. --}}
+<script src="/vendor/chart.umd.min.js?v=4.4.0"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

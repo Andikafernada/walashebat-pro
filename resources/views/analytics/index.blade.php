@@ -246,9 +246,7 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
-        integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/vendor/chart.umd.min.js?v=4.4.0"></script>
 @if($selectedClass && count($monthlyAttendance) > 0)
 <script>
 document.addEventListener('DOMContentLoaded', function() {

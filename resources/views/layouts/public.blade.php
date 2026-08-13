@@ -7,9 +7,6 @@
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('title') - WaliKelas Pro</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     {{-- @vite, bukan mix(): alasannya ditulis panjang di layouts/guest.blade.php. --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])

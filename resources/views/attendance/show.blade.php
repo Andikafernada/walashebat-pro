@@ -3,9 +3,7 @@
 @section('title', 'Detail Absensi - ' . $classroom->name)
 
 @section('content')
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"
-        integrity="sha384-lQXOAyZwHXE55JFyrOMB7nY2Wv+m5ZWNtJcHrd1rceRQXAYNLak8ukN5TjBTcIwz"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/vendor/qrcode.min.js?v=1.4.4"></script>
 
 @php
     $rupaStatus = [

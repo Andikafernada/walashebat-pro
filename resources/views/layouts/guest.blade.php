@@ -14,9 +14,6 @@
          menyadari sampai ada pengguna yang mengeluh. --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="icon" href="/favicon-32.png" sizes="32x32">
 
     {{-- Halaman masuk, daftar, dan verifikasi masing-masing menitipkan gayanya

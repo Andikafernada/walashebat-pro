@@ -124,10 +124,12 @@
         cetak, dan IBM Plex Mono memegang segala yang berperilaku seperti data
         — label kolom, nomor, PIN, jam. Bobotnya sengaja sedikit; setiap bobot
         tambahan adalah berkas yang harus diunduh HP kelas menengah.
+
+        Ketiganya dilayani sendiri dari public/fonts/ lewat @font-face di
+        resources/css/app.css — yang halaman ini sudah muat di bawah. Archivo
+        dan Newsreader HANYA dipakai di sini; halaman lain tidak mengunduhnya
+        karena tidak ada elemen di sana yang memakai keluarganya.
     --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
