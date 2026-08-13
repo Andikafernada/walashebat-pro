@@ -38,7 +38,7 @@
         putih transparan. Nama anak — satu-satunya hal yang dicari saat halaman
         ini dibuka — harus bersaing dengan semuanya.
     --}}
-    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="page-header sm:items-start">
         <div class="flex min-w-0 items-start gap-3">
             <span class="avatar-hero {{ $siswa->gender === 'P' ? 'avatar-hero--female' : 'avatar-hero--male' }} {{ !$siswa->is_active ? 'avatar-hero--inactive' : '' }}">
                 @if ($siswa->photoUrl())

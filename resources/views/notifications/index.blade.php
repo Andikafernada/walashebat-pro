@@ -5,7 +5,7 @@
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
-    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="page-header">
         <div>
             <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
                 <a href="{{ route('dashboard') }}" class="hover:text-slate-600">Dashboard</a>

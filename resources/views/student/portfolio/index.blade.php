@@ -71,7 +71,7 @@
 <div id="modal-achievement" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-slate-900/60" onclick="this.closest('.fixed').classList.add('hidden')"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+        <div class="w-full max-w-md rounded-lg border border-slate-300 bg-white p-6 shadow-xl">
             <h3 class="text-lg font-semibold mb-4">Catat Pencapaian</h3>
             <form action="{{ route('student.portfolio.achievement') }}" method="POST" class="space-y-4">
                 @csrf
@@ -109,7 +109,7 @@
 <div id="modal-reflection" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-slate-900/60" onclick="this.closest('.fixed').classList.add('hidden')"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+        <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg border border-slate-300 bg-white p-6 shadow-xl">
             <h3 class="text-lg font-semibold mb-4">Refleksi Harian</h3>
             <form action="{{ route('student.reflection.store') }}" method="POST" class="space-y-4">
                 @csrf

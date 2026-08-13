@@ -5,7 +5,7 @@
 @section('content')
 <div class="space-y-5 pb-12" x-data="{ shareClassId: '', className: '', shareLink: '', showModal: false }">
 
-    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="page-header">
         <div>
             <p class="eyebrow">Daftar kelas</p>
             <h1 class="mt-1 text-xl font-semibold tracking-tight text-slate-900">Kelas Anda</h1>

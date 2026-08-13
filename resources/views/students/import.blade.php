@@ -3,7 +3,7 @@
 @section('content')
     @include('partials.class-nav')
 
-    <div class="page-header">
+    <div class="page-header mb-5">
         <div>
             <h2 class="page-header__title">Impor siswa dari Excel</h2>
             <p class="page-header__description">

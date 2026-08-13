@@ -9,7 +9,7 @@
 
 <div class="space-y-6 pb-12" x-data="waSession({ connected: {{ auth()->user()->whatsappConnected() ? 'true' : 'false' }}, statusUrl: '{{ route('whatsapp.status') }}' })">
     <!-- Header -->
-    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="page-header">
         <div>
             <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 Integrasi WhatsApp &amp; Balasan Otomatis
@@ -94,7 +94,7 @@
     </div>
 
     {{-- KARTU KODE PENAUTAN — jalur "saya memakai HP ini" --}}
-    <div class="rounded-lg border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
+    <div class="rounded-lg border-2 border-emerald-500 bg-white p-6 text-center space-y-4"
          x-show="status !== 'connected' && kodePairing" x-cloak>
         <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
             <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
@@ -131,7 +131,7 @@
     </div>
 
     <!-- DYNAMIC REAL-TIME QR CODE DISPLAY CARD -->
-    <div class="rounded-lg border-2 border-emerald-500 bg-white p-6 shadow-xl text-center space-y-4"
+    <div class="rounded-lg border-2 border-emerald-500 bg-white p-6 text-center space-y-4"
          x-show="status !== 'connected' && qr">
         <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
             <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
@@ -146,7 +146,7 @@
 
         <!-- QR CODE CANVAS CONTAINER -->
         <div class="py-2 flex justify-center">
-            <div class="p-3 bg-white border-2 border-slate-900 rounded-lg shadow-xl inline-block">
+            <div class="p-3 bg-white border-2 border-slate-900 rounded-lg inline-block">
                 <canvas id="wa-qr-canvas-dynamic"></canvas>
             </div>
         </div>

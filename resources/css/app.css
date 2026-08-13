@@ -153,8 +153,12 @@
     /* ------------------------------------------------------------------ */
     /* KEPALA HALAMAN                                                     */
     /* ------------------------------------------------------------------ */
+    /* Judul di kiri, tombol halaman di kanan, dipisah garis dari isinya.
+       Di layar sempit keduanya menumpuk. Jaraknya ke bawah diserahkan pada
+       induk (umumnya space-y-6) supaya tidak dobel. */
     .page-header {
-        @apply mb-5 border-b border-slate-200 pb-4;
+        @apply flex flex-col gap-3 border-b border-slate-200 pb-4;
+        @apply sm:flex-row sm:items-end sm:justify-between;
     }
     .page-header__title {
         @apply text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl;

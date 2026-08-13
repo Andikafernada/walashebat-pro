@@ -21,7 +21,7 @@
     ];
 @endphp
 
-<div class="page-header flex flex-wrap items-end justify-between gap-3">
+<div class="page-header mb-5 flex-wrap">
     <div>
         <h1 class="page-header__title">Koreksi Absensi</h1>
         <p class="page-header__description">

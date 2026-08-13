@@ -4,7 +4,7 @@
     @include('partials.class-nav')
 
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header mb-5">
         <div>
             <p class="text-sm text-slate-500">{{ $students->total() }} siswa diarsipkan</p>
         </div>

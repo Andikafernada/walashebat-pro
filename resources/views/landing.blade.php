@@ -342,7 +342,7 @@
                 sempat membaca satu kalimat pun — dan yang dijanjikan halaman ini
                 memang persis itu: daftar yang terisi tanpa ia mengetik.
             --}}
-            <div class="lembar overflow-hidden shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+            <div class="lembar overflow-hidden">
                 <div class="flex items-baseline justify-between gap-3 px-4 sm:px-5 py-3 border-b border-[color:var(--garis)] bg-[color:var(--kertas-tua)]">
                     <span class="label-formulir text-[color:var(--tinta)]">Daftar Hadir</span>
                     <span class="data text-[11px] text-[color:var(--abu)]">Kelas 5A &middot; 11 Agu</span>

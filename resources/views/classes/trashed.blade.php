@@ -3,7 +3,7 @@
 @section('content')
 
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header mb-5">
         <div>
             <p class="text-sm text-slate-500">{{ $classes->total() }} kelas diarsipkan</p>
         </div>

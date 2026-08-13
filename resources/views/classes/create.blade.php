@@ -3,7 +3,7 @@
 @section('content')
 
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header mb-5">
         <div>
             <p class="text-sm text-slate-500">
                 {{ isset($classroom) ? 'Perbarui informasi kelas' : 'Tambah kelas baru untuk mulai mengelola administrasi' }}

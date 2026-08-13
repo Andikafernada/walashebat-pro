@@ -16,7 +16,7 @@
 
 <div class="space-y-5 pb-12">
 
-    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="page-header">
         <div class="min-w-0">
             <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
                 <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>

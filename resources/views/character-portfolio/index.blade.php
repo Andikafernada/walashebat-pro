@@ -5,7 +5,7 @@
 @section('content')
 <div class="space-y-6 pb-12" x-data="{ showShareModal: false }">
     <!-- Header Bar -->
-    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="page-header">
         <div>
             <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
                 <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
