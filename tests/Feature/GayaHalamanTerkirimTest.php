@@ -20,11 +20,28 @@ class GayaHalamanTerkirimTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_gaya_halaman_masuk_ikut_terkirim(): void
+    /**
+     * Layout tamu tetap merender @stack('styles').
+     *
+     * Dulu dibuktikan lewat keluaran halaman masuk, yang menitipkan animasi
+     * 'login-float'. Penyapuan Agustus 2026 membuang animasi itu — dan
+     * sekarang tidak ada satu pun halaman tamu yang menitipkan gaya, sehingga
+     * tidak ada lagi yang bisa diamati dari keluarannya.
+     *
+     * Yang dijaga tetap sama: baris @stack itu sendiri. Ia pernah hilang satu
+     * kali, dan hilangnya tidak menimbulkan galat apa pun — halaman tetap
+     * tampil, titipan gayanya saja yang dibuang diam-diam. Orang berikutnya
+     * yang menitipkan gaya di halaman tamu tidak boleh menemukan lubang itu
+     * lagi.
+     */
+    public function test_layout_tamu_masih_merender_titipan_gaya(): void
     {
-        $this->get('/login')
-            ->assertOk()
-            ->assertSee('login-float', false);
+        $this->assertStringContainsString(
+            "@stack('styles')",
+            file_get_contents(resource_path('views/layouts/guest.blade.php')),
+        );
+
+        $this->get('/login')->assertOk();
     }
 
     public function test_gaya_halaman_analitik_ikut_terkirim(): void

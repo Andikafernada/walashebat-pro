@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Rules\NomorWhatsApp;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -25,7 +26,7 @@ class ProfileController extends Controller
             // NIP wali kelas dipakai pada blok tanda tangan laporan resmi.
             'nip' => ['nullable', 'string', 'max:30'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'whatsapp_number' => ['nullable', 'string', 'max:20'],
+            'whatsapp_number' => ['nullable', 'string', 'max:20', new NomorWhatsApp],
             'school_name' => ['required', 'string', 'max:255'],
             'school_address' => ['nullable', 'string', 'max:255'],
             // Kota untuk baris "Bandung, 25 Juli 2026" di atas tanda tangan.

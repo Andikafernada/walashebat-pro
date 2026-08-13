@@ -119,8 +119,35 @@ class ClassroomController extends Controller
     {
         $classroom = Classroom::create($request->validated());
 
-        return redirect()->route('classes.show', $classroom)
-            ->with('success', 'Kelas berhasil dibuat.');
+        return $this->serahkanKeWhatsApp($request, $classroom, 'Kelas berhasil dibuat.')
+            ?? redirect()->route('classes.show', $classroom)
+                ->with('success', 'Kelas berhasil dibuat.');
+    }
+
+    /**
+     * Serah-terima ke halaman WhatsApp saat absensi otomatis baru dinyalakan.
+     *
+     * Absensi otomatis tanpa sesi WhatsApp adalah janji yang tidak bisa
+     * ditepati: penjadwal tetap berjalan, tautan presensi tidak pernah sampai
+     * ke grup, dan guru baru menyadarinya keesokan pagi saat kelasnya kosong.
+     *
+     * Detik centang itu dinyalakan adalah satu-satunya saat guru pasti sedang
+     * memikirkan hal ini. Peringatan di beranda datang belakangan dan hanya
+     * mengabarkan sesuatu yang sudah telanjur gagal.
+     */
+    private function serahkanKeWhatsApp(
+        ClassroomRequest $request,
+        Classroom $class,
+        string $sukses
+    ): ?RedirectResponse {
+        if (! $class->auto_attendance || $request->user()->whatsappConnected()) {
+            return null;
+        }
+
+        return redirect()->route('whatsapp.index')
+            ->with('success', $sukses)
+            ->with('warning', "Absensi otomatis {$class->name} baru berjalan setelah WhatsApp Anda tersambung. "
+                .'Sambungkan sekarang — cukup sekali, dan berlaku untuk semua kelas.');
     }
 
     public function show(Classroom $class): View
@@ -163,10 +190,21 @@ class ClassroomController extends Controller
 
     public function update(ClassroomRequest $request, Classroom $class): RedirectResponse
     {
+        // Hanya peralihan mati->nyala yang diserahterimakan. Kelas yang memang
+        // sudah otomatis sejak dulu tidak boleh menyeret guru ke halaman
+        // WhatsApp setiap kali ia sekadar membetulkan nama wali kelas.
+        $sebelumnyaOtomatis = (bool) $class->auto_attendance;
+
         $class->update($request->validated());
 
-        return redirect()->route('classes.show', $class)
-            ->with('success', 'Kelas diperbarui.');
+        if ($sebelumnyaOtomatis) {
+            return redirect()->route('classes.show', $class)
+                ->with('success', 'Kelas diperbarui.');
+        }
+
+        return $this->serahkanKeWhatsApp($request, $class->fresh(), 'Kelas diperbarui.')
+            ?? redirect()->route('classes.show', $class)
+                ->with('success', 'Kelas diperbarui.');
     }
 
     public function destroy(Classroom $class): RedirectResponse

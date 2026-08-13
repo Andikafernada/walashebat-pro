@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\NomorWhatsApp;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -47,8 +48,8 @@ class StudentRequest extends FormRequest
             ],
             'nisn' => ['nullable', 'string', 'max:50'],
             'gender' => ['nullable', Rule::in(['L', 'P'])],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'parent_phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:20', new NomorWhatsApp],
+            'parent_phone' => ['nullable', 'string', 'max:20', new NomorWhatsApp],
             'address' => ['nullable', 'string', 'max:500'],
             'is_active' => ['sometimes', 'boolean'],
 

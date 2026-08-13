@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\NomorWhatsApp;
 use App\Support\Phone;
 use App\Services\CharacterDimensionProvisioner;
 use Illuminate\Http\RedirectResponse;
@@ -80,10 +81,8 @@ class AuthController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:191'],
             'email' => ['required', 'email', 'max:191', 'unique:users,email'],
-            'whatsapp_number' => ['required', 'string', 'max:20', 'regex:/^[0-9]+$/'],
+            'whatsapp_number' => ['required', 'string', 'max:20', new NomorWhatsApp],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ], [
-            'whatsapp_number.regex' => 'Nomor WhatsApp hanya boleh angka, contoh: 8123456789.',
         ]);
 
         // Langsung buat user

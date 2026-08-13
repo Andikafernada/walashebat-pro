@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Classroom;
 use App\Models\Student;
+use App\Support\Phone;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -272,6 +273,7 @@ class StudentsImport implements ToCollection, WithChunkReading, WithHeadingRow
                 'tanggal_lahir' => $this->tanggal($nilai),
                 'anak_ke', 'jumlah_saudara', 'tinggi_badan_cm', 'berat_badan_kg', 'tahun_masuk' => $this->bulat($nilai),
                 'jarak_rumah_km' => $this->desimal($nilai),
+                'phone', 'parent_phone' => $this->nomorWa($nilai, $kolom),
                 'penerima_kip', 'penerima_pkh' => $this->boolean($nilai),
                 // NIS/NISN dipaksa string: Excel gemar membuang angka nol di depan.
                 'nis', 'nisn' => $nilai === null || $nilai === '' ? null : (string) $nilai,
@@ -280,6 +282,37 @@ class StudentsImport implements ToCollection, WithChunkReading, WithHeadingRow
         }
 
         return $hasil;
+    }
+
+    /**
+     * Nomor HP dari berkas impor.
+     *
+     * Dinormalkan di sini, bukan diserahkan ke mutator model. Mutator hanya
+     * bisa mengembalikan null, sehingga nomor salah ketik lenyap tanpa jejak
+     * dan impor tetap melaporkan "berhasil" — satu kelas bisa terisi tanpa satu
+     * pun nomor orang tua yang benar tanpa ada yang menyadarinya. Di sini
+     * kegagalannya ikut ke ringkasan impor lengkap dengan nomor barisnya.
+     */
+    private function nomorWa(mixed $v, string $kolom): ?string
+    {
+        $mentah = trim((string) $v);
+
+        if ($mentah === '') {
+            return null;
+        }
+
+        $nomor = Phone::normalize($mentah);
+
+        if ($nomor === null) {
+            $this->catatan[] = [
+                'baris' => $this->baris,
+                'nama' => '—',
+                'pesan' => "Nomor \"{$mentah}\" bukan nomor seluler Indonesia, kolom "
+                    .($kolom === 'phone' ? 'HP siswa' : 'HP orang tua').' dikosongkan.',
+            ];
+        }
+
+        return $nomor;
     }
 
     private function gender(mixed $v): ?string

@@ -113,6 +113,23 @@
             </template>
         </div>
 
+        {{--
+            Kode ini diterbitkan UNTUK satu nomor tertentu. Kalau nomor yang
+            tersimpan bukan nomor WhatsApp di HP ini — salah ketik satu digit
+            saat mendaftar sudah cukup — kodenya tidak akan pernah diterima,
+            dan yang guru lihat hanya kode yang diam sampai kedaluwarsa.
+            Validasi tidak bisa menangkap ini: nomornya sah, cuma bukan
+            miliknya. Yang bisa menangkapnya hanya mata guru, jadi nomornya
+            ditaruh di sini, di detik ia menunggu.
+        --}}
+        <div class="mx-auto max-w-md rounded border border-amber-200 bg-amber-50 p-3 text-left text-xs text-amber-900">
+            Kode ini hanya berlaku untuk WhatsApp bernomor
+            <strong class="font-mono">{{ auth()->user()->whatsapp_number }}</strong>.
+            Bukan nomor di HP ini?
+            <a href="{{ route('profile.edit') }}" class="font-semibold underline">Betulkan dulu nomornya</a>,
+            lalu terbitkan kode baru.
+        </div>
+
         <div class="mx-auto max-w-md rounded bg-slate-50 border border-slate-200 p-3.5 text-left text-xs text-slate-700 space-y-1.5">
             <p class="font-semibold text-slate-900">Langkahnya:</p>
             <p>1. Buka <strong>WhatsApp</strong> di HP ini.</p>
