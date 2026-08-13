@@ -312,7 +312,7 @@ class WhatsAppSessionController extends Controller
     /** Mulai penautan; menampilkan QR dari gateway. */
     public function pair(Request $request, WhatsAppSessionManager $manager): RedirectResponse
     {
-        $user = $request->user() ?? \Illuminate\Support\Facades\Auth::user();
+        $user = $request->user() ?? Auth::user();
 
         if (! $user) {
             return back()->withErrors(['whatsapp' => 'Anda harus login terlebih dahulu.']);
@@ -327,9 +327,10 @@ class WhatsAppSessionController extends Controller
         // Cek apakah gateway tersedia
         if (! $manager->isHealthy()) {
             $circuitStatus = $manager->getCircuitStatus();
+
             return back()->with('warning',
                 'Gateway WhatsApp sedang tidak tersedia. '
-                .'Mohon tunggu ' . ceil($circuitStatus['time_until_retry'] / 60) . ' menit, lalu coba lagi.');
+                .'Mohon tunggu '.ceil($circuitStatus['time_until_retry'] / 60).' menit, lalu coba lagi.');
         }
 
         /*
@@ -345,11 +346,8 @@ class WhatsAppSessionController extends Controller
         try {
             $result = $manager->startPairing($user, $metode);
 
-            $user->update([
-                'wa_session_id' => $result['session_id'],
-                'wa_session_status' => $result['status'],
-                'wa_last_error' => null,
-            ]);
+            $user->forceFill(['wa_session_id' => $result['session_id']])->save();
+            $user->catatStatusSesi($result['status']);
 
             if ($result['status'] === 'connected') {
                 return back()->with('success', 'Nomor WhatsApp tersambung.');
@@ -380,7 +378,7 @@ class WhatsAppSessionController extends Controller
             return back()->with('wa_qr', $result['qr'])
                 ->with('success', 'Pindai QR berikut dengan WhatsApp di ponsel Anda.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menautkan WhatsApp: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menautkan WhatsApp: '.$e->getMessage());
         }
     }
 
@@ -390,13 +388,7 @@ class WhatsAppSessionController extends Controller
         $user = $request->user();
         $result = $manager->status($user);
 
-        $user->update([
-            'wa_session_status' => $result['status'],
-            'wa_last_error' => $result['error'],
-            'wa_connected_at' => $result['status'] === 'connected'
-                ? ($user->wa_connected_at ?? now())
-                : null,
-        ]);
+        $user->catatStatusSesi($result['status'], $result['error']);
 
         return response()->json([
             'status' => $result['status'],
@@ -562,7 +554,7 @@ class WhatsAppSessionController extends Controller
 
     public function disconnect(Request $request, WhatsAppSessionManager $manager): RedirectResponse
     {
-        $user = $request->user() ?? \Illuminate\Support\Facades\Auth::user();
+        $user = $request->user() ?? Auth::user();
 
         if (! $user) {
             return back()->withErrors(['whatsapp' => 'Anda harus login terlebih dahulu.']);
@@ -570,11 +562,8 @@ class WhatsAppSessionController extends Controller
 
         $manager->disconnect($user);
 
-        $user->update([
-            'wa_session_status' => 'disconnected',
-            'wa_connected_at' => null,
-            'wa_session_id' => null,
-        ]);
+        $user->catatStatusSesi('disconnected');
+        $user->forceFill(['wa_session_id' => null])->save();
 
         return back()->with('success', 'Nomor WhatsApp diputus dari sistem.');
     }

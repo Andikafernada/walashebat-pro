@@ -71,6 +71,25 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:20,10')
         ->name('register.store');
 
+    /*
+     * Verifikasi nomor WhatsApp pendaftar.
+     *
+     * Titipan pendaftarannya hidup di cache dan dikunci token yang disimpan di
+     * sesi, jadi rute ini tidak perlu parameter apa pun — nomor maupun token
+     * tidak pernah muncul di bilah alamat, tempat ia gampang tersalin ke grup.
+     *
+     * Kirim ulang dibatasi lebih ketat daripada pendaftarannya: tiap panggilan
+     * benar-benar mengirim pesan WhatsApp, dan gateway punya jeda antar-kirim.
+     */
+    Route::get('register/verifikasi', [AuthController::class, 'showVerifikasi'])
+        ->name('register.verifikasi.form');
+    Route::post('register/verifikasi', [AuthController::class, 'verifikasi'])
+        ->middleware('throttle:20,10')
+        ->name('register.verifikasi');
+    Route::post('register/kirim-ulang', [AuthController::class, 'kirimUlang'])
+        ->middleware('throttle:5,10')
+        ->name('register.kirim-ulang');
+
     // Reset kata sandi lewat OTP WhatsApp.
     Route::get('lupa-password', [PasswordResetController::class, 'showRequestForm'])->name('password.request');
     Route::post('lupa-password', [PasswordResetController::class, 'sendOtp'])->name('password.otp.send');

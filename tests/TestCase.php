@@ -2,10 +2,40 @@
 
 namespace Tests;
 
+use App\Support\Contracts\NotificationChannel;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Testing\TestResponse;
+use Tests\Support\PenangkapPesanWhatsApp;
 
 abstract class TestCase extends BaseTestCase
 {
+    /**
+     * Daftarkan seorang guru sampai akunnya benar-benar jadi.
+     *
+     * Sejak nomor WhatsApp diverifikasi, pendaftaran bukan lagi satu POST:
+     * formulirnya menitipkan data ke cache, kodenya dikirim, dan akun baru
+     * dibuat setelah kode itu dibalas. Test yang subjeknya BUKAN verifikasi —
+     * masa gratis tiga bulan, dimensi karakter, peran yang tidak boleh
+     * diselundupkan — tidak perlu tahu urutan itu, dan tidak boleh ikut patah
+     * setiap kali urutannya berubah.
+     */
+    protected function daftarkanGuru(array $isian): TestResponse
+    {
+        $gateway = new PenangkapPesanWhatsApp;
+        $this->app->instance(NotificationChannel::class, $gateway);
+
+        $balasan = $this->post('/register', $isian);
+
+        $kode = $gateway->kodeTerakhir();
+
+        // Sakelar verifikasi mati, atau pendaftarannya memang ditolak.
+        if ($kode === null) {
+            return $balasan;
+        }
+
+        return $this->post('/register/verifikasi', ['otp' => $kode]);
+    }
+
     /**
      * Pengaman: tolak berjalan bila koneksi test menunjuk database sungguhan.
      *

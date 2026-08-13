@@ -38,11 +38,7 @@ class WhatsAppWebhookController extends Controller
             return response()->json(['ok' => false, 'reason' => 'unknown_session'], 404);
         }
 
-        $user->update([
-            'wa_session_status' => $data['status'],
-            'wa_last_error' => $data['error'] ?? null,
-            'wa_connected_at' => $data['status'] === 'connected' ? now() : null,
-        ]);
+        $user->catatStatusSesi($data['status'], $data['error'] ?? null);
 
         return response()->json(['ok' => true]);
     }

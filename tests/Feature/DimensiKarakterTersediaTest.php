@@ -32,7 +32,7 @@ class DimensiKarakterTersediaTest extends TestCase
 
     public function test_wali_kelas_baru_langsung_punya_dimensi_karakter(): void
     {
-        $this->post(route('register'), [
+        $this->daftarkanGuru([
             'name' => 'Bu Rina',
             'email' => 'rina@sekolah.test',
             'whatsapp_number' => '81234567890',

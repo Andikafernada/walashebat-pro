@@ -66,7 +66,7 @@ class PenautanWhatsAppDariHpTest extends TestCase
 
     public function test_pendaftaran_menerima_nomor_wajar_dan_menyimpannya_berformat_62(): void
     {
-        $this->post('/register', [
+        $this->daftarkanGuru([
             'name' => 'Bu Sri',
             'email' => 'sri@sekolah.sch.id',
             'whatsapp_number' => '0812-3456-7890',

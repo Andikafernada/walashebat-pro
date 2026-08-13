@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Phone;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,17 +12,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
     public const ROLE_TEACHER = 'teacher';
+
     public const ROLE_ADMIN = 'admin';
 
     public const TIER_TRIAL = 'trial';
+
     public const TIER_PRO = 'pro';
 
     /** Lama masa gratis untuk setiap pendaftar baru. */
@@ -116,6 +120,36 @@ class User extends Authenticatable
     }
 
     /** Nomor WhatsApp guru siap dipakai mengirim absensi? */
+    /**
+     * Catat keadaan sesi WhatsApp guru — satu-satunya pintu.
+     *
+     * Status sesi ditulis dari tiga tempat: saat penautan dimulai, saat
+     * halaman menanyakannya berkala, dan saat gateway mendorong perubahannya
+     * lewat webhook. Aturan "tersambung berarti nomornya terbukti" harus
+     * berlaku di ketiganya — ditulis di satu tempat saja, dua tempat lain
+     * akan diam-diam melewatkannya.
+     *
+     * Sesi yang tersambung untuk nomor ini membuktikan nomor itu benar milik
+     * guru: WhatsApp hanya menautkan perangkat setelah pemilik nomor
+     * menyetujuinya dari ponselnya sendiri. Buktinya sama kuat dengan kode
+     * yang dibalas saat mendaftar, jadi tandanya ikut berubah di sini.
+     *
+     * Tanda itu tidak pernah dicabut saat sesi putus. Putusnya sesi berarti
+     * perangkatnya tidak tertaut hari ini, bukan bahwa nomornya ternyata
+     * bukan miliknya.
+     */
+    public function catatStatusSesi(string $status, ?string $galat = null): void
+    {
+        $tersambung = $status === 'connected';
+
+        $this->forceFill([
+            'wa_session_status' => $status,
+            'wa_last_error' => $galat,
+            'wa_connected_at' => $tersambung ? ($this->wa_connected_at ?? now()) : null,
+            'whatsapp_verified' => $this->whatsapp_verified || $tersambung,
+        ])->save();
+    }
+
     public function whatsappConnected(): bool
     {
         return $this->wa_session_status === 'connected' && filled($this->whatsapp_number);
@@ -166,7 +200,7 @@ class User extends Authenticatable
     }
 
     /** Masa gratis pendaftar baru: dipakai saat registrasi dan di test. */
-    public static function akhirMasaGratis(): \Illuminate\Support\Carbon
+    public static function akhirMasaGratis(): Carbon
     {
         return now()->addMonths(self::BULAN_MASA_GRATIS);
     }
@@ -181,7 +215,7 @@ class User extends Authenticatable
      * subscription_tier/ends_at sengaja di-guard dari mass assignment; ditulis
      * resmi lewat forceFill().
      */
-    public function tambahPro(int $months): \Illuminate\Support\Carbon
+    public function tambahPro(int $months): Carbon
     {
         $currentEnd = $this->subscription_ends_at && $this->subscription_ends_at->isFuture()
             ? $this->subscription_ends_at

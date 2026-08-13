@@ -46,7 +46,7 @@ class GerbangLanggananTest extends TestCase
 
     public function test_pendaftar_baru_dapat_tiga_bulan_gratis(): void
     {
-        $this->post(route('register.store'), [
+        $this->daftarkanGuru([
             'name' => 'Ibu Sari',
             'email' => 'sari@contoh.test',
             'whatsapp_number' => '81234567890',
@@ -69,7 +69,7 @@ class GerbangLanggananTest extends TestCase
     {
         // 'role' tidak ada di $fillable; permintaan yang menitipkannya harus
         // tetap menghasilkan akun guru biasa.
-        $this->post(route('register.store'), [
+        $this->daftarkanGuru([
             'name' => 'Penyusup',
             'email' => 'penyusup@contoh.test',
             'whatsapp_number' => '81299998888',

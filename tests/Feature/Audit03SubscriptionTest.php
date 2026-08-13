@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Classroom;
 use App\Models\PaymentProof;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -359,8 +362,8 @@ class Audit03SubscriptionTest extends TestCase
         DB::table('users')->where('id', $admin->id)->update(['role' => 'admin']);
 
         $guru = User::factory()->create(['name' => 'Guru B']);
-        $kelas = \App\Models\Classroom::factory()->create(['user_id' => $guru->id]);
-        \App\Models\Student::factory()->count(3)->create([
+        $kelas = Classroom::factory()->create(['user_id' => $guru->id]);
+        Student::factory()->count(3)->create([
             'user_id' => $guru->id, 'class_id' => $kelas->id,
         ]);
 
@@ -402,7 +405,7 @@ class Audit03SubscriptionTest extends TestCase
     public function test_registrasi_tidak_bisa_menanam_role_admin(): void
     {
         $this->samakanSkemaProduksi();
-        $this->post('/register', [
+        $this->daftarkanGuru([
             'name' => 'Penyusup',
             'email' => 'penyusup@a.test',
             'password' => 'RahasiaKuat123',
@@ -424,7 +427,7 @@ class Audit03SubscriptionTest extends TestCase
 
         // Masa aktifnya harus masa gratis biasa, bukan lima tahun yang diminta penyusup.
         $this->assertTrue(
-            \Illuminate\Support\Carbon::parse($row->subscription_ends_at)->lessThan(now()->addYears(2)),
+            Carbon::parse($row->subscription_ends_at)->lessThan(now()->addYears(2)),
             'masa langganan tidak boleh ditentukan oleh pendaftar',
         );
     }

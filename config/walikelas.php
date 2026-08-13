@@ -59,6 +59,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Verifikasi Nomor Saat Pendaftaran
+    |--------------------------------------------------------------------------
+    | Pendaftar harus membuktikan nomor WhatsApp yang diketiknya benar-benar
+    | miliknya, dengan membalas kode yang dikirim ke nomor itu.
+    |
+    | Sakelar ini ada karena kodenya dikirim lewat gateway: bila sesi pengirim
+    | sistem (SYSTEM_MSISDN) sedang tidak tersambung, tidak ada satu pun kode
+    | yang bisa sampai — dan menyalakan verifikasi berarti menutup pendaftaran
+    | sama sekali. Menutup pendaftaran kadang memang pilihan yang benar, tetapi
+    | itu keputusan operator, bukan sesuatu yang boleh terjadi diam-diam karena
+    | gateway mati semalam.
+    |
+    | Dimatikan, akun dibuat langsung dan whatsapp_verified tetap false —
+    | mencatat keadaan yang sebenarnya, bukan yang kita harapkan.
+    */
+    'verifikasi_nomor_saat_daftar' => (bool) env('WALIKELAS_VERIFIKASI_NOMOR_DAFTAR', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Notifikasi WhatsApp
     |--------------------------------------------------------------------------
     | driver : 'n8n' -> webhook n8n (WhatsApp Gateway workflow)
