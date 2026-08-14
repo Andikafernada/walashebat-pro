@@ -131,10 +131,28 @@
         <div class="mx-auto max-w-md rounded bg-slate-50 border border-slate-200 p-3.5 text-left text-xs text-slate-700 space-y-1.5">
             <p class="font-semibold text-slate-900">Langkahnya:</p>
             <p>1. Buka <strong>WhatsApp</strong> di HP ini.</p>
-            <p>2. Ketuk <strong>Titik Tiga (⋮)</strong> &rarr; <strong>Perangkat Tertaut</strong>.</p>
-            <p>3. Ketuk <strong>Tautkan Perangkat</strong>, lalu pilih <strong>Tautkan dengan nomor telepon</strong>.</p>
-            <p>4. Masukkan kode di atas.</p>
+            <p>2. Android: ketuk <strong>Titik Tiga (⋮)</strong> &rarr; <strong>Perangkat Tertaut</strong>.
+               iPhone: <strong>Setelan</strong> &rarr; <strong>Perangkat Tertaut</strong>.</p>
+            <p>3. Ketuk <strong>Tautkan Perangkat</strong>. Kamera pemindai QR akan terbuka &mdash; itu wajar, jangan ditutup.</p>
+            {{--
+                Langkah 4 dulu berbunyi "pilih Tautkan dengan nomor telepon"
+                seolah ia item menu di sebelah Tautkan Perangkat. Bukan: ia
+                tombol di DALAM layar kamera QR. Guru yang mencarinya di menu
+                hanya menemukan pemindai QR, menyimpulkan fiturnya tidak ada,
+                lalu bertanya. Yang mahal bukan kalimatnya, tapi guru yang
+                menyerah sebelum sempat bertanya.
+            --}}
+            <p>4. <strong>Tetap di layar kamera itu.</strong> Di bagian bawahnya ada tulisan biru
+               <strong>&ldquo;Tautkan dengan nomor telepon&rdquo;</strong> &mdash; ketuk itu.
+               (Di sebagian HP letaknya di pojok kanan atas.)</p>
+            <p>5. Masukkan kode 8 huruf di atas.</p>
         </div>
+
+        <p class="mx-auto max-w-md text-left text-[11px] text-slate-500">
+            Tulisan itu tidak ada sama sekali? WhatsApp Anda terlalu lama &mdash; perbarui lewat
+            Play Store atau App Store. WhatsApp tiruan (GB/FM WhatsApp) memang tidak punya fitur ini;
+            pakai jalur <strong>pindai QR</strong> di bawah sebagai gantinya.
+        </p>
 
         <p class="text-xs font-semibold text-indigo-600">
             ⏳ Menunggu kode dimasukkan… Halaman akan otomatis terhubung.
