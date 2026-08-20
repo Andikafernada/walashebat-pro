@@ -37,10 +37,15 @@ class SeatingController extends Controller
             'seats.*.label' => ['nullable', 'string', 'max:50'],
         ]);
 
+        // 'seats' divalidasi 'sometimes': kunci ini boleh sama sekali tidak
+        // ada di request (klien mengosongkan denah). Tanpa default ini,
+        // $data['seats'] tidak terdefinisi dan foreach()-nya fatal.
+        $seats = $data['seats'] ?? [];
+
         try {
-            DB::transaction(function () use ($class, $data) {
+            DB::transaction(function () use ($class, $seats) {
                 $class->seats()->delete();
-                foreach ($data['seats'] as $seat) {
+                foreach ($seats as $seat) {
                     $class->seats()->create($seat + ['user_id' => $class->user_id]);
                 }
             });
@@ -48,6 +53,6 @@ class SeatingController extends Controller
             return response()->json(['ok' => false, 'message' => 'Gagal menyimpan denah.'], 500);
         }
 
-        return response()->json(['ok' => true, 'count' => count($data['seats'])]);
+        return response()->json(['ok' => true, 'count' => count($seats)]);
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Classroom;
 use App\Models\Schedule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ScheduleController extends Controller
@@ -48,6 +49,27 @@ class ScheduleController extends Controller
                 },
             ],
         ]);
+
+        /*
+         * Bentrok dengan jadwal lain pada HARI yang sama ditolak.
+         *
+         * Dua interval waktu tumpang tindih kecuali salah satu berakhir
+         * sebelum yang lain mulai -- kondisi klasik "start < endLain DAN
+         * end > startLain". Tanpa penjagaan ini, GenerateScheduledAttendance
+         * yang mengambil MIN(start_time) sebagai "jam pertama" bisa memilih
+         * jadwal yang salah bila dua entri bertabrakan.
+         */
+        $bentrok = $class->schedules()
+            ->where('day_of_week', $data['day_of_week'])
+            ->where('start_time', '<', $data['end_time'])
+            ->where('end_time', '>', $data['start_time'])
+            ->exists();
+
+        if ($bentrok) {
+            throw ValidationException::withMessages([
+                'start_time' => 'Jadwal ini bentrok dengan jadwal lain di hari yang sama.',
+            ]);
+        }
 
         $class->schedules()->create($data + ['user_id' => $class->user_id]);
 

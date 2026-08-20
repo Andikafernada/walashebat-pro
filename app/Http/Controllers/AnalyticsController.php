@@ -60,17 +60,27 @@ class AnalyticsController extends Controller
      */
     private function getMonthlyAttendance(int $classId): array
     {
+        $awal = now()->subMonths(11)->startOfMonth();
+        $akhir = now()->endOfMonth();
+
+        /*
+         * SATU query untuk 12 bulan, bukan 12 query terpisah (satu per
+         * bulan). Baris mentahnya dikelompokkan di PHP -- jauh lebih murah
+         * daripada 12 kali bolak-balik ke database untuk satu grafik.
+         */
+        $baris = Attendance::query()
+            ->join('attendance_sessions', 'attendance_sessions.id', '=', 'attendances.attendance_session_id')
+            ->where('attendance_sessions.class_id', $classId)
+            ->whereBetween('attendance_sessions.session_date', [$awal, $akhir])
+            ->where('attendance_sessions.status', '!=', 'cancelled')
+            ->get(['attendances.status as status', 'attendance_sessions.session_date as session_date']);
+
+        $perBulan = $baris->groupBy(fn ($b) => \Illuminate\Support\Carbon::parse($b->session_date)->format('Y-m'));
+
         $months = collect();
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $startOfMonth = $date->copy()->startOfMonth();
-            $endOfMonth = $date->copy()->endOfMonth();
-
-            $attendance = Attendance::whereHas('session', function ($q) use ($classId, $startOfMonth, $endOfMonth) {
-                $q->where('class_id', $classId)
-                    ->whereBetween('session_date', [$startOfMonth, $endOfMonth])
-                    ->where('status', '!=', 'cancelled');
-            })->get(['status']);
+            $attendance = $perBulan->get($date->format('Y-m'), collect());
 
             $total = $attendance->count();
             $present = $attendance->whereIn('status', Attendance::STATUS_MASUK)->count();
@@ -292,12 +302,4 @@ class AnalyticsController extends Controller
         ];
     }
 
-    /**
-     * Export analytics as PDF (placeholder for future)
-     */
-    public function export(Request $request)
-    {
-        // Future: implement PDF export
-        return back()->with('error', 'Fitur export PDF akan segera hadir.');
-    }
 }

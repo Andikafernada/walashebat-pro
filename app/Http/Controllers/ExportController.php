@@ -162,6 +162,11 @@ class ExportController extends Controller
      */
     public function characterPortfolioExcel(Request $request, Classroom $class, Student $student): Response
     {
+        // $class dan $student adalah dua binding independen; tanpa ini, guru
+        // dengan 2+ kelas bisa menukar id siswa di URL dan mendapat dokumen
+        // resmi berkop kelas A berisi data karakter siswa kelas lainnya.
+        abort_unless($student->class_id === $class->id, 404);
+
         $records = $this->prepareCharacterRecordsData($student);
 
         $export = new CharacterPortfolioExport($class, $student, $records);
@@ -176,6 +181,8 @@ class ExportController extends Controller
      */
     public function characterPortfolioPdf(Request $request, Classroom $class, Student $student): Response
     {
+        abort_unless($student->class_id === $class->id, 404);
+
         $records = $this->prepareCharacterRecordsData($student);
 
         $pdf = Pdf::loadView('exports.character-portfolio-pdf', [
