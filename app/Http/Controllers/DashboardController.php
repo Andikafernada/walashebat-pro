@@ -105,9 +105,22 @@ class DashboardController extends Controller
         $waPerluPerhatian = Classroom::whereIn('id', $classIds)->where('auto_attendance', true)->exists()
             && ! auth()->user()->whatsappConnected();
 
+        /*
+         * Kelas utama untuk "Aksi Cepat" — kelas perwalian tunggal didahulukan
+         * karena itu pola paling umum (satu wali kelas memegang satu kelas
+         * perwalian meski mengajar beberapa kelas lain), lalu kelas tunggal
+         * bila guru itu sama sekali tidak berwali kelas. Selain dua kasus itu
+         * tidak ada cara menebak kelas mana yang dimaksud, jadi dibiarkan null
+         * dan tombolnya jatuh balik ke daftar kelas.
+         */
+        $kelasUtama = $idPerwalian->count() === 1
+            ? $kelas->firstWhere('id', $idPerwalian->first())
+            : ($kelas->count() === 1 ? $kelas->first() : null);
+
         return view('dashboard', [
             'chartTrend' => $chartTrend,
             'stats' => $this->angkaHariIni($kelas, $idPerwalian),
+            'kelasUtama' => $kelasUtama,
             'statusKelas' => $statusKelas,
             // Disusun dari koleksi yang SUDAH diambil di atas — papan tugas ini
             // tidak menambah satu query pun.

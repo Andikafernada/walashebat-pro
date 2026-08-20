@@ -130,10 +130,22 @@ class AttendanceMagicLinkController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'nis']);
 
+        /*
+         * Laporan izin/sakit orang tua untuk tanggal sesi ini, dibaca sebagai
+         * catatan di sebelah nama siswa — bukan status yang sudah tercentang.
+         * Lihat komentar di roster.blade.php.
+         */
+        $excuses = \App\Models\StudentExcuse::withoutTenant()
+            ->where('class_id', $session->class_id)
+            ->where('tanggal', $session->session_date)
+            ->get()
+            ->keyBy('student_id');
+
         return view('attendance.public.roster', [
             'session' => $session,
             'students' => $students,
             'statuses' => Attendance::STATUSES,
+            'excuses' => $excuses,
         ]);
     }
 

@@ -62,6 +62,26 @@ class StudentController extends Controller
         // Tanpa loadCount nilainya null dan lencananya hilang begitu saja.
         $class->loadCount('students');
 
+        /*
+         * Ringkasan kelas: satu query agregat, bukan empat COUNT terpisah.
+         * Dihitung dari SELURUH kelas (bukan hasil pencarian $cari) karena
+         * tujuannya memberi gambaran kelas, bukan gambaran hasil cari.
+         *
+         * Dilewati sama sekali untuk kelas ajar: gender, HP ortu, dan poin
+         * disiplin bukan data yang dipegang guru mapel (lihat class-nav),
+         * jadi menghitungnya di sini hanya query yang hasilnya tidak pernah
+         * ditampilkan.
+         */
+        $ringkasan = null;
+        if (! $class->kelasAjar()) {
+            $ringkasan = $class->students()->selectRaw(<<<'SQL'
+                SUM(CASE WHEN gender = 'L' THEN 1 ELSE 0 END) as laki,
+                SUM(CASE WHEN gender = 'P' THEN 1 ELSE 0 END) as perempuan,
+                SUM(CASE WHEN parent_phone IS NOT NULL AND parent_phone != '' THEN 1 ELSE 0 END) as ada_hp_ortu,
+                SUM(CASE WHEN discipline_points < 50 THEN 1 ELSE 0 END) as perlu_perhatian
+            SQL)->first();
+        }
+
         return view('students.index', [
             'classroom' => $class,
             'students' => $students,
@@ -70,6 +90,7 @@ class StudentController extends Controller
             'arah' => $arah,
             'per' => $per,
             'totalKelas' => $class->students_count,
+            'ringkasan' => $ringkasan,
         ]);
     }
 

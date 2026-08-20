@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Classroom;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\Contracts\NotificationChannel;
@@ -180,6 +181,15 @@ class WhatsAppSessionController extends Controller
                     ? $channel->getCircuitStatus()
                     : null,
             ],
+            /*
+             * Pengingat SPP diatur di sini, bukan di halaman kelas, karena
+             * targetnya grup WhatsApp — satu ekor dengan seluruh pengaturan WA
+             * lain di halaman ini. Kelas ajar dikecualikan: iuran adalah urusan
+             * wali kelasnya, bukan guru mapel (lihat kelasAjar()).
+             */
+            'kelasWali' => Classroom::where('is_active', true)
+                ->get(['id', 'name', 'jenis', 'parent_group_wa', 'spp_pengingat_aktif', 'spp_pengingat_tanggal', 'spp_pengingat_teks', 'spp_pengingat_terkirim_pada'])
+                ->reject(fn (Classroom $k) => $k->kelasAjar()),
         ]);
     }
 

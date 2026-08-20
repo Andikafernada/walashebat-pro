@@ -1,26 +1,10 @@
 @php
-    // Dijaga di bawah ~65 karakter: lebih dari itu dipotong Google di hasil
-    // pencarian, dan yang terpotong justru ekor yang membawa kata kuncinya.
-    $judul = 'Wali Kelas Hebat — Absensi WhatsApp & Administrasi Kelas';
-    // "EWS" sengaja tidak dipakai di kalimat jualan. Itu istilah orang dalam
-    // sistem informasi sekolah; wali kelas yang mencari solusi mengetik
-    // "siswa sering bolos", bukan akronimnya. Akronim tetap disebut sekali di
-    // kartu fitur, untuk pembaca yang memang mencarinya.
-    $ringkas = 'Presensi WhatsApp 1 klik, form biodata mandiri siswa, refleksi karakter P5 Kurikulum Merdeka, peringatan dini siswa berisiko, dan laporan PDF siap tanda tangan. Gratis '.$bulanGratis.' bulan, tanpa kartu kredit.';
+    $judul = 'Wali Kelas Hebat — Presensi WhatsApp & Administrasi Kelas Smart AI';
+    $ringkas = 'Presensi WhatsApp 1-klik, Form Biodata Mandiri 33 Field, Refleksi Karakter P5 Kurikulum Merdeka, EWS Siswa Berisiko, dan Cetak Laporan PDF Resmi 1-Klik. Gratis '.$bulanGratis.' bulan, tanpa kartu kredit.';
     $beranda = 'https://walas.my.id/';
-    $gambar = 'https://walas.my.id/og-image.png?v=2';
+    $gambar = 'https://walas.my.id/images/3d_teacher_story.jpg';
     $rupiah = 'Rp '.number_format($hargaPro, 0, ',', '.');
 
-    /*
-     * JSON-LD disusun sebagai array PHP lalu di-encode, bukan ditulis tangan
-     * sebagai teks JSON di dalam Blade. Dua sebabnya: Blade memperlakukan
-     * "@context" sebagai awal direktif dan merusaknya, dan JSON yang ditulis
-     * tangan mudah menjadi tidak valid tanpa ketahuan — Google diam saja saat
-     * menolaknya, jadi kerusakannya tak pernah terlihat dari sisi kita.
-     *
-     * FAQ-nya memakai $faq yang sama dengan yang dirender di bawah, sehingga
-     * apa yang dibaca Google selalu sama persis dengan yang dibaca pengunjung.
-     */
     $skema = [
         '@context' => 'https://schema.org',
         '@graph' => [
@@ -28,27 +12,14 @@
                 '@type' => 'SoftwareApplication',
                 '@id' => $beranda.'#app',
                 'name' => 'Wali Kelas Hebat',
-                'url' => $beranda,
+                'operatingSystem' => 'All',
                 'applicationCategory' => 'EducationalApplication',
-                'operatingSystem' => 'Web',
-                'inLanguage' => 'id-ID',
-                'description' => $ringkas,
-                'screenshot' => $gambar,
-                'featureList' => [
-                    'Presensi WhatsApp Magic Link dan PIN harian',
-                    'Form biodata mandiri siswa tanpa login',
-                    'Refleksi karakter P5 Kurikulum Merdeka',
-                    'Peringatan dini siswa berisiko (EWS) dan poin kedisiplinan',
-                    'Buku kas kelas dengan rekap setoran per siswa',
-                    'Laporan PDF dan Excel siap cetak',
-                ],
                 'offers' => [
                     '@type' => 'Offer',
                     'price' => (string) $hargaPro,
                     'priceCurrency' => 'IDR',
-                    'category' => 'subscription',
-                    'description' => 'Gratis '.$bulanGratis.' bulan, selanjutnya '.$rupiah.' per bulan untuk otomasi WhatsApp.',
                 ],
+                'description' => $ringkas,
             ],
             [
                 '@type' => 'FAQPage',
@@ -62,24 +33,95 @@
         ],
     ];
 
-    /*
-     * Baris contoh untuk daftar hadir di hero.
-     *
-     * Nama-nama ini karangan, dan harus tetap begitu: satu-satunya data nyata
-     * di server ini adalah data produksi, dan menaruh nama siswa sungguhan di
-     * halaman publik adalah kebocoran, bukan pemasaran.
-     */
-    $contohHadir = [
-        ['01', 'Ahmad Fauzi', 'H'],
-        ['02', 'Bunga Lestari', 'H'],
-        ['03', 'Citra Dewi', 'I'],
-        ['04', 'Dimas Prakoso', 'H'],
-        ['05', 'Eka Ramadhani', 'H'],
-        ['06', 'Fitri Handayani', 'A'],
+    $fitur_kreatif = [
+        [
+            'id' => 'wa',
+            'judul' => 'Presensi WA 1-Klik',
+            'sub' => 'Magic Link + PIN Harian',
+            'icon' => '📲',
+            'badge' => 'Otomatisasi WhatsApp',
+            'ringkasan' => 'Wali Kelas atau Seksi Absensi membuka link presensi harian dengan PIN 6-digit. Rekap kehadiran otomatis diproses dan langsung bisa dikirimkan ke grup WhatsApp orang tua.',
+            'poin' => [
+                'Tanpa perlu instalasi aplikasi di HP siswa atau orang tua',
+                'Magic link aman dilengkapi PIN harian yang diperbarui otomatis',
+                'Format rekap WA rapi (Hadir, Sakit, Izin, Alfa) tanpa copy-paste manual'
+            ],
+            'bg_accent' => 'from-emerald-50 to-teal-50 border-emerald-200 text-emerald-800'
+        ],
+        [
+            'id' => 'biodata',
+            'judul' => 'Biodata Mandiri 33 Field',
+            'sub' => 'Disisi Mandiri oleh Ortu/Siswa',
+            'icon' => '📋',
+            'badge' => 'Bebas Ketik Manual',
+            'ringkasan' => 'Cukup bagikan 1 tautan kelas. Orang tua atau siswa melengkapi 33 bidang data lengkap (Identitas, Alamat, HP Ortu, Pekerjaan, KIP/PKH) dari HP masing-masing.',
+            'poin' => [
+                'Wali kelas bebas dari tugas pengetikan 30+ siswa satu per satu',
+                'Terkompilasi otomatis menjadi tabel profil kelas yang rapi & valid',
+                'Dapat diunduh kapan saja ke format Excel (.xlsx)'
+            ],
+            'bg_accent' => 'from-indigo-50 to-blue-50 border-indigo-200 text-indigo-800'
+        ],
+        [
+            'id' => 'p5',
+            'judul' => 'Refleksi Karakter P5',
+            'sub' => '6 Dimensi Profil Pelajar Pancasila',
+            'icon' => '🌟',
+            'badge' => 'Kurikulum Merdeka',
+            'ringkasan' => 'Siswa melakukan penilaian refleksi diri harian/mingguan berbasis 6 Dimensi Pancasila dari HP. Guru tinggal meninjau, memberi umpan balik, dan menyetujui.',
+            'poin' => [
+                'Mencakup Beriman, Berkebinekaan, Gotong Royong, Mandiri, Bernalar Kritis, & Kreatif',
+                'Tersedia grafik statistik perkembangan karakter siswa per semester',
+                'Siap dicetak sebagai Lampiran Portofolio Karakter P5'
+            ],
+            'bg_accent' => 'from-amber-50 to-orange-50 border-amber-200 text-amber-800'
+        ],
+        [
+            'id' => 'ews',
+            'judul' => 'Early Warning System (EWS)',
+            'sub' => 'Deteksi Dini Siswa Berisiko',
+            'icon' => '🛡️',
+            'badge' => 'Peringatan Otomatis',
+            'ringkasan' => 'Sistem otomatis menandai siswa yang Alfa ≥ 3 kali dalam sebulan atau memiliki poin kedisiplinan berisiko, sehingga tindakan pencegahan dapat dilakukan lebih awal.',
+            'poin' => [
+                'Deteksi dini sebelum masalah ketidakhadiran menjadi parah',
+                'Laporan rekap EWS siap digunakan saat koordinasi dengan Guru BK & Kepsek',
+                'Riwayat penanganan siswa tercatat dengan rapi & transparan'
+            ],
+            'bg_accent' => 'from-rose-50 to-pink-50 border-rose-200 text-rose-800'
+        ],
+        [
+            'id' => 'kas',
+            'judul' => 'Buku Kas Digital Kelas',
+            'sub' => 'Iuran & Pengeluaran Transparan',
+            'icon' => '💰',
+            'badge' => 'Kas Transparan 100%',
+            'ringkasan' => 'Pencatatan iuran kas kelas per siswa secara digital. Dilengkapi laporan pemasukan, pengeluaran, dan sisa saldo kas yang dapat dipublikasikan ke orang tua.',
+            'poin' => [
+                'Pencatatan setoran siswa dengan cetak tanda terima digital',
+                'Laporan keuangan bulanan otomatis tanpa hitung rumus Excel',
+                'Transparansi 100% untuk menjaga kepercayaan orang tua siswa'
+            ],
+            'bg_accent' => 'from-cyan-50 to-sky-50 border-cyan-200 text-cyan-800'
+        ],
+        [
+            'id' => 'pdf',
+            'judul' => 'Cetak Laporan PDF 7 Bab',
+            'sub' => 'Format Standar Resmi Siap Cetak',
+            'icon' => '🖨️',
+            'badge' => '1-Klik Siap Tanda Tangan',
+            'ringkasan' => 'Cetak Laporan Wali Kelas lengkap dalam 1 klik. Dilengkapi Sampul Resmi, Penomoran Halaman, Lembar Pengesahan, dan Kolom Tanda Tangan Kepala Sekolah.',
+            'poin' => [
+                'Mencakup Sampul, Biodata, Rekap Absensi, P5, Buku Kas, EWS, & Lembar Pengesahan',
+                'Ukuran A4 standar dinas pendidikan yang rapi & presisi',
+                'Hemat waktu penyusunan laporan dari berjam-jam menjadi 1 detik'
+            ],
+            'bg_accent' => 'from-purple-50 to-fuchsia-50 border-purple-200 text-purple-800'
+        ],
     ];
 @endphp
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="id" class="scroll-smooth h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -87,588 +129,576 @@
 
     <title>{{ $judul }}</title>
     <meta name="description" content="{{ $ringkas }}">
+    <meta name="keywords" content="aplikasi wali kelas, wali kelas hebat, administrasi wali kelas, absensi whatsapp otomatis, kurikulum merdeka, refleksi p5, ews sekolah">
     <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#F6F5F1">
     <link rel="canonical" href="{{ $beranda }}">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="manifest" href="/manifest.webmanifest">
 
-    {{--
-        Tautan aplikasi ini beredar dari mulut ke mulut di grup WhatsApp guru.
-        Tanpa tag di bawah, tautannya muncul di sana sebagai teks telanjang
-        tanpa judul maupun gambar — dan tautan tanpa pratinjau nyaris tidak
-        pernah diklik. Ini kanal penyebaran utamanya, bukan pelengkap.
-    --}}
     <meta property="og:type" content="website">
     <meta property="og:locale" content="id_ID">
-    <meta property="og:site_name" content="Wali Kelas Hebat">
     <meta property="og:url" content="{{ $beranda }}">
     <meta property="og:title" content="{{ $judul }}">
     <meta property="og:description" content="{{ $ringkas }}">
     <meta property="og:image" content="{{ $gambar }}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Wali Kelas Hebat — presensi WhatsApp, biodata mandiri, dan refleksi P5">
-
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $judul }}">
-    <meta name="twitter:description" content="{{ $ringkas }}">
-    <meta name="twitter:image" content="{{ $gambar }}">
 
     <script type="application/ld+json">{!! json_encode($skema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 
-    {{--
-        Tiga keluarga huruf untuk tiga peran, bukan satu keluarga yang
-        diperbesar dan ditebalkan: Archivo membawa judul dengan tulang tebal
-        khas kop formulir, Newsreader membuat isinya terbaca seperti dokumen
-        cetak, dan IBM Plex Mono memegang segala yang berperilaku seperti data
-        — label kolom, nomor, PIN, jam. Bobotnya sengaja sedikit; setiap bobot
-        tambahan adalah berkas yang harus diunduh HP kelas menengah.
-
-        Ketiganya dilayani sendiri dari public/fonts/ lewat @font-face di
-        resources/css/app.css — yang halaman ini sudah muat di bawah. Archivo
-        dan Newsreader HANYA dipakai di sini; halaman lain tidak mengunduhnya
-        karena tidak ada elemen di sana yang memakai keluarganya.
-    --}}
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        /*
-         * Nilainya disamakan dengan tailwind.config.js.
-         *
-         * Halaman ini memang berdiri sendiri — ia tidak memakai palet Tailwind
-         * aplikasi dan tidak seharusnya, karena rupa huruf jualannya berbeda.
-         * Tetapi warnanya harus sama persis: pengunjung yang menekan "Coba
-         * gratis" berpindah dari halaman ini ke halaman daftar dalam satu klik,
-         * dan tinta yang bergeser sedikit di antara keduanya terbaca sebagai
-         * dua situs yang berbeda.
-         */
-        :root {
-            --kertas:      #f7f5f1;  /* = slate-50   */
-            --kertas-tua:  #efebe4;  /* = slate-100  */
-            --garis:       #e3ded4;  /* = slate-200  */
-            --tinta:       #23486b;  /* = indigo-600 */
-            --tinta-muda:  #356494;  /* = indigo-500 */
-            --abu:         #7c7466;  /* = slate-500  */
-            --pena-merah:  #9a3527;  /* = rose-600, HANYA untuk tanda: alfa, belum, koreksi */
-            --hijau:       #2e6446;  /* = emerald-600, HANYA untuk centang hadir */
-            --putih:       #FFFFFF;
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f7ff !important;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, .font-heading { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        .gradient-blue-text {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 40%, #4f46e5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        body { background: var(--kertas); color: #443e33; } /* = slate-700 */
-
-        .judul { font-family: 'Archivo', system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; }
-        .isi   { font-family: 'Newsreader', Georgia, serif; }
-        .data  { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
-
-        /* Label kecil bergaya kop formulir: "NAMA SISWA", "KELAS", "TANGGAL". */
-        .label-formulir {
-            font-family: 'IBM Plex Mono', ui-monospace, monospace;
-            font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
-            text-transform: uppercase; color: var(--abu);
+        .card-informative {
+            background: #ffffff;
+            border: 1.5px solid #bae6fd;
+            box-shadow: 0 14px 35px -10px rgba(14, 165, 233, 0.08);
+            border-radius: 1.75rem;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /*
-            Garis-garis buku tulis di belakang hero. Dipasang HANYA di hero:
-            sekali dipakai ia jadi ciri, dipakai di setiap seksi ia jadi bising
-            dan teks di atasnya sulit dibaca.
-        */
-        .kertas-bergaris {
-            background-image: repeating-linear-gradient(
-                to bottom,
-                transparent 0, transparent 31px,
-                var(--garis) 31px, var(--garis) 32px
-            );
+        .card-informative:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 24px 50px -12px rgba(37, 99, 235, 0.16);
+            transform: translateY(-3px);
         }
 
-        /* Lembar: kartu di sini berperilaku seperti kertas, bukan seperti kaca. */
-        .lembar {
-            background: var(--putih);
-            border: 1px solid var(--garis);
-            border-radius: 4px;
+        .btn-creative-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.625rem;
+            padding: 1rem 2.25rem;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #4f46e5 100%);
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 800;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            text-decoration: none;
+            box-shadow: 0 12px 28px -6px rgba(37, 99, 235, 0.45);
+            transition: all 0.3s ease;
         }
 
-        /* Garis bawah judul, seperti coretan penegas dengan pena merah. */
-        .garis-tegas {
-            background-image: linear-gradient(var(--pena-merah), var(--pena-merah));
-            background-size: 100% 3px;
-            background-position: 0 92%;
-            background-repeat: no-repeat;
+        .btn-creative-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 18px 40px -6px rgba(37, 99, 235, 0.6);
         }
 
-        /*
-            Tanda tangan halaman: daftar hadir yang mencentang dirinya sendiri.
-            Satu per satu, secepat orang benar-benar mencentang di layar HP.
-        */
-        @keyframes tercentang {
-            from { opacity: 0; transform: translateY(3px); }
-            to   { opacity: 1; transform: none; }
-        }
-        .tanda { opacity: 0; animation: tercentang .3s ease-out forwards; }
-
-        /* Gerak bukan hiasan wajib. Yang mematikannya tetap melihat hasil akhir. */
-        @media (prefers-reduced-motion: reduce) {
-            html { scroll-behavior: auto; }
-            .tanda { opacity: 1; animation: none; }
-        }
-
-        details > summary { list-style: none; cursor: pointer; }
-        details > summary::-webkit-details-marker { display: none; }
-        details[open] .faq-panah { transform: rotate(180deg); }
-
-        /* Fokus keyboard harus terlihat di atas kertas terang. */
-        a:focus-visible, summary:focus-visible, button:focus-visible {
-            outline: 2px solid var(--tinta);
-            outline-offset: 3px;
+        .btn-creative-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 1.875rem;
+            border-radius: 9999px;
+            border: 1.5px solid #93c5fd;
+            background: #ffffff;
+            color: #1e3a8a;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.04);
         }
 
-        /* Sasaran #anchor tidak boleh tersembunyi di balik navbar melayang. */
-        section[id] { scroll-margin-top: 6rem; }
-        /* Di HP navbar dua tingkat (logo + deretan pil), jadi lebih tinggi. */
-        @media (max-width: 767px) { section[id] { scroll-margin-top: 9rem; } }
+        .btn-creative-secondary:hover {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .pulse-emerald {
+            width: 8px; height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 12px #10b981;
+            animation: pdot 2s infinite;
+        }
+        @keyframes pdot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.65); }
+        }
+
+        .float-hero-img {
+            animation: floatHero 6s ease-in-out infinite;
+        }
+        @keyframes floatHero {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
     </style>
 </head>
-<body class="min-h-screen antialiased">
+<body class="min-h-screen flex flex-col antialiased">
 
-    <a href="#fitur" class="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-[color:var(--tinta)] focus:text-white focus:font-semibold">
-        Lewati ke konten
-    </a>
-
-    <!-- NAVBAR -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-[color:var(--kertas)] border-b border-[color:var(--garis)]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-            <a href="/" class="flex items-center gap-3">
-                <span class="flex h-9 w-9 items-center justify-center border border-[color:var(--tinta)] text-[color:var(--tinta)] judul text-sm" aria-hidden="true">WK</span>
-                <span class="leading-none">
-                    <span class="judul text-base text-[color:var(--tinta)] block">WALI KELAS HEBAT</span>
-                    <span class="label-formulir">walas.my.id</span>
-                </span>
+    {{-- CLEAN STICKY NAVBAR --}}
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-sky-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            {{-- Brand Logo --}}
+            <a href="/" class="flex items-center gap-3.5 no-underline group">
+                <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform"
+                     style="background: linear-gradient(135deg,#2563eb,#4f46e5); box-shadow: 0 4px 14px rgba(37,99,235,.35);">🎓</div>
+                <div>
+                    <span class="font-black text-xl text-slate-900 block leading-none" style="font-family:'Plus Jakarta Sans',sans-serif;">Wali Kelas <span class="gradient-blue-text">Hebat</span></span>
+                    <span class="text-[10px] font-bold tracking-widest text-sky-600 uppercase block mt-1">walas.my.id</span>
+                </div>
             </a>
 
-            {{--
-                Setiap butir di sini WAJIB punya <section id="..."> pasangannya.
-                Menu lama menjanjikan empat halaman yang tidak pernah dibuat,
-                jadi empat dari lima tautannya mati: diklik, halaman diam saja.
-                Pengunjung tidak menyimpulkan "menunya salah", ia menyimpulkan
-                "situsnya rusak" — lalu pergi. LandingTest menjaga agar setiap
-                tautan di sini benar-benar punya tujuan.
-            --}}
-            <nav class="hidden md:flex items-center gap-7 label-formulir" aria-label="Navigasi utama">
-                <a href="#fitur" class="hover:text-[color:var(--tinta)]">Fitur</a>
-                <a href="#wa" class="hover:text-[color:var(--tinta)]">WhatsApp</a>
-                <a href="#p5" class="hover:text-[color:var(--tinta)]">Refleksi P5</a>
-                <a href="#harga" class="hover:text-[color:var(--tinta)]">Harga</a>
-                <a href="#faq" class="hover:text-[color:var(--tinta)]">FAQ</a>
-            </nav>
-
-            <div class="flex items-center gap-3">
-                <a href="{{ route('login') }}" class="hidden sm:inline-flex label-formulir hover:text-[color:var(--tinta)]">Masuk</a>
-                <a href="{{ route('register') }}" class="h-10 px-4 inline-flex items-center bg-[color:var(--tinta)] text-white judul text-sm">
-                    Coba Gratis
-                </a>
+            {{-- Navigation Links --}}
+            <div class="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600">
+                <a href="#fitur-eksplorasi" class="hover:text-blue-600 transition-colors">Panduan Fitur</a>
+                <a href="#simulasi" class="hover:text-blue-600 transition-colors">Simulasi Otomasi</a>
+                <a href="#perbandingan" class="hover:text-blue-600 transition-colors">Kisah Guru</a>
+                <a href="#harga" class="hover:text-blue-600 transition-colors">Harga Paket</a>
+                <a href="#faq" class="hover:text-blue-600 transition-colors">FAQ</a>
             </div>
+
+            {{-- Actions --}}
+            <div class="hidden md:flex items-center gap-3.5">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="btn-creative-primary" style="padding: 0.625rem 1.375rem; font-size: 0.875rem;">
+                        Dashboard
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" class="btn-creative-secondary" style="padding: 0.625rem 1.25rem; font-size: 0.875rem;">
+                        Masuk
+                    </a>
+                    <a href="{{ route('register') }}" class="btn-creative-primary" style="padding: 0.625rem 1.5rem; font-size: 0.875rem;">
+                        Coba Gratis {{ $bulanGratis }} Bulan
+                    </a>
+                @endauth
+            </div>
+
+            {{-- Mobile Toggle Button --}}
+            <button @click="open = !open" x-data="{ open: false }" type="button" class="md:hidden p-2.5 rounded-xl text-slate-600 hover:text-slate-900 bg-sky-50 border border-sky-200" aria-label="Menu Toggle">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
         </div>
-
-        {{--
-            Di bawah md, nav di atas tersembunyi — dan sampai sekarang itu berarti
-            pengunjung HP tidak punya jalan ke Harga atau FAQ selain menggulir
-            seluruh halaman. Padahal hampir semua wali kelas membukanya dari HP.
-
-            Deretan pil yang bisa digeser, bukan menu hamburger: hamburger butuh
-            state, panel, jebakan fokus, dan tombol tutup — untuk lima tautan
-            jangkar di satu halaman. Yang ini tidak memakai JavaScript sama
-            sekali, jadi tidak ada yang bisa rusak diam-diam.
-        --}}
-        <nav class="md:hidden border-t border-[color:var(--garis)] overflow-x-auto" aria-label="Navigasi bagian halaman">
-            <div class="flex gap-4 px-4 py-2.5 w-max label-formulir">
-                <a href="#fitur" class="whitespace-nowrap">Fitur</a>
-                <a href="#wa" class="whitespace-nowrap">WhatsApp</a>
-                <a href="#p5" class="whitespace-nowrap">Refleksi P5</a>
-                <a href="#harga" class="whitespace-nowrap">Harga</a>
-                <a href="#faq" class="whitespace-nowrap">FAQ</a>
-                <a href="{{ route('login') }}" class="whitespace-nowrap text-[color:var(--tinta)]">Masuk</a>
-            </div>
-        </nav>
     </header>
 
-    <!-- HERO -->
-    {{-- pt lebih besar di HP: navbar di sana dua tingkat, bukan satu. --}}
-    <section class="relative pt-36 md:pt-28 pb-16 kertas-bergaris">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-
-            <div class="pt-4">
-                {{--
-                    Lencana ini dulu berbunyi "Aplikasi ... No. 1 di Indonesia".
-                    Klaim itu tidak bisa dibuktikan, dan pembaca yang skeptis justru
-                    jadi kurang percaya pada sisa halaman. Diganti janji yang
-                    memang ditepati kodenya: masa gratis penuh tanpa kartu kredit.
-                --}}
-                <p class="label-formulir text-[color:var(--tinta)]">
-                    Gratis {{ $bulanGratis }} bulan penuh — tanpa kartu kredit
-                </p>
-
-                <h1 class="judul text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.08] text-[color:var(--tinta)] mt-5">
-                    Administrasi wali kelas selesai <span class="garis-tegas">sebelum bel istirahat</span>.
-                </h1>
-
-                {{--
-                    Paragraf ini pernah memuat **Wali Kelas Hebat** dengan bintang
-                    Markdown. Blade bukan Markdown: bintangnya tercetak apa adanya
-                    di layar, dan itu terpampang di kalimat pembuka halaman muka.
-                --}}
-                <p class="isi text-lg sm:text-xl text-[color:var(--abu)] leading-relaxed mt-6 max-w-xl">
-                    Tinggalkan rekap manual yang melelahkan. <strong class="text-[#22252B] font-medium">Wali Kelas Hebat</strong>
-                    menghadirkan presensi 1 klik lewat WhatsApp, form biodata mandiri siswa, peringatan dini
-                    untuk siswa yang mulai sering absen, dan refleksi P5 Kurikulum Merdeka — semuanya dari satu dasbor.
-                </p>
-
-                <div class="mt-8 flex flex-col sm:flex-row sm:items-center gap-4">
-                    <a href="{{ route('register') }}" class="h-12 px-6 inline-flex items-center justify-center gap-2 bg-[color:var(--tinta)] text-white judul text-sm hover:bg-[#16225A] transition-colors">
-                        Mulai buat kelas
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
-                    <a href="#wa" class="h-12 px-6 inline-flex items-center justify-center border border-[color:var(--garis)] bg-[color:var(--putih)] judul text-sm text-[color:var(--tinta)] hover:border-[color:var(--tinta)] transition-colors">
-                        Lihat cara kerjanya
-                    </a>
-                </div>
-
-                <p class="isi text-sm text-[color:var(--abu)] mt-6">
-                    Untuk wali kelas SD, SMP, SMA, dan SMK. Siswa tidak perlu memasang aplikasi apa pun.
-                </p>
-            </div>
-
-            {{--
-                Tanda tangan halaman ini: bukan gambar dasbor, melainkan benda
-                kerjanya sendiri. Wali kelas mengenali daftar hadir sebelum ia
-                sempat membaca satu kalimat pun — dan yang dijanjikan halaman ini
-                memang persis itu: daftar yang terisi tanpa ia mengetik.
-            --}}
-            <div class="lembar overflow-hidden">
-                <div class="flex items-baseline justify-between gap-3 px-4 sm:px-5 py-3 border-b border-[color:var(--garis)] bg-[color:var(--kertas-tua)]">
-                    <span class="label-formulir text-[color:var(--tinta)]">Daftar Hadir</span>
-                    <span class="data text-[11px] text-[color:var(--abu)]">Kelas 5A &middot; 11 Agu</span>
-                </div>
-
-                <table class="table">
-                    <caption class="sr-only">Contoh daftar hadir kelas yang terisi lewat tautan presensi</caption>
-                    <thead>
-                        <tr class="text-[color:var(--abu)] border-b border-[color:var(--garis)]">
-                            <th scope="col" class="text-left font-semibold px-4 sm:px-5 py-2 w-10">No</th>
-                            <th scope="col" class="text-left font-semibold py-2">Nama</th>
-                            <th scope="col" class="font-semibold py-2 w-8">H</th>
-                            <th scope="col" class="font-semibold py-2 w-8">I</th>
-                            <th scope="col" class="font-semibold py-2 w-8">S</th>
-                            <th scope="col" class="font-semibold py-2 w-8 pr-4 sm:pr-5">A</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($contohHadir as $i => [$no, $nama, $status])
-                            <tr class="{{ $i % 2 ? 'bg-[color:var(--kertas)]' : '' }}">
-                                <td class="px-4 sm:px-5 py-2.5 text-[color:var(--abu)]">{{ $no }}</td>
-                                <td class="py-2.5 whitespace-nowrap">{{ $nama }}</td>
-                                @foreach (['H', 'I', 'S', 'A'] as $kolom)
-                                    <td class="py-2.5 text-center {{ $kolom === 'A' ? 'pr-4 sm:pr-5' : '' }}">
-                                        @if ($status === $kolom)
-                                            <span class="tanda inline-block font-semibold {{ $kolom === 'A' ? 'text-[color:var(--pena-merah)]' : ($kolom === 'H' ? 'text-[color:var(--hijau)]' : 'text-[color:var(--tinta)]') }}"
-                                                  style="animation-delay: {{ 250 + $i * 180 }}ms">
-                                                {{ $kolom === 'H' ? '✓' : $kolom }}
-                                            </span>
-                                        @else
-                                            <span class="text-[color:var(--garis)]" aria-hidden="true">·</span>
-                                        @endif
-                                    </td>
-                                @endforeach
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-
-                <div class="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-t border-[color:var(--garis)] bg-[color:var(--kertas-tua)]">
-                    <span class="data text-[11px] text-[color:var(--hijau)]">terkirim 06:47 &larr; WhatsApp</span>
-                    <span class="data text-[11px] text-[color:var(--abu)]">34 / 36 hadir</span>
-                </div>
-            </div>
-        </div>
-
-        <p class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 data text-[11px] text-[color:var(--abu)]">
-            Ilustrasi. Nama-nama di atas karangan, bukan data siswa sungguhan.
-        </p>
-    </section>
-
-    <!-- FITUR -->
-    <section id="fitur" class="py-20 border-t border-[color:var(--garis)]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-2xl">
-                <span class="label-formulir">Solusi administrasi kelas</span>
-                <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3">Enam pekerjaan yang tidak lagi manual</h2>
-                <p class="isi text-lg text-[color:var(--abu)] mt-4">Dirancang untuk memangkas waktu administrasi wali kelas dari berjam-jam menjadi hitungan menit.</p>
-            </div>
-
-            {{--
-                Tanpa ikon. Kartu ini dulu dibuka emoji (   ), dan di tata
-                rupa yang meniru formulir cetak, emoji adalah satu-satunya benda
-                yang tidak mungkin ada di atas kertas. Yang menggantikannya bukan
-                ikon lain, melainkan tidak ada apa-apa: judul yang tegas lebih
-                cepat dibaca daripada gambar kecil yang harus ditafsirkan.
-            --}}
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[color:var(--garis)] border border-[color:var(--garis)] mt-12">
-                @foreach ([
-                    ['Presensi WhatsApp Magic Link & PIN', 'Terbitkan tautan absensi sekali pakai dan PIN harian 6 digit yang dikirim otomatis ke Seksi Absensi atau grup kelas Anda.'],
-                    ['Form Biodata Mandiri Siswa', 'Siswa mengisi data pribadi, orang tua, pekerjaan, KIP/PKH, hobi, dan cita-cita sendiri lewat tautan publik beralamat acak — tanpa login.'],
-                    ['Peringatan Dini Siswa Berisiko (EWS)', 'Sistem menandai siswa yang mulai berisiko — alfa berulang atau poin disiplin menipis — selagi masih bisa ditangani, bukan setelah kepala sekolah bertanya.'],
-                    ['Refleksi Karakter P5 Merdeka', 'Jurnal perkembangan enam dimensi Profil Pelajar Pancasila, lengkap dengan analisis persentase dan lencana penghargaan siswa.'],
-                    ['Buku Kas & Rekap Setoran Siswa', 'Lihat siapa yang sudah setor dan siapa yang belum dalam satu daftar, centang yang membayar hari ini sekaligus, lalu cetak saldo yang bisa dipertanggungjawabkan.'],
-                    ['Cetak Laporan PDF 1 Klik', 'Rekap bulanan, leger absensi, portofolio siswa, dan laporan wali kelas siap dicetak dan ditandatangani kepala sekolah.'],
-                ] as $i => [$nama, $isi])
-                    <div class="bg-[color:var(--putih)] p-7 space-y-3">
-                        <span class="data text-[11px] text-[color:var(--abu)]">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
-                        <h3 class="judul text-lg text-[color:var(--tinta)] leading-snug">{{ $nama }}</h3>
-                        <p class="isi text-[color:var(--abu)] leading-relaxed">{{ $isi }}</p>
+    {{-- HERO SECTION KREATIF --}}
+    <section class="py-16 sm:py-24 bg-gradient-to-b from-sky-100/60 via-sky-50/40 to-transparent">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+                
+                {{-- Left Content --}}
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    {{-- Badge Pill --}}
+                    <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-xs sm:text-sm font-extrabold bg-sky-100 border border-sky-300 text-sky-800">
+                        <span class="pulse-emerald"></span>
+                        <span>Solusi Otomatisasi Administrasi Wali Kelas Indonesia</span>
                     </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
 
-    <!-- INTEGRASI WHATSAPP -->
-    <section id="wa" class="py-20 border-t border-[color:var(--garis)]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-14 items-start">
-                <div>
-                    <span class="label-formulir">Integrasi WhatsApp</span>
-                    <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3 leading-tight">Absensi masuk tanpa Anda mengetik apa pun</h2>
-                    <p class="isi text-lg text-[color:var(--abu)] mt-5 leading-relaxed">
-                        Rekap kehadiran biasanya berhenti di satu orang: wali kelas yang harus menyalin ulang laporan dari grup.
-                        Di sini pekerjaan itu berpindah ke tautan sekali pakai yang dikirim sendiri oleh sistem setiap pagi.
+                    {{-- Headline --}}
+                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black leading-tight text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">
+                        Presensi WhatsApp Otomatis &amp;<br>
+                        <span class="gradient-blue-text">Administrasi Kelas Rapi 1-Klik</span>
+                    </h1>
+
+                    {{-- Description --}}
+                    <p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                        Tinggalkan rekap manual yang menyita waktu malam Anda. Nikmati <strong>Presensi WhatsApp 1-Klik</strong>, <strong>Form Biodata Mandiri 33 Field</strong>, <strong>Refleksi P5 Merdeka</strong>, dan <strong>Cetak Laporan PDF Resmi</strong>.
                     </p>
 
-                    {{--
-                        Bernomor karena urutannya memang informasi: langkah 3
-                        mustahil sebelum langkah 1. Di seksi lain penomoran
-                        serupa hanya akan jadi hiasan, jadi tidak dipakai.
-                    --}}
-                    <ol class="mt-9 space-y-7">
-                        @foreach ([
-                            ['Sistem menerbitkan tautan harian', 'Setiap pagi, satu tautan absensi sekali pakai dan PIN 6 digit dibuat otomatis untuk tiap kelas.'],
-                            ['Dikirim ke grup atau Seksi Absensi', 'Pesan berangkat sendiri lewat gateway WhatsApp Anda pada jam yang Anda tentukan.'],
-                            ['Petugas mencentang di satu layar', 'Cukup dibuka di peramban HP. Tidak perlu memasang aplikasi dan tidak perlu membuat akun.'],
-                            ['Rekap langsung masuk dasbor', 'Begitu dikirim, tautannya tertutup dan hasilnya tampil di dasbor — siap dicetak kapan pun.'],
-                        ] as $i => [$langkah, $rinci])
-                            <li class="flex gap-5">
-                                <span class="flex-none data text-sm font-semibold text-[color:var(--tinta)] pt-0.5">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
-                                <div class="border-l border-[color:var(--garis)] pl-5">
-                                    <h3 class="judul text-base text-[color:var(--tinta)]">{{ $langkah }}</h3>
-                                    <p class="isi text-[color:var(--abu)] mt-1.5 leading-relaxed">{{ $rinci }}</p>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ol>
+                    {{-- CTAs --}}
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 pt-2">
+                        <a href="{{ route('register') }}" class="btn-creative-primary">
+                            <span>🚀 Mulai Buat Kelas Gratis</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                        <a href="#fitur-eksplorasi" class="btn-creative-secondary">
+                            📖 Jelajahi Panduan Fitur
+                        </a>
+                    </div>
+
+                    {{-- Guarantees --}}
+                    <div class="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs sm:text-sm text-slate-500 font-semibold pt-2">
+                        <span class="flex items-center gap-1.5"><span class="text-emerald-600 font-black">✓</span> Gratis {{ $bulanGratis }} Bulan Pertama</span>
+                        <span class="flex items-center gap-1.5"><span class="text-emerald-600 font-black">✓</span> Tanpa Kartu Kredit</span>
+                        <span class="flex items-center gap-1.5"><span class="text-emerald-600 font-black">✓</span> Data Aman &amp; Tidak Terkunci</span>
+                    </div>
                 </div>
 
-                <!-- Ilustrasi percakapan WhatsApp -->
-                <div class="lembar p-5 sm:p-6 space-y-4">
-                    <div class="flex items-center justify-between gap-3 border-b border-[color:var(--garis)] pb-4">
-                        <span class="judul text-sm text-[color:var(--tinta)]">Grup Kelas 5A</span>
-                        <span class="data text-[11px] text-[color:var(--abu)]">36 anggota</span>
-                    </div>
-
-                    <div class="border-l-2 border-[color:var(--hijau)] bg-[color:var(--kertas)] p-4 isi leading-relaxed">
-                        <p class="label-formulir text-[color:var(--hijau)] mb-2">Wali Kelas Hebat</p>
-                        <p>Assalamualaikum. Berikut tautan presensi Kelas 5A untuk hari ini.</p>
-                        <p class="mt-2 data text-xs text-[color:var(--tinta)] break-all">walas.my.id/a/8f3c1d…</p>
-                        <p class="mt-2">PIN hari ini: <strong class="data font-semibold tracking-widest">482619</strong></p>
-                        <p class="mt-2 text-sm text-[color:var(--abu)]">Tautan tertutup otomatis setelah presensi dikirim.</p>
-                    </div>
-
-                    <div class="border-l-2 border-[color:var(--garis)] bg-[color:var(--kertas)] p-4 ml-6 isi">
-                        <p class="label-formulir mb-2">Seksi Absensi</p>
-                        <p>Sudah dikirim, Bu. Hadir 34, izin 1, sakit 1.</p>
-                    </div>
-
-                    <p class="data text-[11px] text-[color:var(--abu)] pt-1">Ilustrasi. Nomor dan PIN di atas bukan data sungguhan.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- REFLEKSI P5 -->
-    <section id="p5" class="py-20 border-t border-[color:var(--garis)]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-2xl">
-                <span class="label-formulir">Kurikulum Merdeka</span>
-                <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3">Refleksi karakter P5 yang benar-benar terisi</h2>
-                <p class="isi text-lg text-[color:var(--abu)] mt-4 leading-relaxed">
-                    Penilaian karakter sering berhenti sebagai kolom kosong yang diisi buru-buru menjelang rapor.
-                    Di sini siswa menulis refleksinya sendiri sepanjang semester, dan wali kelas tinggal membaca perkembangannya.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-[color:var(--garis)] border border-[color:var(--garis)] mt-12">
-                @foreach ([
-                    'Beriman & Bertakwa',
-                    'Berkebinekaan Global',
-                    'Bergotong Royong',
-                    'Mandiri',
-                    'Bernalar Kritis',
-                    'Kreatif',
-                ] as $dimensi)
-                    <div class="bg-[color:var(--putih)] px-4 py-6 text-center">
-                        <h3 class="judul text-sm text-[color:var(--tinta)] leading-snug">{{ $dimensi }}</h3>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8 mt-12">
-                @foreach ([
-                    ['Siswa mengisi sendiri', 'Lewat portal siswa, anak menuliskan apa yang sudah baik, apa yang perlu diperbaiki, dan rencana tindak lanjutnya.'],
-                    ['Wali kelas memberi umpan balik', 'Setiap refleksi bisa dibalas. Catatan itu tersimpan sebagai jejak pembinaan sepanjang semester.'],
-                    ['Portofolio siap dicetak', 'Perkembangan per dimensi terangkum dalam grafik dan portofolio PDF — bahan siap pakai saat pembagian rapor.'],
-                ] as [$judulKartu, $isiKartu])
-                    <div class="border-t-2 border-[color:var(--tinta)] pt-5">
-                        <h3 class="judul text-base text-[color:var(--tinta)]">{{ $judulKartu }}</h3>
-                        <p class="isi text-[color:var(--abu)] mt-2 leading-relaxed">{{ $isiKartu }}</p>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    <!-- HARGA -->
-    <section id="harga" class="py-20 border-t border-[color:var(--garis)]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-2xl">
-                <span class="label-formulir">Harga</span>
-                <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3">Gratis {{ $bulanGratis }} bulan, lalu {{ $rupiah }} sebulan</h2>
-                <p class="isi text-lg text-[color:var(--abu)] mt-4 leading-relaxed">
-                    Tidak ada kartu kredit, tidak ada penagihan otomatis, dan tidak ada kejutan di akhir masa gratis.
-                </p>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-8 mt-12 max-w-4xl">
-
-                <div class="lembar p-7 flex flex-col">
-                    <h3 class="label-formulir">Masa Gratis</h3>
-                    <p class="judul text-5xl text-[color:var(--tinta)] mt-4">Rp 0</p>
-                    <p class="isi text-[color:var(--abu)] mt-2">{{ $bulanGratis }} bulan penuh sejak akun dibuat.</p>
-                    <ul class="mt-6 space-y-2.5 isi flex-1">
-                        @foreach ([
-                            'Seluruh fitur terbuka tanpa batas kelas',
-                            'Presensi WhatsApp otomatis aktif',
-                            'Biodata mandiri, peringatan dini, buku kas, refleksi P5',
-                            'Cetak laporan PDF dan Excel',
-                            'Tanpa kartu kredit',
-                        ] as $butir)
-                            <li class="flex gap-3">
-                                <span class="data text-[color:var(--hijau)]" aria-hidden="true">✓</span>
-                                <span>{{ $butir }}</span>
-                            </li>
-                        @endforeach
-                    </ul>
-                    <a href="{{ route('register') }}" class="mt-8 h-12 inline-flex items-center justify-center border border-[color:var(--tinta)] judul text-sm text-[color:var(--tinta)] hover:bg-[color:var(--kertas)] transition-colors">
-                        Daftar gratis
-                    </a>
-                </div>
-
-                <div class="lembar p-7 flex flex-col border-[color:var(--tinta)] border-2">
-                    <div class="flex items-baseline justify-between gap-3">
-                        <h3 class="label-formulir text-[color:var(--tinta)]">PRO</h3>
-                        <span class="data text-[11px] text-[color:var(--abu)]">setelah masa gratis</span>
-                    </div>
-                    <p class="mt-4">
-                        <span class="judul text-5xl text-[color:var(--tinta)]">{{ $rupiah }}</span>
-                        <span class="isi text-[color:var(--abu)]"> / bulan</span>
-                    </p>
-                    <p class="isi text-[color:var(--abu)] mt-2">Transfer DANA, diverifikasi manual oleh operator.</p>
-                    <ul class="mt-6 space-y-2.5 isi flex-1">
-                        @foreach ([
-                            'Membuka kembali otomasi WhatsApp',
-                            'Pengiriman tautan presensi terjadwal',
-                            'Balasan otomatis untuk orang tua',
-                            'Perpanjang kapan saja, berhenti kapan saja',
-                        ] as $butir)
-                            <li class="flex gap-3">
-                                <span class="data text-[color:var(--hijau)]" aria-hidden="true">✓</span>
-                                <span>{{ $butir }}</span>
-                            </li>
-                        @endforeach
-                    </ul>
-                    <a href="{{ route('register') }}" class="mt-8 h-12 inline-flex items-center justify-center bg-[color:var(--tinta)] text-white judul text-sm hover:bg-[#16225A] transition-colors">
-                        Mulai dari masa gratis
-                    </a>
-                </div>
-            </div>
-
-            {{--
-                Ini pembeda yang paling menenangkan calon pengguna, jadi ia
-                berdiri sendiri alih-alih terselip sebagai butir kecil: data
-                absensi adalah dokumen wajib sekolah, dan menyanderanya untuk
-                menagih pembayaran akan merugikan pihak yang paling tidak
-                bersalah — wali kelas yang belum sempat memperpanjang.
-            --}}
-            <div class="mt-10 max-w-4xl border-l-2 border-[color:var(--pena-merah)] pl-6 py-1">
-                <h3 class="judul text-lg text-[color:var(--tinta)]">Masa gratis habis tidak berarti aplikasi terkunci</h3>
-                <p class="isi text-[color:var(--abu)] mt-2 leading-relaxed max-w-2xl">
-                    Absensi, biodata siswa, buku kas, dan seluruh laporan tetap bisa dibuka, diubah, dan dicetak selamanya.
-                    Yang berhenti hanya pengiriman WhatsApp otomatis. Data sekolah tidak kami jadikan alat tagih.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ -->
-    <section id="faq" class="py-20 border-t border-[color:var(--garis)]">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <span class="label-formulir">Tanya Jawab</span>
-            <h2 class="judul text-3xl sm:text-4xl text-[color:var(--tinta)] mt-3 mb-10">Pertanyaan yang sering masuk</h2>
-
-            {{--
-                "T" dan "J" alih-alih ikon: itu penanda tanya-jawab yang sudah
-                dipakai di lembar-lembar sekolah jauh sebelum ada situs web,
-                jadi ia menjelaskan dirinya sendiri tanpa perlu dipelajari.
-            --}}
-            <div class="border-t border-[color:var(--garis)]">
-                @foreach ($faq as $tanya)
-                    <details class="group border-b border-[color:var(--garis)]">
-                        <summary class="flex items-start justify-between gap-4 py-5">
-                            <div class="flex gap-4">
-                                <span class="data text-sm font-semibold text-[color:var(--pena-merah)] pt-0.5" aria-hidden="true">T</span>
-                                <h3 class="judul text-base text-[color:var(--tinta)]">{{ $tanya['q'] }}</h3>
-                            </div>
-                            <svg class="faq-panah flex-none w-4 h-4 mt-1 text-[color:var(--abu)] transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </summary>
-                        <div class="flex gap-4 pb-6 -mt-1 isi text-[color:var(--abu)] leading-relaxed">
-                            <span class="data text-sm font-semibold text-[color:var(--hijau)]" aria-hidden="true">J</span>
-                            <p>{{ $tanya['a'] }}</p>
+                {{-- Right 3D Character Illustration Frame --}}
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="float-hero-img card-informative p-5 text-center space-y-4 max-w-md w-full">
+                        <div class="overflow-hidden rounded-2xl border border-sky-100 shadow-md">
+                            <img src="/images/3d_teacher_story.jpg" alt="3D Character Wali Kelas Relief" class="w-full h-auto object-cover">
                         </div>
-                    </details>
-                @endforeach
+
+                        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-800">
+                            <div class="flex items-center gap-2.5 text-left">
+                                <span class="text-xl">✨</span>
+                                <div>
+                                    <span class="font-bold block">Wali Kelas Tenang &amp; Bebas Pusing</span>
+                                    <span class="text-[11px] text-emerald-600">Presensi WA &amp; Laporan PDF Selesai Otomatis</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full shrink-0">ONLINE ✓</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    {{-- MODUL EKSPLORASI FITUR INFORMATIF --}}
+    <section id="fitur-eksplorasi" class="py-20 sm:py-28 bg-white border-t border-sky-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="text-xs font-bold uppercase tracking-widest text-blue-600">Panduan Modul Lengkap</span>
+                <h2 class="text-2xl sm:text-4xl font-black text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">
+                    Informasi Fitur Utama <span class="gradient-blue-text">Wali Kelas Hebat</span>
+                </h2>
+                <p class="text-base text-slate-600">Pelajari bagaimana setiap fitur membantu memangkas beban kerja administrasi kelas Anda secara nyata.</p>
             </div>
 
-            <div class="mt-14 border-t-2 border-[color:var(--tinta)] pt-8">
-                <h2 class="judul text-2xl sm:text-3xl text-[color:var(--tinta)]">Siap memangkas pekerjaan administrasi Anda?</h2>
-                <p class="isi text-lg text-[color:var(--abu)] mt-3">Buat kelas pertama Anda hari ini. Gratis {{ $bulanGratis }} bulan penuh.</p>
-                <a href="{{ route('register') }}" class="mt-7 h-12 px-6 inline-flex items-center justify-center gap-2 bg-[color:var(--tinta)] text-white judul text-sm hover:bg-[#16225A] transition-colors">
-                    Mulai buat kelas
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach($fitur_kreatif as $fk)
+                    <div class="card-informative p-7 space-y-5 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0" style="background: rgba(37,99,235,.08); border: 1px solid rgba(37,99,235,.15);">
+                                    {{ $fk['icon'] }}
+                                </div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border {{ $fk['bg_accent'] }}">{{ $fk['badge'] }}</span>
+                            </div>
+
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">{{ $fk['judul'] }}</h3>
+                                <span class="text-xs font-semibold text-sky-600 block mt-0.5">{{ $fk['sub'] }}</span>
+                            </div>
+
+                            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{{ $fk['ringkasan'] }}</p>
+
+                            <ul class="space-y-2 pt-3 border-t border-slate-100 text-xs text-slate-700">
+                                @foreach($fk['poin'] as $p)
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 font-bold shrink-0">✓</span>
+                                        <span>{{ $p }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- SIMULASI INTERAKTIF KREATIF (LIVE WHATSAPP STREAM MOCKUP) --}}
+    <section id="simulasi" class="py-20 sm:py-28 border-t border-sky-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="text-xs font-bold uppercase tracking-widest text-blue-600">Simulasi Alur Kerja</span>
+                <h2 class="text-2xl sm:text-4xl font-black text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">
+                    Bagaimana WhatsApp Gateway <span class="gradient-blue-text">Bekerja Otomatis?</span>
+                </h2>
+                <p class="text-base text-slate-600">Alur sederhana tanpa aplikasi tambahan bagi orang tua maupun siswa.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-5xl mx-auto">
+                {{-- Left Interactive Steps --}}
+                <div class="lg:col-span-6 space-y-4">
+                    <div class="card-informative p-5 flex items-start gap-4 border-l-4 border-l-blue-600">
+                        <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">1</div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">Buka Link Presensi Harian</h4>
+                            <p class="text-xs text-slate-600 mt-1">Guru atau Seksi Absensi membuka tautan khusus presensi kelas dengan PIN harian.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-informative p-5 flex items-start gap-4 border-l-4 border-l-emerald-600">
+                        <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">Tandai Kehadiran Siswa</h4>
+                            <p class="text-xs text-slate-600 mt-1">Tandai status (Hadir, Sakit, Izin, Alfa) dalam hitungan detik dari HP.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-informative p-5 flex items-start gap-4 border-l-4 border-l-purple-600">
+                        <div class="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm shrink-0">3</div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">Kirim Rekap WA Otomatis</h4>
+                            <p class="text-xs text-slate-600 mt-1">Format laporan otomatis tersusun dan terkirim ke grup WhatsApp orang tua.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Right WA Message Bubble Mockup --}}
+                <div class="lg:col-span-6">
+                    <div class="card-informative p-6 bg-slate-900 text-slate-100 space-y-4 font-sans">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                <span class="text-xs font-bold text-slate-300">Grup WA Orang Tua · Kelas 8B</span>
+                            </div>
+                            <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">TERVERIFIKASI ✓</span>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 text-xs text-emerald-100 space-y-2 leading-relaxed">
+                            <p class="font-bold text-emerald-400">📊 LAPORAN PRESENSI HARIAN KELAS 8B</p>
+                            <p>Hari/Tanggal: <strong>{{ date('d F Y') }}</strong></p>
+                            <div class="py-1 border-t border-b border-emerald-800/40 my-1 space-y-0.5">
+                                <p>✅ Hadir: <strong>34 Siswa</strong></p>
+                                <p>🤒 Sakit: <strong>1 Siswa</strong> (Citra Dewi)</p>
+                                <p>✉️ Izin: <strong>1 Siswa</strong> (Budi Santoso)</p>
+                                <p>❌ Alfa: <strong>0 Siswa</strong></p>
+                            </div>
+                            <p class="text-[11px] text-emerald-300 italic">"Terima kasih atas perhatian bapak/ibu orang tua siswa."</p>
+                            <span class="text-[9px] text-emerald-500 block text-right">10:15 WIB · Otomatis oleh Wali Kelas Hebat</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- PERBANDINGAN SEBELUM VS SESUDAH --}}
+    <section id="perbandingan" class="py-20 sm:py-28 bg-white border-t border-sky-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="text-xs font-bold uppercase tracking-widest text-blue-600">Kisah Transformasi Guru</span>
+                <h2 class="text-2xl sm:text-4xl font-black text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">
+                    Perjuangan Wali Kelas: <span class="gradient-blue-text">Sebelum vs Sesudah</span>
+                </h2>
+                <p class="text-base text-slate-600">Bandingkan kerepotan masa lalu saat rekap manual dengan kemudahan aplikasi Wali Kelas Hebat.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                {{-- SEBELUM --}}
+                <div class="card-informative p-7 sm:p-8 space-y-6 border-rose-200 bg-rose-50/30">
+                    <div class="flex items-center justify-between border-b border-rose-200 pb-4">
+                        <span class="px-3.5 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800 border border-rose-300">SEBELUM 😫</span>
+                        <span class="text-xs font-bold text-rose-700">Cara Manual &amp; Lelah</span>
+                    </div>
+
+                    <ul class="space-y-4 text-xs sm:text-sm text-rose-950 leading-relaxed">
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-600 font-bold text-base shrink-0">❌</span>
+                            <span><strong>Rekap WA Manual Tiap Malam</strong>: Menghabiskan 30+ menit copy-paste data hadir/sakit dari grup kelas.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-600 font-bold text-base shrink-0">❌</span>
+                            <span><strong>Mengetik Biodata 30+ Siswa</strong>: Capek mengetik alamat, NIS, dan HP ortu satu per satu ke Word/Excel.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-600 font-bold text-base shrink-0">❌</span>
+                            <span><strong>Kecolongan Siswa Bolos</strong>: Baru sadar ada siswa Alfa berkali-kali saat akhir semester.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-600 font-bold text-base shrink-0">❌</span>
+                            <span><strong>Laporan Berantakan</strong>: Jam-jaman mengedit format tabel laporan wali kelas sebelum disetor ke Kepsek.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                {{-- SESUDAH --}}
+                <div class="card-informative p-7 sm:p-8 space-y-6 border-emerald-200 bg-emerald-50/30">
+                    <div class="flex items-center justify-between border-b border-emerald-200 pb-4">
+                        <span class="px-3.5 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">SESUDAH ✨</span>
+                        <span class="text-xs font-bold text-emerald-700">Dengan Wali Kelas Hebat</span>
+                    </div>
+
+                    <ul class="space-y-4 text-xs sm:text-sm text-emerald-950 leading-relaxed">
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-600 font-bold text-base shrink-0">✅</span>
+                            <span><strong>Presensi WA 1-Klik</strong>: PIN harian ke Seksi Absensi, rekap kehadiran langsung tersusun otomatis.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-600 font-bold text-base shrink-0">✅</span>
+                            <span><strong>Form Biodata Mandiri 33 Field</strong>: Ortu/Siswa isi via link HP, data langsung rapi di dasbor.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-600 font-bold text-base shrink-0">✅</span>
+                            <span><strong>EWS Alert Otomatis</strong>: Sistem langsung menandai siswa yang Alfa ≥ 3x secara realtime.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-600 font-bold text-base shrink-0">✅</span>
+                            <span><strong>Cetak PDF 1-Klik</strong>: Laporan Administrasi 7 Bab lengkap dengan sampul &amp; kolom tanda tangan Kepsek.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- CARA KERJA 4 LANGKAH --}}
+    <section id="cara-kerja" class="py-20 sm:py-28 border-t border-sky-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="text-xs font-bold uppercase tracking-widest text-blue-600">Praktis &amp; Langsung Jalan</span>
+                <h2 class="text-2xl sm:text-4xl font-black text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">
+                    Mulai Dalam <span class="gradient-blue-text">4 Langkah Sederhana</span>
+                </h2>
+                <p class="text-base text-slate-600">Tidak perlu instalasi aplikasi rumit. Cukup daftar dari browser HP Anda.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                @php $steps = [
+                    ['1','📝','Daftar Akun Guru','Buat akun dalam 30 detik. Gratis '.$bulanGratis.' bulan tanpa kartu kredit.'],
+                    ['2','🏫','Buat Kelas Baru','Input nama kelas & daftar siswa, atau import langsung dari Excel.'],
+                    ['3','📱','Hubungkan WA Gateway','Scan QR sekali, sistem siap kirim absensi harian otomatis.'],
+                    ['4','📊','Cetak PDF Resmi','Rekap masuk realtime. Cetak laporan resmi siap tanda tangan.'],
+                ]; @endphp
+                @foreach($steps as [$num,$icon,$title,$desc])
+                    <div class="card-informative p-6 text-center space-y-3">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white mx-auto shadow-md" style="background: linear-gradient(135deg,#2563eb,#4f46e5);">
+                            {{ $icon }}
+                        </div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-widest block">Langkah 0{{ $num }}</span>
+                        <h3 class="text-base font-bold text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">{{ $title }}</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed">{{ $desc }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- PRICING SECTION --}}
+    <section id="harga" class="py-20 sm:py-28 bg-white border-t border-sky-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="text-xs font-bold uppercase tracking-widest text-blue-600">Harga Sederhana</span>
+                <h2 class="text-2xl sm:text-4xl font-black text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">
+                    Transparan &amp; <span class="gradient-blue-text">Tanpa Biaya Tersembunyi</span>
+                </h2>
+                <p class="text-base text-slate-600">Gratis {{ $bulanGratis }} bulan pertama. Tanpa penagihan otomatis &amp; tanpa kartu kredit.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                {{-- FREE PLAN --}}
+                <div class="card-informative p-8 flex flex-col justify-between space-y-6">
+                    <div class="space-y-4">
+                        <span class="px-3.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 uppercase tracking-wider w-fit block border border-slate-200">Masa Gratis</span>
+                        <div>
+                            <span class="text-4xl sm:text-5xl font-black text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">Rp 0</span>
+                            <span class="text-xs text-slate-500"> / {{ $bulanGratis }} bulan pertama</span>
+                        </div>
+                        <p class="text-xs text-slate-500">Akses seluruh fitur tanpa batasan kelas.</p>
+                        <ul class="space-y-3 text-xs text-slate-700 pt-4 border-t border-slate-100">
+                            <li class="flex items-center gap-2.5"><span class="text-emerald-600 font-bold">✓</span> Presensi WhatsApp Otomatis</li>
+                            <li class="flex items-center gap-2.5"><span class="text-emerald-600 font-bold">✓</span> Biodata Mandiri 33 Field &amp; EWS</li>
+                            <li class="flex items-center gap-2.5"><span class="text-emerald-600 font-bold">✓</span> Refleksi P5 &amp; Buku Kas Kelas</li>
+                            <li class="flex items-center gap-2.5"><span class="text-emerald-600 font-bold">✓</span> Cetak PDF &amp; Export Excel</li>
+                        </ul>
+                    </div>
+                    <a href="{{ route('register') }}" class="btn-creative-secondary w-full text-center">Daftar Gratis Sekarang</a>
+                </div>
+
+                {{-- PRO PLAN --}}
+                <div class="card-informative p-8 flex flex-col justify-between space-y-6 border-blue-300 bg-blue-50/50">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-white" style="background: linear-gradient(135deg,#2563eb,#4f46e5);">PRO</span>
+                            <span class="text-xs text-blue-700 font-bold">setelah masa gratis</span>
+                        </div>
+                        <div>
+                            <span class="text-4xl sm:text-5xl font-black text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">{{ $rupiah }}</span>
+                            <span class="text-xs text-slate-500"> / bulan</span>
+                        </div>
+                        <p class="text-xs text-slate-600">Transfer DANA ke 083817203455, diverifikasi manual operator.</p>
+                        <ul class="space-y-3 text-xs text-slate-700 pt-4 border-t border-blue-100">
+                            <li class="flex items-center gap-2.5"><span class="text-blue-600 font-bold">✓</span> Melanjutkan Otomasi WhatsApp</li>
+                            <li class="flex items-center gap-2.5"><span class="text-blue-600 font-bold">✓</span> Pengiriman Tautan Terjadwal</li>
+                            <li class="flex items-center gap-2.5"><span class="text-blue-600 font-bold">✓</span> Balasan Otomatis untuk Orang Tua</li>
+                            <li class="flex items-center gap-2.5"><span class="text-blue-600 font-bold">✓</span> Perpanjang / Berhenti Kapan Saja</li>
+                        </ul>
+                    </div>
+                    <a href="{{ route('register') }}" class="btn-creative-primary w-full text-center">Mulai dari Masa Gratis</a>
+                </div>
+            </div>
+
+            {{-- Guarantee Card --}}
+            <div class="mt-8 max-w-4xl mx-auto p-6 rounded-2xl text-xs sm:text-sm text-emerald-900 leading-relaxed bg-emerald-50 border border-emerald-200">
+                <strong class="text-emerald-700 font-bold text-sm block mb-1">🛡️ Jaminan Keamanan Data Sekolah:</strong> Masa gratis habis tidak berarti aplikasi terkunci. Absensi, biodata siswa, buku kas, dan seluruh laporan Anda <strong>TETAP BISA DIBUKA, DIUBAH, &amp; DICETAK SELAMANYA</strong>. Data absensi adalah dokumen wajib sekolah, jadi kami tidak menyanderanya untuk menagih pembayaran.
+            </div>
+        </div>
+    </section>
+
+    {{-- FAQ SECTION --}}
+    <section id="faq" class="py-20 sm:py-28 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12 space-y-3">
+            <span class="text-xs font-bold uppercase tracking-widest text-blue-600">Pertanyaan Umum</span>
+            <h2 class="text-2xl sm:text-4xl font-black text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">
+                Sering Ditanyakan (FAQ)
+            </h2>
+        </div>
+
+        <div class="space-y-4">
+            @foreach($faq as $item)
+                <details class="card-informative rounded-2xl group transition-all">
+                    <summary class="flex items-center justify-between p-5 cursor-pointer list-none font-bold text-sm sm:text-base text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">
+                        <span class="pr-4 leading-snug">{{ $item['q'] }}</span>
+                        <svg class="w-5 h-5 text-blue-600 transition-transform group-open:rotate-180 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </summary>
+                    <div class="px-5 pb-5 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-sky-100 pt-4">
+                        {{ $item['a'] }}
+                    </div>
+                </details>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- CTA BOX --}}
+    <section class="py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="card-informative rounded-3xl p-8 sm:p-14 relative overflow-hidden bg-gradient-to-br from-sky-100/70 via-blue-50/50 to-white border-blue-200 space-y-6">
+            <h2 class="text-2xl sm:text-4xl font-black text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">
+                Siap memangkas pekerjaan <span class="gradient-blue-text">administrasi kelas?</span>
+            </h2>
+            <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
+                Buat akun gratis hari ini. Nikmati {{ $bulanGratis }} bulan penuh tanpa kartu kredit.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+                <a href="{{ route('register') }}" class="btn-creative-primary">
+                    🚀 Buat Kelas Sekarang
+                </a>
+                <a href="{{ route('login') }}" class="btn-creative-secondary">
+                    Masuk ke Akun
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="py-10 border-t border-[color:var(--garis)]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <p class="data text-[11px] text-[color:var(--abu)]">&copy; {{ date('Y') }} Wali Kelas Hebat &middot; walas.my.id</p>
-            <nav class="flex flex-wrap justify-center gap-6 label-formulir" aria-label="Navigasi footer">
-                <a href="#fitur" class="hover:text-[color:var(--tinta)]">Fitur</a>
-                <a href="#harga" class="hover:text-[color:var(--tinta)]">Harga</a>
-                <a href="#faq" class="hover:text-[color:var(--tinta)]">FAQ</a>
-                <a href="{{ route('login') }}" class="hover:text-[color:var(--tinta)]">Masuk</a>
-                <a href="{{ route('register') }}" class="hover:text-[color:var(--tinta)]">Daftar</a>
-            </nav>
+    {{-- FOOTER --}}
+    <footer class="py-10 border-t border-sky-100 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0"
+                     style="background: linear-gradient(135deg,#2563eb,#4f46e5);">🎓</div>
+                <span class="font-black text-base text-slate-900" style="font-family:'Plus Jakarta Sans',sans-serif;">Wali Kelas Hebat</span>
+            </div>
+            <p class="text-xs text-slate-500">© {{ date('Y') }} Wali Kelas Hebat · walas.my.id</p>
+            <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:gap-x-6 text-xs text-slate-600 font-bold">
+                <a href="#fitur-eksplorasi" class="hover:text-blue-600 transition-colors">Panduan Fitur</a>
+                <a href="#simulasi" class="hover:text-blue-600 transition-colors">Simulasi</a>
+                <a href="#perbandingan" class="hover:text-blue-600 transition-colors">Kisah Guru</a>
+                <a href="#harga" class="hover:text-blue-600 transition-colors">Harga</a>
+                <a href="#faq" class="hover:text-blue-600 transition-colors">FAQ</a>
+                <a href="{{ route('login') }}" class="hover:text-blue-600 transition-colors">Masuk</a>
+                <a href="{{ route('register') }}" class="hover:text-blue-600 transition-colors">Daftar</a>
+            </div>
         </div>
     </footer>
 

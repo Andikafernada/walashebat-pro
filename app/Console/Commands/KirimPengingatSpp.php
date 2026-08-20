@@ -126,7 +126,8 @@ class KirimPengingatSpp extends Command
         );
     }
 
-    private const TEKS_BAWAAN = "*Pengingat Iuran Kelas {nama_kelas}*\n\n"
+    /** Dipakai juga oleh formulir pengaturan di halaman Integrasi WhatsApp, supaya guru melihat teks sungguhan — bukan sekadar "kosongkan untuk bawaan". */
+    public const TEKS_BAWAAN = "*Pengingat Iuran Kelas {nama_kelas}*\n\n"
         ."Bapak/Ibu orang tua/wali murid yang kami hormati,\n"
         ."kami mengingatkan iuran kelas untuk bulan {bulan} {tahun}.\n\n"
         ."Terima kasih atas perhatian dan kerja samanya.\n\n"

@@ -3,7 +3,7 @@
 @section('title', 'Daftar Kelas')
 
 @section('content')
-<div class="space-y-5 pb-12" x-data="{ shareClassId: '', className: '', shareLink: '', showModal: false }">
+<div class="space-y-5 pb-12" x-data="{ shareClassId: '', className: '', shareLink: '', shareKind: 'biodata', showModal: false }">
 
     <div class="page-header">
         <div>
@@ -167,8 +167,11 @@
                                 <a href="{{ route('classes.nilai.index', $class) }}" class="btn-ghost btn-ghost--sm">Nilai Harian</a>
                             @else
                                 <button type="button"
-                                        @click="shareClassId = '{{ $class->id }}'; className = '{{ $class->name }}'; shareLink = '{{ route('public.biodata.show', $class->tokenPublik()) }}'; showModal = true"
+                                        @click="shareClassId = '{{ $class->id }}'; className = '{{ $class->name }}'; shareLink = '{{ route('public.biodata.show', $class->tokenPublik()) }}'; shareKind = 'biodata'; showModal = true"
                                         class="btn-ghost btn-ghost--sm">Bagikan Form Mandiri Siswa</button>
+                                <button type="button"
+                                        @click="shareClassId = '{{ $class->id }}'; className = '{{ $class->name }}'; shareLink = '{{ route('public.excuse.show', $class->tokenPublik()) }}'; shareKind = 'excuse'; showModal = true"
+                                        class="btn-ghost btn-ghost--sm">Bagikan Link Izin/Sakit</button>
                             @endif
 
                             <a href="{{ route('classes.edit', $class) }}" class="btn-icon" aria-label="Ubah kelas {{ $class->name }}">
@@ -199,7 +202,7 @@
         <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-slate-300 bg-white shadow-xl" @click.away="showModal = false">
             <div class="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
                 <div>
-                    <h2 class="text-sm font-semibold tracking-tight text-slate-900">Bagikan Form Mandiri Siswa</h2>
+                    <h2 class="text-sm font-semibold tracking-tight text-slate-900" x-text="shareKind === 'excuse' ? 'Bagikan Link Izin/Sakit' : 'Bagikan Form Mandiri Siswa'"></h2>
                     <p class="mt-0.5 text-xs text-slate-500">Kelas <span x-text="className" class="font-medium text-slate-700"></span></p>
                 </div>
                 <button type="button" @click="showModal = false" class="btn-icon" aria-label="Tutup">&times;</button>
@@ -209,24 +212,39 @@
                 <div class="space-y-1.5">
                     <p class="eyebrow">Pratinjau pesan</p>
                     <div class="space-y-2 rounded border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-700">
-                        <p class="font-semibold text-slate-900">*PEMBERITAHUAN PENGISIAN BIODATA MANDIRI SISWA*</p>
-                        <p>Assalamu'alaikum Wr. Wb. / Selamat Pagi Bapak/Ibu Orang Tua &amp; Wali Siswa,</p>
-                        <p>Sehubungan dengan pembaruan data administrasi siswa Kelas <span x-text="className" class="font-medium"></span>, kami memohon kesediaan Bapak/Ibu atau siswa untuk melengkapi Form Biodata Mandiri melalui tautan berikut:</p>
-                        <p class="break-all font-mono text-indigo-700" x-text="shareLink"></p>
-                        <p class="text-slate-500">Mohon data dapat diisi dengan teliti dan benar. Terima kasih.</p>
+                        <template x-if="shareKind === 'excuse'">
+                            <div class="space-y-2">
+                                <p class="font-semibold text-slate-900">*LAPOR IZIN / SAKIT KELAS <span x-text="className"></span>*</p>
+                                <p>Assalamu'alaikum Wr. Wb. / Selamat Pagi Bapak/Ibu Orang Tua &amp; Wali Siswa,</p>
+                                <p>Mulai sekarang, laporan izin/sakit anak <strong>WAJIB</strong> lewat tautan berikut ya Bapak/Ibu, bukan hanya chat di grup — supaya tercatat resmi dan tidak terlewat:</p>
+                                <p class="break-all font-mono text-indigo-700" x-text="shareLink"></p>
+                                <p class="text-slate-500">Cukup pilih nama anak, tanggal, dan alasannya. Terima kasih.</p>
+                            </div>
+                        </template>
+                        <template x-if="shareKind !== 'excuse'">
+                            <div class="space-y-2">
+                                <p class="font-semibold text-slate-900">*PEMBERITAHUAN PENGISIAN BIODATA MANDIRI SISWA*</p>
+                                <p>Assalamu'alaikum Wr. Wb. / Selamat Pagi Bapak/Ibu Orang Tua &amp; Wali Siswa,</p>
+                                <p>Sehubungan dengan pembaruan data administrasi siswa Kelas <span x-text="className" class="font-medium"></span>, kami memohon kesediaan Bapak/Ibu atau siswa untuk melengkapi Form Biodata Mandiri melalui tautan berikut:</p>
+                                <p class="break-all font-mono text-indigo-700" x-text="shareLink"></p>
+                                <p class="text-slate-500">Mohon data dapat diisi dengan teliti dan benar. Terima kasih.</p>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
                 <div class="space-y-2 border-t border-slate-200 pt-3">
-                    <form :action="'/classes/' + shareClassId + '/share-biodata-wa'" method="POST">
+                    <form :action="'/classes/' + shareClassId + '/share-' + (shareKind === 'excuse' ? 'excuse' : 'biodata') + '-wa'" method="POST">
                         @csrf
                         <button type="submit" class="btn-primary w-full">Kirim ke grup WhatsApp</button>
                     </form>
 
-                    <a :href="'https://api.whatsapp.com/send?text=' + encodeURIComponent('*PEMBERITAHUAN PENGISIAN BIODATA MANDIRI SISWA*\nKelas ' + className + '\n\nAssalamu\'alaikum Wr. Wb. / Selamat Pagi Bapak/Ibu Orang Tua & Wali Siswa,\n\nSehubungan dengan pembaruan data administrasi siswa, mohon isi Form Biodata Mandiri melalui tautan resmi:\n' + shareLink + '\n\nMohon diisi dengan benar. Terima kasih.')"
+                    <a :href="'https://api.whatsapp.com/send?text=' + encodeURIComponent(shareKind === 'excuse'
+                            ? ('*LAPOR IZIN / SAKIT KELAS ' + className + '*\n\nAssalamu\'alaikum Wr. Wb. / Selamat Pagi Bapak/Ibu Orang Tua & Wali Siswa,\n\nMulai sekarang, laporan izin/sakit anak WAJIB lewat tautan berikut ya Bapak/Ibu, bukan hanya chat di grup:\n' + shareLink + '\n\nCukup pilih nama anak, tanggal, dan alasannya. Terima kasih.')
+                            : ('*PEMBERITAHUAN PENGISIAN BIODATA MANDIRI SISWA*\nKelas ' + className + '\n\nAssalamu\'alaikum Wr. Wb. / Selamat Pagi Bapak/Ibu Orang Tua & Wali Siswa,\n\nSehubungan dengan pembaruan data administrasi siswa, mohon isi Form Biodata Mandiri melalui tautan resmi:\n' + shareLink + '\n\nMohon diisi dengan benar. Terima kasih.'))"
                        target="_blank" class="btn-secondary w-full">Buka di WhatsApp</a>
 
-                    <button type="button" @click="navigator.clipboard.writeText(shareLink); alert('Tautan form siswa berhasil disalin.');"
+                    <button type="button" @click="navigator.clipboard.writeText(shareLink); alert('Tautan berhasil disalin.');"
                             class="btn-ghost w-full">Salin tautan</button>
                 </div>
             </div>

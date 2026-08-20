@@ -121,6 +121,30 @@ class AttendanceSessionController extends Controller
 
         $max = (int) config('walikelas.max_sessions_per_day', 3);
 
+        /*
+         * Kesehatan pengiriman WA 30 hari terakhir — satu query agregat.
+         *
+         * Sebelumnya status kirim ("WA Terkirim"/"WA Gagal") hanya terlihat
+         * per baris, satu sesi pada satu waktu. Wali kelas yang WA-nya diam-
+         * diam berhenti terkirim (nomor diblokir, sesi gateway putus) tidak
+         * akan tahu polanya kecuali menggulir dan menghitung sendiri. Angka
+         * ini menjawabnya di depan.
+         *
+         * Dilewati untuk kelas ajar: magic link WA memang tidak diterbitkan
+         * dari sana (lihat catatan di view), jadi "0 dari 0 terkirim" hanya
+         * akan terbaca sebagai kabar buruk yang palsu.
+         */
+        $kesehatanWa = null;
+        if (! $class->kelasAjar()) {
+            $kesehatanWa = $class->attendanceSessions()
+                ->where('session_date', '>=', now()->subDays(30))
+                ->selectRaw(<<<'SQL'
+                    SUM(CASE WHEN delivery_status = 'sent' THEN 1 ELSE 0 END) as terkirim,
+                    SUM(CASE WHEN delivery_status = 'failed' THEN 1 ELSE 0 END) as gagal,
+                    COUNT(*) as total
+                SQL)->first();
+        }
+
         return view('attendance.index', [
             'classroom' => $class,
             'sessions' => $sessions,
@@ -132,6 +156,7 @@ class AttendanceSessionController extends Controller
                 ->where('status', 'open')
                 ->where('expires_at', '>', now())
                 ->exists(),
+            'kesehatanWa' => $kesehatanWa,
         ]);
     }
 

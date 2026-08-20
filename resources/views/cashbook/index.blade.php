@@ -125,75 +125,28 @@
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4">
             {{--
-                Pengingat iuran bulanan ke grup WhatsApp orang tua.
-
-                Isinya teks bebas dan TIDAK menyebut siapa yang belum membayar.
-                Menyebut nama anak yang menunggak di grup yang dibaca seluruh
-                orang tua adalah keputusan yang jauh lebih besar daripada
-                teknisnya — kalau suatu saat memang diinginkan, itu percakapan
-                tersendiri, bukan kotak centang.
+                Pengaturannya pindah ke Integrasi WhatsApp (seekor dengan
+                pengaturan WA lain: grup, kata kunci, templat). Di sini cukup
+                penunjuknya, plus kabar terakhir terkirim untuk kelas ini.
             --}}
-            <div class="card space-y-4">
+            <div class="card space-y-3">
                 <div class="flex items-center gap-3">
                     <div class="flex h-10 w-10 items-center justify-center rounded bg-emerald-100 text-emerald-700">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/></svg>
                     </div>
                     <div>
                         <h3 class="text-sm font-semibold text-slate-900">Pengingat Iuran Bulanan</h3>
-                        <p class="text-xs text-slate-500">Terkirim otomatis ke grup WhatsApp orang tua</p>
+                        <p class="text-xs text-slate-500">
+                            {{ $classroom->spp_pengingat_aktif ? 'Aktif, ' : 'Belum aktif, ' }}diatur di
+                            <a href="{{ route('whatsapp.index') }}" class="font-semibold text-emerald-700 underline">Integrasi WhatsApp</a>.
+                        </p>
                     </div>
                 </div>
 
-                @if (! $classroom->parent_group_wa)
-                    {{-- Tanpa grup, kotak centang ini hanya janji yang tidak
-                         pernah ditepati dan tidak ada galat yang menjelaskannya. --}}
-                    <p class="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-                        Grup WhatsApp orang tua kelas ini belum diatur, jadi pengingat belum bisa dikirim.
-                        Aturlah lebih dulu di <a href="{{ route('whatsapp.index') }}" class="font-semibold underline">Integrasi WhatsApp</a>.
+                @if ($classroom->spp_pengingat_terkirim_pada)
+                    <p class="text-[11px] text-slate-500">
+                        Terakhir terkirim {{ $classroom->spp_pengingat_terkirim_pada->translatedFormat('d F Y') }}.
                     </p>
-                @else
-                    <form method="POST" action="{{ route('classes.cashbook.pengingat', $classroom) }}" class="space-y-3">
-                        @csrf
-
-                        <label class="flex items-center gap-2.5 rounded border border-slate-200 bg-slate-50 p-3">
-                            <input type="hidden" name="spp_pengingat_aktif" value="0">
-                            <input type="checkbox" name="spp_pengingat_aktif" value="1"
-                                   @checked($classroom->spp_pengingat_aktif)
-                                   class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                            <span class="text-xs font-semibold text-slate-800">Kirim pengingat tiap bulan</span>
-                        </label>
-
-                        <div>
-                            <label for="spp_pengingat_tanggal" class="block eyebrow mb-1">Tanggal kirim</label>
-                            <input id="spp_pengingat_tanggal" type="number" name="spp_pengingat_tanggal" min="1" max="31"
-                                   value="{{ old('spp_pengingat_tanggal', $classroom->spp_pengingat_tanggal) }}"
-                                   class="h-9 w-24 rounded border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-800 focus:border-emerald-500 focus:outline-none">
-                            <span class="text-[11px] text-slate-500">tiap bulan, pukul 07.00</span>
-                            {{-- Bulan pendek tidak punya tanggal 31; pengingatnya
-                                 jatuh ke hari terakhir alih-alih hilang. --}}
-                            <p class="mt-1 text-[11px] text-slate-400">Bila bulannya lebih pendek, dikirim pada hari terakhir bulan itu.</p>
-                        </div>
-
-                        <div>
-                            <label for="spp_pengingat_teks" class="block eyebrow mb-1">Isi pesan</label>
-                            <textarea id="spp_pengingat_teks" name="spp_pengingat_teks" rows="6" maxlength="1000"
-                                      placeholder="Kosongkan untuk memakai pesan bawaan."
-                                      class="form-input form-input--sm">{{ old('spp_pengingat_teks', $classroom->spp_pengingat_teks) }}</textarea>
-                            <p class="mt-1 text-[11px] text-slate-500">
-                                Bisa dipakai: <code>{nama_kelas}</code> <code>{bulan}</code> <code>{tahun}</code> <code>{wali_kelas}</code>
-                            </p>
-                        </div>
-
-                        @if ($classroom->spp_pengingat_terkirim_pada)
-                            <p class="text-[11px] text-slate-500">
-                                Terakhir terkirim {{ $classroom->spp_pengingat_terkirim_pada->translatedFormat('d F Y') }}.
-                            </p>
-                        @endif
-
-                        <button type="submit" class="h-9 w-full rounded bg-emerald-600 text-xs font-semibold text-white transition-colors hover:bg-emerald-700">
-                            Simpan pengaturan pengingat
-                        </button>
-                    </form>
                 @endif
             </div>
 

@@ -7,6 +7,7 @@ use App\Models\CharacterDimension;
 use App\Models\CharacterReflection;
 use App\Models\Classroom;
 use App\Models\Student;
+use App\Models\StudentExcuse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
@@ -313,6 +314,55 @@ class PublicStudentFormController extends Controller
         return back()->with('success_public', 'Refleksi karakter Anda berhasil dikirim ke Wali Kelas!');
     }
 
+    /** Form laporan izin/sakit oleh orang tua. */
+    public function showExcuseForm(Classroom $class)
+    {
+        $students = $class->students()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'nis']);
+
+        return view('public.student_excuse_form', compact('class', 'students'));
+    }
+
+    /** Simpan laporan izin/sakit. */
+    public function storeExcuse(Request $request, Classroom $class)
+    {
+        $validated = $request->validate([
+            'student_id' => [
+                'required',
+                Rule::exists('students', 'id')->where('class_id', $class->id),
+            ],
+            // Rentang dibatasi: laporan jauh di masa lalu/depan hampir pasti
+            // salah tanggal ketik, bukan laporan sungguhan.
+            'tanggal' => [
+                'required', 'date',
+                'after_or_equal:'.now()->subDays(2)->toDateString(),
+                'before_or_equal:'.now()->addDays(3)->toDateString(),
+            ],
+            'jenis' => ['required', 'in:izin,sakit'],
+            'keterangan' => ['nullable', 'string', 'max:500'],
+        ], [
+            'tanggal.after_or_equal' => 'Tanggal terlalu lama berlalu. Hubungi wali kelas langsung untuk tanggal itu.',
+            'tanggal.before_or_equal' => 'Tanggal terlalu jauh di depan.',
+        ]);
+
+        $siswa = Student::where('class_id', $class->id)->findOrFail($validated['student_id']);
+
+        // forceFill: sama seperti CharacterReflection, user_id tidak boleh
+        // bisa dititipkan lewat request pada formulir tanpa login ini.
+        (new StudentExcuse)->forceFill([
+            'user_id' => $class->user_id,
+            'class_id' => $class->id,
+            'student_id' => $siswa->id,
+            'tanggal' => $validated['tanggal'],
+            'jenis' => $validated['jenis'],
+            'keterangan' => $validated['keterangan'] ?? null,
+        ])->save();
+
+        return back()->with(
+            'success_public',
+            'Terima kasih! Laporan '.($validated['jenis'] === 'sakit' ? 'sakit' : 'izin').' '.$siswa->name.' sudah kami terima dan akan terlihat oleh wali kelas.'
+        );
+    }
+
     /** Kirim link form mandiri + kata-kata profesional langsung ke WhatsApp Grup. */
     public function shareBiodataWa(Request $request, Classroom $class)
     {
@@ -355,6 +405,58 @@ class PublicStudentFormController extends Controller
                 'class_id' => $class->id,
             ]);
             return back()->with('success', 'Pesan pengisian biodata berhasil dikirimkan ke grup WhatsApp!');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal mengirim ke WhatsApp: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Kirim link form izin/sakit ke grup WhatsApp orang tua.
+     *
+     * Balasan otomatis mengangkat kalimat guru SECARA ACAK dari campuran
+     * kalimat bawaan gateway — menaruh tautan di sana berarti hanya sebagian
+     * kecil balasan yang membawanya. Pesan sekali kirim ini yang jadi jalan
+     * pasti: sekali dikirim, tautannya ada di riwayat chat grup selamanya.
+     */
+    public function shareExcuseWa(Request $request, Classroom $class)
+    {
+        $validated = $request->validate([
+            'group_id' => ['nullable', 'string'],
+            'custom_message' => ['nullable', 'string'],
+        ]);
+
+        $groupId = $validated['group_id'] ?? $class->parent_group_wa;
+
+        if (blank($groupId)) {
+            return back()->with('error', 'Grup WhatsApp belum dipilih atau belum terhubung ke kelas.');
+        }
+
+        $link = route('public.excuse.show', $class->tokenPublik());
+
+        $defaultMessage = implode("\n", [
+            "*LAPOR IZIN / SAKIT KELAS ".$class->name."*",
+            "",
+            "Assalamu'alaikum Wr. Wb. / Selamat Pagi Bapak/Ibu Orang Tua & Wali Siswa,",
+            "",
+            "Mulai sekarang, laporan izin/sakit anak WAJIB lewat tautan berikut ya Bapak/Ibu, bukan hanya chat di grup — supaya tercatat resmi dan tidak terlewat:",
+            "",
+            "🔗 *Tautan Lapor Izin/Sakit:*",
+            $link,
+            "",
+            "Cukup pilih nama anak, tanggal, dan alasannya. Terima kasih atas kerja samanya.",
+            "",
+            "Hormat kami,",
+            "Wali Kelas ".$class->name,
+        ]);
+
+        $message = !empty($validated['custom_message']) ? $validated['custom_message'] : $defaultMessage;
+
+        try {
+            SendWhatsAppMessage::dispatch($groupId, $message, $class->user_id, [
+                'type' => 'excuse_share',
+                'class_id' => $class->id,
+            ]);
+            return back()->with('success', 'Link lapor izin/sakit berhasil dikirimkan ke grup WhatsApp!');
         } catch (\Throwable $e) {
             return back()->with('error', 'Gagal mengirim ke WhatsApp: ' . $e->getMessage());
         }

@@ -2,105 +2,105 @@ import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
 
 /*
- * BUKU ADMINISTRASI KELAS
+ * KERTAS HANGAT
  *
- * Arahnya tenang dan rapat: kertas hangat, garis rambut 1px, tanpa bayangan,
- * sudut kecil, angka rata kolom. Yang dituju bukan dasbor SaaS melainkan buku
- * administrasi yang dipegang wali kelas — dan kerangka aplikasi ini memang
- * sudah memakai metaforanya (lihat "pembatas" di layouts/app.blade.php).
+ * Arah baru: dasar krem gading seperti kertas HVS, lembar putih yang
+ * mengambang di atasnya, dan SATU aksen terracotta/rust — warna tinta
+ * stempel dan sampul map arsip sekolah. Warna semantik (hijau/kuning/merah)
+ * dinaikkan sedikit kehangatannya (moss/mustard/bata) supaya sekeluarga
+ * dengan dasarnya, bukan hijau-kuning-merah klinis di atas kertas hangat.
  *
- * NAMA WARNANYA SENGAJA TIDAK DIGANTI.
+ * Menggantikan "TERANG MODERN" (dasar abu sejuk, aksen lembayung) yang
+ * berdiri di sini sebelumnya — pemilik memutuskan arah itu belum pas dan
+ * minta sesuatu yang terasa seperti buku catatan wali kelas fisik, bukan
+ * dashboard SaaS.
  *
- * Ada ~4.000 pemakaian kelas warna harfiah tersebar di 90 berkas Blade.
- * Menambah kosakata semantik baru (surface/ink/line) di samping yang lama
- * berarti dua sistem hidup berdampingan selama penyisiran, dan yang seperti itu
- * tidak pernah benar-benar selesai. Jadi yang diganti NILAINYA, bukan namanya:
+ * NAMA WARNANYA SENGAJA TIDAK DIGANTI, dengan alasan yang sama seperti versi
+ * sebelumnya: ~4.000 pemakaian kelas warna harfiah di 90 berkas Blade.
+ * Yang diganti NILAINYA:
  *
- *   slate  → netral hangat (kertas, garis, tinta teks)
- *   indigo → tinta biru-hitam, satu-satunya aksen
- *   emerald→ hijau papan tulis   (hadir, saldo positif)
- *   rose   → merah pena koreksi  (alfa, hapus, tunggakan)
- *   amber  → oker                (izin, peringatan, langganan)
- *
- * Konsekuensinya: satu berkas ini sudah mengubah rupa seluruh aplikasi, dan
- * penyisiran per halaman tinggal mengurus struktur, kerapatan, dan hierarki —
- * bukan mencari-ganti nama warna di 90 berkas.
+ *   slate  → netral hangat (kertas, garis, tinta)
+ *   indigo → terracotta, satu-satunya aksen
+ *   emerald→ hijau lumut   (hadir, lunas, beres)
+ *   rose   → merah bata    (alfa, hapus, tunggakan)
+ *   amber  → kuning mustar (izin, peringatan, langganan)
  */
 
-/** Netral hangat. Kertas HVS, bukan abu biru. */
-const kertas = {
-    50: '#f7f5f1',
-    100: '#efebe4',
-    200: '#e3ded4', // garis rambut — hampir seluruh border memakai ini
-    300: '#cfc7b8',
-    400: '#a79e90',
-    500: '#7c7466', // teks sekunder
-    600: '#5e5749',
-    700: '#443e33', // teks isi
-    800: '#2c2820',
-    900: '#1a1712', // judul
-    950: '#100e0a',
+/* Netral hangat, dibiaskan ke cokelat kertas — bukan abu netral murni. */
+const netral = {
+    50: '#faf6ee',  // dasar halaman — kertas HVS
+    100: '#f3ecdd',
+    200: '#e8dcc6', // garis — hampir seluruh border memakai ini
+    300: '#d6c3a3',
+    400: '#b39d7d',
+    500: '#8a7860', // teks sekunder
+    600: '#6b5b48',
+    700: '#4f4335', // teks isi
+    800: '#362d23',
+    900: '#241d16', // judul
+    950: '#150f0a',
 };
 
-/** Tinta biru-hitam. Satu-satunya aksen: hanya untuk yang bisa diklik. */
-const tinta = {
-    50: '#eef3f8',
-    100: '#dce6f0',
-    200: '#bccee1',
-    300: '#90aecc',
-    400: '#5c87b0',
-    500: '#356494',
-    600: '#23486b',
-    700: '#1c3a57',
-    800: '#172f46',
-    900: '#14283a',
-    950: '#0d1a26',
+/** Terracotta/rust. Satu-satunya aksen: hanya untuk yang bisa diklik atau aktif. */
+const aksen = {
+    50: '#fdf3ec',
+    100: '#fbe4d2',
+    200: '#f5c7a8',
+    300: '#eca274',
+    400: '#dc7d49',
+    500: '#c4622d',
+    600: '#ad4f22', // tombol utama
+    700: '#8c3e1a',
+    800: '#6f3216',
+    900: '#5a2913',
+    950: '#33160a',
 };
 
-/** Hijau papan tulis. Diredam supaya tabel padat tidak berubah jadi permen. */
-const papan = {
-    50: '#eef4ef',
-    100: '#d8e7dc',
-    200: '#b4d0bc',
-    300: '#86b295',
-    400: '#59906d',
-    500: '#3d7452',
-    600: '#2e6446',
-    700: '#255238',
-    800: '#1f422e',
-    900: '#1a3626',
-    950: '#0f2016',
+/** Hijau lumut — hadir, lunas, beres. */
+const hijau = {
+    50: '#f3f6ec',
+    100: '#e3ebd1',
+    200: '#c8d9a8',
+    300: '#a8c078',
+    400: '#8aa857',
+    500: '#708f44',
+    600: '#597237',
+    700: '#46592c',
+    800: '#384624',
+    900: '#2e3a1f',
+    950: '#191f10',
 };
 
-/** Merah pena koreksi. */
-const koreksi = {
-    50: '#fbf0ee',
-    100: '#f6dcd8',
-    200: '#ebbab2',
-    300: '#db8d80',
-    400: '#c55f4e',
-    500: '#af4130',
-    600: '#9a3527',
-    700: '#7e2b20',
-    800: '#67241b',
-    900: '#561f18',
-    950: '#300f0c',
+/** Merah bata — alfa, hapus, tunggakan. */
+const merah = {
+    50: '#fbefec',
+    100: '#f6dad2',
+    200: '#ebb4a2',
+    300: '#de8a6e',
+    400: '#cb6244',
+    500: '#b4472a',
+    600: '#963a21',
+    700: '#782e1b',
+    800: '#602719',
+    900: '#4e2117',
+    950: '#2a100b',
 };
 
-/** Oker. */
-const oker = {
-    50: '#faf4e8',
-    100: '#f3e7ca',
-    200: '#e6d096',
-    300: '#d5b45d',
-    400: '#c09733',
-    500: '#a47d22',
-    600: '#8a6317',
-    700: '#6e4e14',
-    800: '#5a4014',
-    900: '#4b3613',
-    950: '#2a1d09',
+/** Kuning mustar — izin, peringatan, langganan. */
+const kuning = {
+    50: '#fbf5e7',
+    100: '#f5e6be',
+    200: '#ebcd82',
+    300: '#dfb350',
+    400: '#ce9a34',
+    500: '#b07e24',
+    600: '#8e651e',
+    700: '#6e4e19',
+    800: '#573f16',
+    900: '#473413',
+    950: '#271c09',
 };
+
 
 export default {
     content: [
@@ -112,89 +112,136 @@ export default {
             fontFamily: {
                 sans: ['"Instrument Sans"', ...defaultTheme.fontFamily.sans],
                 mono: ['"IBM Plex Mono"', ...defaultTheme.fontFamily.mono],
+                /*
+                 * Serif editorial untuk judul — dipakai TERBATAS (lihat
+                 * app.css: h1–h4, .blok__judul, .page-header__title saja).
+                 * Newsreader sudah dilayani sendiri sejak awal untuk
+                 * landing.blade.php, jadi tidak ada berkas font baru yang
+                 * diunduh — halaman yang belum pernah memakainya kini ikut
+                 * memakai berkas yang sudah pernah diambil peramban.
+                 */
+                display: ['"Newsreader"', ...defaultTheme.fontFamily.serif],
             },
 
             colors: {
-                slate: kertas,
-                gray: kertas,
-                zinc: kertas,
-                neutral: kertas,
-                stone: kertas,
+                slate: netral,
+                gray: netral,
+                zinc: netral,
+                neutral: netral,
+                stone: netral,
 
-                indigo: tinta,
-                blue: tinta,
-                violet: tinta,
-                purple: tinta,
-                sky: tinta,
-                cyan: tinta,
-                primary: tinta,
+                indigo: aksen,
+                blue: aksen,
+                violet: aksen,
+                purple: aksen,
+                sky: aksen,
+                cyan: aksen,
+                primary: aksen,
 
-                emerald: papan,
-                green: papan,
-                teal: papan,
-                lime: papan,
+                emerald: hijau,
+                green: hijau,
+                teal: hijau,
+                lime: hijau,
 
-                rose: koreksi,
-                red: koreksi,
-                pink: koreksi,
-                fuchsia: koreksi,
-                orange: koreksi,
+                rose: merah,
+                red: merah,
+                pink: merah,
+                fuchsia: merah,
+                orange: merah,
 
-                amber: oker,
-                yellow: oker,
+                amber: kuning,
+                yellow: kuning,
             },
 
             /*
-             * Sudut kecil, dan seluruh skalanya dimampatkan.
-             *
-             * rounded-xl dipakai 397 kali dan rounded-2xl 186 kali; memampatkan
-             * skalanya di sini jauh lebih murah — dan jauh lebih sulit
-             * terlewat — daripada menyunting 583 tempat.
+             * Sudut membulat, ditarik satu tingkat lebih kecil dari sebelumnya
+             * — kertas dan kartu arsip tidak bersudut sebesar tombol aplikasi
+             * ponsel. Skalanya tetap dipetakan ulang di sini, bukan disunting
+             * di 583 tempat, dengan alasan yang sama seperti warna di atas.
              */
             borderRadius: {
                 none: '0',
-                sm: '2px',
-                DEFAULT: '3px',
-                md: '3px',
-                lg: '4px',
-                xl: '4px',
-                '2xl': '6px',
-                '3xl': '8px',
+                sm: '4px',
+                DEFAULT: '6px',
+                md: '8px',
+                lg: '10px',
+                xl: '12px',
+                '2xl': '16px',
+                '3xl': '20px',
             },
 
             /*
-             * Tanpa bayangan. Pemisahan dikerjakan garis, bukan gumpalan abu.
-             *
-             * Kecuali yang benar-benar mengambang di atas isi halaman: menu
-             * avatar dan pemilih kelas perlu terbaca sebagai lapisan lain,
-             * bukan sebagai kotak yang kebetulan menimpa. Itu pun tipis.
+             * Bayangan lembut, nadanya cokelat-gelap sekarang (dulu
+             * biru-gelap) — bayangan sejuk di atas dasar kertas hangat
+             * terbaca kotor, sama seperti bayangan hitam murni di atas dasar
+             * berbias lembayung dulu.
              */
             boxShadow: {
-                xs: 'none',
-                sm: 'none',
-                DEFAULT: 'none',
-                md: 'none',
-                lg: 'none',
-                xl: '0 1px 2px rgb(26 23 18 / 0.06), 0 12px 28px -14px rgb(26 23 18 / 0.28)',
-                '2xl': '0 1px 2px rgb(26 23 18 / 0.06), 0 16px 36px -16px rgb(26 23 18 / 0.32)',
-                inner: 'none',
+                xs: '0 1px 2px rgb(40 32 20 / 0.05)',
+                sm: '0 1px 2px rgb(40 32 20 / 0.05), 0 4px 10px -8px rgb(40 32 20 / 0.30)',
+                DEFAULT: '0 1px 2px rgb(40 32 20 / 0.05), 0 10px 22px -18px rgb(40 32 20 / 0.40)',
+                md: '0 1px 2px rgb(40 32 20 / 0.05), 0 10px 22px -18px rgb(40 32 20 / 0.40)',
+                lg: '0 1px 2px rgb(40 32 20 / 0.06), 0 16px 32px -20px rgb(40 32 20 / 0.45)',
+                xl: '0 1px 2px rgb(40 32 20 / 0.07), 0 24px 44px -24px rgb(40 32 20 / 0.50)',
+                '2xl': '0 1px 2px rgb(40 32 20 / 0.07), 0 32px 60px -28px rgb(40 32 20 / 0.55)',
+                inner: 'inset 0 1px 2px rgb(40 32 20 / 0.07)',
                 none: 'none',
             },
 
             /*
-             * Gerak seperlunya. Yang tersisa hanya yang menyampaikan keadaan:
-             * spin & ping untuk proses berjalan, dan satu peredupan halus.
-             * Float, wiggle, bounce-slow, dan kawan-kawan dibuang — tidak satu
-             * pun dipakai, dan tidak satu pun punya alasan untuk ada di layar
-             * yang dibuka guru tiap hari.
+             * GERAK — kosakata empat kata, semuanya hanya menyentuh transform
+             * dan opacity supaya ponsel kelas menengah menggambarnya di GPU
+             * tanpa menghitung ulang tata letak.
+             *
+             *   naik     kartu/baris muncul: naik sedikit lalu diam
+             *   pop      lencana mendarat dengan satu pantulan kecil
+             *   garis    garis ditarik dari kiri ke kanan
+             *   denyut   satu tarikan perhatian, hanya untuk yang menunggu
+             *
+             * Yang TIDAK ada di sini: float, wiggle, bounce tanpa henti. Gerak
+             * yang berulang selamanya bukan gerak, melainkan gangguan — dan
+             * halaman ini dibuka guru tiap pagi, bukan sekali seumur hidup.
+             *
+             * Pemakaiannya diatur app.css, termasuk penghormatan pada
+             * prefers-reduced-motion yang mematikan semuanya sekaligus.
              */
             animation: {
                 'fade-in': 'fadeIn 0.15s ease-out forwards',
+                naik: 'naik 0.26s cubic-bezier(0.22, 1, 0.36, 1) both',
+                pop: 'pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                garis: 'garis 0.42s cubic-bezier(0.22, 1, 0.36, 1) both',
+                denyut: 'denyut 2.4s ease-in-out infinite',
             },
             keyframes: {
                 fadeIn: {
                     '0%': { opacity: '0' },
                     '100%': { opacity: '1' },
+                },
+
+                /* Naik 8px sambil muncul. Sependek itu supaya terasa sebagai
+                   "sudah ada, baru terbaca", bukan sebagai benda yang terbang. */
+                naik: {
+                    '0%': { opacity: '0', transform: 'translateY(8px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+
+                /* Lencana mendarat: sedikit lebih kecil, melewati ukurannya,
+                   lalu berhenti. Satu pantulan, tanpa putaran. */
+                pop: {
+                    '0%': { opacity: '0', transform: 'scale(0.86)' },
+                    '100%': { opacity: '1', transform: 'scale(1)' },
+                },
+
+                /* Ditarik dari kiri. Dipakai garis bawah judul dan pemisah. */
+                garis: {
+                    '0%': { transform: 'scaleX(0)' },
+                    '100%': { transform: 'scaleX(1)' },
+                },
+
+                /* Hanya untuk yang benar-benar menunggu tindakan guru. */
+                denyut: {
+                    '0%, 100%': { opacity: '1' },
+                    '50%': { opacity: '0.55' },
                 },
             },
 

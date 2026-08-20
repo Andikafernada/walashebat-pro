@@ -354,14 +354,17 @@ require __DIR__.'/student.php';
 Route::middleware('throttle:60,1')->group(function () {
     Route::get('isi-biodata/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'showBiodataForm'])->name('public.biodata.show');
     Route::get('refleksi-karakter/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'showReflectionForm'])->name('public.reflection.show');
+    Route::get('izin/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'showExcuseForm'])->name('public.excuse.show');
 });
 
 Route::middleware('throttle:10,1')->group(function () {
     Route::post('isi-biodata/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'storeBiodata'])->name('public.biodata.store');
     Route::post('refleksi-karakter/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'storeReflection'])->name('public.reflection.store');
+    Route::post('izin/{class:public_token}', [App\Http\Controllers\PublicStudentFormController::class, 'storeExcuse'])->name('public.excuse.store');
 });
 
 Route::post('classes/{class}/share-biodata-wa', [App\Http\Controllers\PublicStudentFormController::class, 'shareBiodataWa'])->middleware('auth')->name('classes.share-biodata-wa');
+Route::post('classes/{class}/share-excuse-wa', [App\Http\Controllers\PublicStudentFormController::class, 'shareExcuseWa'])->middleware('auth')->name('classes.share-excuse-wa');
 
 // Route Absensi Manual Langsung (Tanpa Magic Link)
 Route::get('classes/{class}/attendance-manual', [App\Http\Controllers\AttendanceSessionController::class, 'createManual'])->middleware(['auth', 'auth.tenant'])->name('classes.attendance.manual.create');

@@ -107,6 +107,24 @@
                     </div>
                 </div>
 
+                {{--
+                    Laporan orang tua ditampilkan sebagai CATATAN, bukan status
+                    yang sudah tercentang. Roster ini sengaja tidak punya nilai
+                    bawaan per baris (lihat komentar di atas soal "tandai semua
+                    hadir") — mencentang otomatis dari laporan yang belum tentu
+                    benar akan melanggar prinsip yang sama, hanya dengan sumber
+                    yang berbeda. Petugas tetap yang menekan tombolnya.
+                --}}
+                @if ($excuses->has($s->id))
+                    @php $lapor = $excuses->get($s->id); @endphp
+                    <p class="mt-2 rounded border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-900">
+                        📩 Orang tua lapor <strong>{{ $lapor->jenis === 'sakit' ? 'sakit' : 'izin' }}</strong>
+                        @if ($lapor->keterangan)
+                            &mdash; {{ $lapor->keterangan }}
+                        @endif
+                    </p>
+                @endif
+
                 <fieldset class="mt-2.5">
                     <legend class="sr-only">Status kehadiran {{ $s->name }}</legend>
                     {{-- Lima kolom pada layar ~340px berarti tiap tombol hanya ~62px.

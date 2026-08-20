@@ -1,311 +1,412 @@
+@php
+    $modeOperator = request()->routeIs('admin.*');
+    
+    // Safety null-coalescing defaults for all pages
+    $kelasAktif = $kelasAktif ?? null;
+    $kelasPintasan = $kelasPintasan ?? collect();
+    $pembatas = $pembatas ?? [];
+
+    $pembatasAktif = 'bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 text-white font-black rounded-full px-4 py-2 sm:px-6 sm:py-2.5 shadow-lg shadow-pink-500/30 scale-105 border border-white/50 shrink-0';
+    $pembatasDiam  = 'text-slate-800 dark:text-slate-100 hover:text-pink-600 hover:bg-white/90 dark:hover:bg-slate-800/90 font-extrabold rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 transition-all duration-200 shrink-0';
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-slate-50">
+<html lang="id" class="h-full antialiased" x-data="{ darkMode: localStorage.getItem('theme') === 'dark', showCmd: false }" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Dashboard') - {{ config('app.name', 'Wali Kelas Hebat') }}</title>
+    <title>✨ {{ config('app.name', 'Wali Kelas Hebat') }} — Responsive Edition ✨</title>
 
-    <!-- PWA Settings -->
-    <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#1a1712">
-
-    {{--
-        Dua rupa huruf, lima berat — sebelumnya dua rupa dengan delapan berat.
-
-        Instrument Sans untuk seluruh antarmuka: sedikit rapat, tenang, dan
-        tidak berlagak. IBM Plex Mono khusus untuk yang berkolom — kode absensi,
-        kepala tabel, label bagian, nomor urut. Angka administrasi harus lurus
-        ke bawah, dan itu pekerjaan rupa monospasi, bukan hiasan.
-
-        Berkasnya dilayani sendiri dari public/fonts/ dan dideklarasikan di
-        resources/css/app.css — tidak ada lagi <link> ke fonts.googleapis.com
-        di sini. Alasannya ditulis panjang di app.css.
-    --}}
-
-    <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- Gaya tambahan per halaman. Lima halaman sudah memakai @push('styles')
-         sejak lama, tetapi tidak ada satu pun layout yang merendernya — jadi
-         seluruh isinya tidak pernah sampai ke browser. --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     @stack('styles')
-    {{-- Alpine sudah ikut di dalam bundel Vite (resources/js/app.js) dan
-         dijalankan di sana. Memuatnya sekali lagi dari CDN membuat dua
-         salinan Alpine berjalan berbarengan — "Detected multiple instances of
-         Alpine running" — dan penangan yang sama terpasang dua kali. --}}
 
     <style>
-        /* Deret pembatas boleh digeser di ponsel, tetapi batang gulirnya
-           sendiri hanya jadi kotoran di bawah tab. */
-        .pembatas { scrollbar-width: none; }
-        .pembatas::-webkit-scrollbar { display: none; }
+        body {
+            font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #fce7f3 0%, #e0e7ff 25%, #dbeafe 50%, #f3e8ff 75%, #fae8ff 100%) !important;
+            background-size: 300% 300% !important;
+            animation: gradientBg 12s ease infinite !important;
+            color: #0f172a;
+            min-height: 100vh;
+        }
+
+        .dark body {
+            background: linear-gradient(135deg, #090d16 0%, #1e1b4b 35%, #31103f 70%, #030712 100%) !important;
+            background-size: 300% 300% !important;
+            animation: gradientBg 12s ease infinite !important;
+            color: #f8fafc;
+        }
+
+        @keyframes gradientBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* HYPER VIBRANT NEON GRADIENT TEXT */
+        .gradient-rainbow-text {
+            background: linear-gradient(135deg, #ff007a 0%, #7928ca 35%, #0070f3 70%, #00dfd8 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShimmer 4s linear infinite;
+        }
+        @keyframes textShimmer {
+            to { background-position: 200% center; }
+        }
+
+        /* EXTRAVAGANT GLASS CARDS WITH RESPONSIVE RADIUS */
+        .card-colorful {
+            position: relative;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 40px -15px rgba(236, 72, 153, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 640px) {
+            .card-colorful {
+                border-radius: 2rem;
+            }
+        }
+
+        .dark .card-colorful {
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 30px 70px -15px rgba(168, 85, 247, 0.4);
+            color: #f8fafc;
+        }
+
+        /* BUTTONS WITH TOUCH TARGETS */
+        .btn-primary, .btn-primary--sm, .btn-colorful-primary {
+            background: linear-gradient(135deg, #ff007a 0%, #7928ca 50%, #0070f3 100%) !important;
+            background-size: 200% auto !important;
+            color: #ffffff !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-weight: 900 !important;
+            border-radius: 9999px !important;
+            padding: 0.625rem 1.25rem !important;
+            font-size: 0.8125rem !important;
+            border: 2px solid rgba(255, 255, 255, 0.6) !important;
+            box-shadow: 0 8px 20px -4px rgba(255, 0, 122, 0.5) !important;
+            transition: all 0.25s ease !important;
+            text-decoration: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        @media (min-width: 640px) {
+            .btn-primary, .btn-primary--sm, .btn-colorful-primary {
+                padding: 0.75rem 1.875rem !important;
+                font-size: 0.9375rem !important;
+            }
+        }
+
+        .btn-secondary, .btn-secondary--sm {
+            background: #ffffff !important;
+            border: 2px solid #8b5cf6 !important;
+            color: #7928ca !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-weight: 900 !important;
+            border-radius: 9999px !important;
+            padding: 0.5rem 1rem !important;
+            font-size: 0.8125rem !important;
+            transition: all 0.25s ease !important;
+            text-decoration: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        @media (min-width: 640px) {
+            .btn-secondary, .btn-secondary--sm {
+                padding: 0.625rem 1.5rem !important;
+                font-size: 0.875rem !important;
+            }
+        }
+
+        /* STAT CARDS RESPONSIVE GRID */
+        .deret-angka {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            margin-bottom: 1.5rem !important;
+        }
+
+        @media (min-width: 640px) {
+            .deret-angka {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 1.25rem !important;
+            }
+        }
+
+        .deret-angka > div, .papan-tugas {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 2px solid #f472b6 !important;
+            border-radius: 1.25rem !important;
+            padding: 1.25rem !important;
+            box-shadow: 0 10px 25px -5px rgba(244, 114, 182, 0.25) !important;
+        }
+
+        .dark .deret-angka > div, .dark .papan-tugas {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border-color: rgba(244, 114, 182, 0.4) !important;
+        }
+
+        .deret-angka > div:nth-child(1) {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%) !important;
+            border-color: #818cf8 !important;
+        }
+        .deret-angka > div:nth-child(2) {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+            border-color: #34d399 !important;
+        }
+        .deret-angka > div:nth-child(3) {
+            background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
+            border-color: #fb7185 !important;
+        }
+
+        .blok {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 2px solid #c084fc !important;
+            border-radius: 1.25rem !important;
+            box-shadow: 0 15px 35px -10px rgba(192, 132, 252, 0.2) !important;
+            overflow: hidden !important;
+        }
+        .dark .blok {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border-color: rgba(192, 132, 252, 0.4) !important;
+        }
+
+        .stat-value {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-weight: 900 !important;
+            background: linear-gradient(135deg, #ff007a 0%, #7928ca 50%, #0070f3 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            font-size: 2rem !important;
+        }
+
+        @media (min-width: 640px) {
+            .stat-value {
+                font-size: 2.5rem !important;
+            }
+        }
+
+        /* HIDE SCROLLBARS FOR TOUCH SLIDING */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
-    {{--
-        Chart.js TIDAK dimuat di sini.
-
-        Dulu setiap halaman menariknya — 200 KB untuk halaman yang tidak punya
-        satu pun grafik, pada ponsel guru dengan kuota terbatas. Lebih buruk
-        lagi, alamatnya tanpa nomor versi, sehingga isinya bisa berganti kapan
-        saja tanpa sepengetahuan kita, dan halaman analitik terlanjur memuat
-        versinya sendiri sehingga berkasnya masuk dua kali.
-
-        Sekarang hanya dua halaman yang memakainya (dashboard dan analitik)
-        yang memuatnya sendiri, dengan versi terpaku dan integrity hash.
-    --}}
 </head>
-<body class="h-full bg-slate-50 text-slate-700 antialiased">
 
-{{-- Pita penyamaran: operator yang sedang masuk sebagai guru harus selalu
-     sadar ia bukan dirinya, dan selalu punya jalan kembali dalam satu klik. --}}
+<body class="h-full antialiased" @keydown.window.ctrl.k.prevent="showCmd = !showCmd" @keydown.window.cmd.k.prevent="showCmd = !showCmd">
+
+{{-- PITA PENYAMARAN --}}
 @if (session('impersonator_id'))
-    <div class="sticky top-0 z-[60] flex h-7 items-center justify-center gap-3 border-b border-amber-700 bg-amber-600 px-4 text-center text-xs font-medium text-white">
-        <span class="kode kode--izin border-white/30 bg-white/10 text-white" aria-hidden="true">OP</span>
-        <span>Masuk sebagai <strong class="font-semibold">{{ auth()->user()->name }}</strong></span>
-        <form method="POST" action="{{ route('teachers.stop-impersonate') }}">
+    <div class="fixed top-0 inset-x-0 z-50 flex items-center justify-between bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-500 px-4 py-2 font-mono text-[11px] font-black text-white shadow-lg">
+        <span class="truncate pr-2">⚡ Mode Penyamaran Operator Aktif</span>
+        <form method="POST" action="{{ route('admin.users.stop-impersonating') }}" class="shrink-0">
             @csrf
-            <button type="submit" class="rounded-sm border border-white/40 px-1.5 py-0.5 text-[11px] font-medium hover:bg-white/15">Kembali ke admin</button>
+            <button type="submit" class="underline hover:text-amber-200">Kembali</button>
         </form>
     </div>
 @endif
 
-@php
-    /*
-     * Kelas yang sedang dibuka — dipakai seluruh chrome di bawah.
-     *
-     * Diperiksa dengan instanceof, bukan isset(). Blade meneruskan SELURUH
-     * variabel yang terdefinisi di view anak ke layout (get_defined_vars()),
-     * termasuk sisa variabel perulangan. Satu @foreach($daftar as $class) di
-     * halaman mana pun sudah cukup membuat menu ini menunjuk ke objek yang
-     * salah — dan bila isinya bukan Classroom, seluruh halaman berhenti dengan
-     * galat 500 dari route() atau dari ->kelasAjar(). Persis itu yang terjadi
-     * pada dashboard admin begitu tabel ringkasan kelasnya berisi data.
-     */
-    $kelasAktif = collect([$classroom ?? null, $class ?? null])
-        ->first(fn ($k) => $k instanceof \App\Models\Classroom);
-
-    /*
-     * Admin adalah operator SaaS, bukan pemegang kelas: ia tidak punya kelas,
-     * kalender, integrasi WA, atau langganan pribadi. Chrome-nya sama persis,
-     * isinya saja yang lain.
-     */
-    $modeOperator = auth()->user()->isAdmin();
-
-    /*
-     * PEMBATAS.
-     *
-     * Aplikasi ini bukan sembilan belas tujuan sederajat — ia satu kelas
-     * dengan beberapa bagian, persis buku administrasi kelas yang dipegang
-     * guru. Maka bentuknya pembatas buku, bukan sidebar dasbor SaaS: yang
-     * jarang dibuka duduk di ujung kanan dan tinggal digeser, tanpa perlu
-     * lipatan, laci, atau kategori.
-     *
-     * Kelas ditulis utuh di dua konstanta di bawah, bukan dirakit dari
-     * potongan: Tailwind memindai berkas ini sebagai teks dan tidak
-     * menjalankan PHP-nya.
-     *
-     * Bentuknya pembatas sungguhan, bukan garis bawah tebal. Pembatas yang
-     * aktif berlatar warna kertas dan kehilangan garis bawahnya, lalu digeser
-     * satu piksel menutupi garis sampul — sehingga ia menyatu dengan halaman
-     * di bawahnya persis seperti pembatas yang sedang dibuka pada map. Itu
-     * juga yang membuat "di mana saya" terbaca tanpa perlu membaca.
-     */
-    $pembatasAktif = '-mb-px rounded-t border border-slate-200 border-b-slate-50 bg-slate-50 text-slate-900';
-    $pembatasDiam = 'border border-transparent text-slate-500 hover:text-slate-900';
-
-    if ($modeOperator) {
-        $pembatas = [
-            ['Panel', route('admin.dashboard'), request()->routeIs('admin.dashboard')],
-            ['Daftar Guru', route('admin.teachers.index'), request()->routeIs('admin.teachers.*')],
-            ['Persetujuan PRO', route('admin.subscriptions.index'), request()->routeIs('admin.subscriptions.*')],
-            ['Pengumuman', route('admin.announcements.form'), request()->routeIs('admin.announcements.*')],
-        ];
-    } else {
-        $pembatas = [['Hari ini', route('dashboard'), request()->routeIs('dashboard')]];
-
-        if ($kelasAktif) {
-            $c = $kelasAktif;
-            $pembatas[] = ['Ringkasan', route('classes.show', $c), request()->routeIs('classes.show')];
-            $pembatas[] = ['Siswa', route('classes.students.index', $c), request()->routeIs('classes.students.*')];
-            $pembatas[] = ['Absensi', route('classes.attendance.index', $c), request()->routeIs('classes.attendance.*')];
-            $pembatas[] = ['Karakter P5', route('classes.character-portfolio.index', $c), request()->routeIs('classes.character-portfolio.*')];
-
-            /*
-             * Sisanya dokumen wali kelas. Pada kelas ajar wali kelasnya orang
-             * lain: buku kas dan laporan bukan miliknya, jadwal disusun per
-             * rombongan belajar (guru mapel yang menyuntingnya menimpa jam
-             * mengajar guru lain), dan buku poin dipegang SATU orang — bila
-             * tiap guru mapel ikut mencatat, satu kejadian tercatat berkali-kali
-             * dan sanksi siswa dihitung dari angka yang salah.
-             */
-            if (! $c->kelasAjar()) {
-                $pembatas[] = ['Poin', route('classes.violations.index', $c), request()->routeIs('classes.violations.*')];
-                $pembatas[] = ['Kas', route('classes.cashbook.index', $c), request()->routeIs('classes.cashbook.*')];
-                $pembatas[] = ['Jadwal', route('classes.schedules.index', $c), request()->routeIs('classes.schedules.*')];
-                $pembatas[] = ['Denah', route('classes.seating.index', $c), request()->routeIs('classes.seating.*')];
-                $pembatas[] = ['Organisasi', route('classes.organization.index', $c), request()->routeIs('classes.organization.*')];
-                $pembatas[] = ['Laporan', route('classes.reports.full', $c), request()->routeIs('classes.reports.*')];
-            }
-        }
-
-        /*
-         * Halaman milik akun dibuka dari menu avatar, jadi tidak punya
-         * pembatas tetap. Tanpa ini guru yang sedang berada di Kalender Sekolah
-         * melihat deret pembatas yang seluruhnya tidak aktif dan kehilangan
-         * penanda di mana ia berada — kegagalan yang sama persis dengan lipatan
-         * sidebar yang dulu menutup halaman aktifnya.
-         */
-        foreach ([
-            'holidays.*' => ['Kalender Sekolah', 'holidays.index'],
-            'whatsapp.*' => ['Integrasi WhatsApp', 'whatsapp.index'],
-            'analytics.*' => ['Analitik', 'analytics.index'],
-            'subscription.*' => ['Langganan PRO', 'subscription.index'],
-            'violation-types.*' => ['Jenis Pelanggaran', 'violation-types.index'],
-            'profile.*' => ['Profil Saya', 'profile.edit'],
-            'classes.index' => ['Daftar Kelas', 'classes.index'],
-            'classes.create' => ['Kelas Baru', 'classes.create'],
-        ] as $pola => [$label, $rute]) {
-            if (request()->routeIs($pola)) {
-                $pembatas[] = [$label, route($rute), true];
-            }
-        }
-    }
-@endphp
-
-{{--
-    BARIS 1 — identitas & akun.
-
-    Setipis mungkin dan tidak pernah menuntut apa pun. Semua yang dibuka
-    sebulan sekali (kalender, gateway WA, langganan, analitik, profil) hidup di
-    balik avatar: dulu kelimanya memakan tinggi sidebar setiap hari untuk
-    pekerjaan yang dilakukan sekali per semester.
---}}
-{{-- Baris ini sengaja TIDAK menempel: yang berguna tetap terlihat saat guru
-     menggulir daftar siswa adalah pembatasnya, bukan merek aplikasi. --}}
-<header class="bg-slate-900">
-    <div class="mx-auto flex h-10 max-w-buku items-center justify-between gap-4 px-4 sm:px-6">
-        {{-- Merek diperlakukan sebagai label arsip: mono, huruf besar,
-             direnggangkan. Ia menamai bukunya, tidak menjual apa pun. --}}
-        <a href="{{ $modeOperator ? route('admin.dashboard') : route('dashboard') }}"
-           class="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 transition-colors hover:text-white">
-            Wali Kelas <span class="text-white">Hebat</span>
+{{-- RESPONSIVE STICKY NAVBAR --}}
+<header class="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-b-2 border-pink-200 dark:border-purple-900 shadow-xl">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+        
+        {{-- Brand Logo --}}
+        <a href="{{ $modeOperator ? route('admin.dashboard') : route('dashboard') }}" class="flex items-center gap-2.5 sm:gap-3.5 no-underline group shrink-0">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-lg sm:text-2xl shrink-0 group-hover:rotate-12 transition-transform duration-300"
+                 style="background: linear-gradient(135deg,#ff007a,#7928ca,#0070f3); box-shadow: 0 4px 15px rgba(255,0,122,.4);">🎓</div>
+            <div>
+                <span class="font-black text-lg sm:text-2xl text-slate-900 dark:text-white block leading-none" style="font-family:'Plus Jakarta Sans',sans-serif;">Wali Kelas <span class="gradient-rainbow-text">Hebat</span></span>
+                <span class="text-[9px] sm:text-[10px] font-black tracking-widest text-pink-600 dark:text-pink-400 uppercase block mt-0.5">walas.my.id</span>
+            </div>
         </a>
 
-        <div class="relative shrink-0" x-data="{ buka: false }" @keydown.escape.window="buka = false">
-            <button type="button" @click="buka = !buka" :aria-expanded="buka ? 'true' : 'false'" aria-haspopup="true"
-                    class="flex items-center gap-2 rounded-sm py-1 pl-1 pr-1.5 transition-colors hover:bg-white/10">
-                <span class="flex h-6 w-6 items-center justify-center rounded-sm border border-white/20 font-mono text-[11px] font-medium text-white">
-                    {{ Str::upper(Str::substr(auth()->user()->name, 0, 1)) }}
-                </span>
-                <span class="hidden max-w-[10rem] truncate text-xs font-medium text-slate-200 sm:block">{{ auth()->user()->name }}</span>
-                <span class="text-[9px] text-slate-400" aria-hidden="true">&#9662;</span>
+        {{-- Search Command Palette Trigger (Desktop) --}}
+        <button @click="showCmd = true" type="button" class="hidden md:flex items-center gap-3 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-slate-800 dark:to-purple-950 border-2 border-pink-300 dark:border-purple-700 px-4 py-2 rounded-full text-xs font-black text-purple-900 dark:text-purple-200 hover:scale-105 transition-all shadow-md">
+            <span>⚡ Cari Pintasan (Presensi, Siswa, PDF)...</span>
+            <kbd class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-2 py-0.5 rounded-full font-mono text-[10px]">Ctrl + K</kbd>
+        </button>
+
+        {{-- Right Controls --}}
+        <div class="flex items-center gap-1 sm:gap-3 shrink-0">
+
+            {{-- Search Icon Trigger (Mobile) --}}
+            <button @click="showCmd = true" type="button" class="md:hidden p-1.5 sm:p-2 rounded-full bg-pink-100 dark:bg-slate-800 text-purple-700 dark:text-purple-300 text-xs font-black" title="Cari Menu">
+                🔍
             </button>
 
-            <div x-show="buka" x-cloak @click.outside="buka = false"
-                 class="absolute right-0 z-50 mt-1 w-60 overflow-hidden rounded border border-slate-300 bg-white py-1 shadow-xl">
-                <div class="border-b border-slate-200 px-3 py-2">
-                    <p class="truncate text-xs font-semibold text-slate-900">{{ auth()->user()->name }}</p>
-                    <p class="truncate font-mono text-[10px] text-slate-500">{{ auth()->user()->email }}</p>
-                </div>
+            {{-- Dark / Light Theme Toggle Button --}}
+            <button @click="darkMode = !darkMode; localStorage.setItem('theme', darkMode ? 'dark' : 'light')" type="button"
+                    class="p-1.5 sm:p-2.5 rounded-full bg-pink-100 dark:bg-slate-800 border-2 border-pink-300 dark:border-purple-700 text-slate-800 dark:text-amber-300 hover:scale-110 transition-transform shadow-md"
+                    :title="darkMode ? 'Ubah ke Mode Terang' : 'Ubah ke Mode Gelap'">
+                <span x-show="!darkMode" class="text-xs sm:text-base">🌙</span>
+                <span x-show="darkMode" x-cloak class="text-xs sm:text-base">☀️</span>
+            </button>
 
-                <a href="{{ route('profile.edit') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Profil &amp; kata sandi</a>
-
-                @unless ($modeOperator)
-                    <a href="{{ route('holidays.index') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Kalender Sekolah</a>
-                    <a href="{{ route('whatsapp.index') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Integrasi WhatsApp</a>
-                    <a href="{{ route('violation-types.index') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Jenis Pelanggaran</a>
-                    {{-- Halaman analitik sudah lengkap dan berfungsi, tetapi dulu tidak
-                         punya SATU PUN tautan dari mana pun: rutenya ada, controllernya
-                         ada, viewnya 363 baris, dan tak seorang pun bisa mencapainya
-                         kecuali mengetik URL-nya sendiri. --}}
-                    <a href="{{ route('analytics.index') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Analitik</a>
-                    <a href="{{ route('subscription.index') }}" class="flex items-center justify-between gap-2 border-t border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
-                        Langganan <span class="kode kode--izin">PRO</span>
-                    </a>
-                @endunless
-
-                <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-200">
-                    @csrf
-                    <button type="submit" class="block w-full px-3 py-1.5 text-left text-xs font-medium text-rose-600 hover:bg-rose-50">Keluar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</header>
-
-{{--
-    BARIS 2 — sampul kelas & pembatasnya.
-
-    Nama kelas adalah judul halaman yang sesungguhnya; ia sekaligus tombol
-    ganti kelas, sehingga pindah kelas tidak lagi menuntut mampir ke Daftar
-    Kelas dulu.
---}}
-{{-- Menempel di bawah pita penyamaran bila pitanya ada; tanpa offset ini
-     pitanya menutupi deret pembatas begitu halaman digulir. --}}
-<div class="sticky {{ session('impersonator_id') ? 'top-7' : 'top-0' }} z-30 border-b border-slate-200 bg-white">
-    <div class="mx-auto max-w-buku px-4 sm:px-6">
-        <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-3">
-            @if ($modeOperator)
-                <span class="text-lg font-semibold tracking-tight text-slate-900">Panel Operator</span>
-            @else
+            {{-- Class Selector Button & Dropdown --}}
+            @unless ($modeOperator)
                 <div class="relative" x-data="{ buka: false }" @keydown.escape.window="buka = false">
-                    <button type="button" @click="buka = !buka" :aria-expanded="buka ? 'true' : 'false'" aria-haspopup="true"
-                            class="-mx-1.5 flex items-center gap-1.5 rounded-sm px-1.5 py-0.5 transition-colors hover:bg-slate-100">
-                        {{-- Bukan "Semua Kelas": itu label saringan di halaman Daftar
-                             Kelas, dan dua benda berbeda dengan nama sama di satu
-                             layar adalah cara tercepat membingungkan orang. --}}
-                        <span class="text-lg font-semibold tracking-tight text-slate-900">{{ $kelasAktif?->name ?? 'Pilih kelas' }}</span>
-                        <span class="text-[10px] text-slate-400" aria-hidden="true">&#9662;</span>
+                    <button type="button" @click="buka = !buka"
+                            class="flex items-center gap-1 sm:gap-2.5 rounded-full bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white border border-white/60 px-2 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-black hover:scale-105 transition-all shadow-md">
+                        <span class="truncate max-w-[52px] sm:max-w-[160px]">{{ $kelasAktif?->name ?? 'Pilih Kelas' }}</span>
+                        <span class="text-[9px] text-pink-200">▼</span>
                     </button>
 
                     <div x-show="buka" x-cloak @click.outside="buka = false"
-                         class="absolute left-0 z-50 mt-1 max-h-80 w-64 overflow-y-auto rounded border border-slate-300 bg-white py-1 shadow-xl">
+                         class="absolute right-0 z-50 mt-2 w-60 sm:w-72 overflow-hidden rounded-3xl border-2 border-pink-300 dark:border-purple-700 bg-white dark:bg-slate-900 py-2 shadow-2xl">
+                        <div class="border-b border-pink-100 dark:border-slate-800 px-4 py-2 text-[10px] sm:text-[11px] font-black text-pink-600 uppercase tracking-wider bg-pink-50 dark:bg-slate-800">
+                            🏫 Pilih Kelas Perwalian / Ajar
+                        </div>
                         @forelse ($kelasPintasan as $k)
                             <a href="{{ route('classes.show', $k) }}"
-                               class="block truncate px-3 py-1.5 text-xs font-medium hover:bg-slate-50 {{ $kelasAktif?->is($k) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700' }}">
+                               class="block truncate px-4 py-2 text-xs font-extrabold transition-all hover:bg-pink-50 dark:hover:bg-slate-800 {{ ($kelasAktif && $kelasAktif->is($k)) ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black' : 'text-slate-700 dark:text-slate-300' }}">
                                 {{ $k->name }}
                             </a>
                         @empty
-                            <p class="px-3 py-1.5 text-xs text-slate-500">Belum ada kelas.</p>
+                            <p class="px-4 py-2 text-xs text-slate-500">Belum ada kelas.</p>
                         @endforelse
-                        <a href="{{ route('classes.index') }}" class="block border-t border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Kelola semua kelas</a>
-                        <a href="{{ route('classes.create') }}" class="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Buat kelas baru</a>
+                        <div class="border-t border-pink-100 dark:border-slate-800 mt-1 pt-1">
+                            <a href="{{ route('classes.index') }}" class="block px-4 py-2 text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-pink-50">Kelola Semua Kelas</a>
+                            <a href="{{ route('classes.create') }}" class="block px-4 py-2 text-xs font-black text-pink-600 hover:bg-pink-50">+ Buat Kelas Baru</a>
+                        </div>
                     </div>
                 </div>
+            @endunless
 
-                @if ($kelasAktif)
-                    {{-- Wali kelas dan guru mapel memegang kelas yang tampak sama
-                         tetapi menuntut pekerjaan yang sangat berbeda; penandanya
-                         harus terbaca sebelum guru mulai mengisi apa pun. --}}
-                    <span class="badge {{ $kelasAktif->kelasAjar() ? 'badge--emerald' : 'badge--indigo' }}">
-                        {{ $kelasAktif->kelasAjar() ? 'Guru Mapel' : 'Perwalian' }}
+            {{-- User Account Dropdown --}}
+            <div class="relative" x-data="{ buka: false }" @keydown.escape.window="buka = false">
+                <button type="button" @click="buka = !buka"
+                        class="flex items-center gap-1.5 sm:gap-2 rounded-full border-2 border-pink-300 dark:border-purple-700 bg-white dark:bg-slate-800 p-1 sm:px-3 sm:py-1.5 shadow-md hover:scale-105 transition-all">
+                    <span class="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-white text-[11px] sm:text-xs font-black shrink-0 shadow-md"
+                          style="background: linear-gradient(135deg,#ff007a,#7928ca);">
+                        {{ Str::upper(Str::substr(auth()->user()->name ?? 'U', 0, 1)) }}
                     </span>
-                @endif
-            @endif
+                    <span class="hidden max-w-[8rem] truncate text-xs font-black text-slate-900 dark:text-white md:block">{{ auth()->user()->name ?? 'Pengguna' }}</span>
+                    <span class="hidden md:inline text-[9px] text-pink-400">▼</span>
+                </button>
+
+                <div x-show="buka" x-cloak @click.outside="buka = false"
+                     class="absolute right-0 z-50 mt-2 w-60 sm:w-64 overflow-hidden rounded-3xl border-2 border-pink-300 dark:border-purple-700 bg-white dark:bg-slate-900 py-2 shadow-2xl">
+                    <div class="border-b border-pink-100 dark:border-slate-800 px-4 py-2.5 bg-gradient-to-r from-pink-50 via-purple-50 to-cyan-50 dark:from-slate-800 dark:to-purple-950">
+                        <p class="truncate text-xs font-black text-purple-900 dark:text-purple-300" style="font-family:'Plus Jakarta Sans',sans-serif;">{{ auth()->user()->name ?? '' }}</p>
+                        <p class="truncate text-[10px] text-pink-600 dark:text-pink-400 font-bold">{{ auth()->user()->email ?? '' }}</p>
+                    </div>
+
+                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:bg-pink-50 dark:hover:bg-slate-800">⚙️ Profil &amp; Kata Sandi</a>
+
+                    @unless ($modeOperator)
+                        <a href="{{ route('holidays.index') }}" class="block px-4 py-2 text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:bg-pink-50 dark:hover:bg-slate-800">📅 Kalender Sekolah</a>
+                        <a href="{{ route('whatsapp.index') }}" class="block px-4 py-2 text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:bg-pink-50 dark:hover:bg-slate-800">💬 Integrasi WhatsApp</a>
+                        <a href="{{ route('violation-types.index') }}" class="block px-4 py-2 text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:bg-pink-50 dark:hover:bg-slate-800">🚨 Jenis Pelanggaran</a>
+                        <a href="{{ route('analytics.index') }}" class="block px-4 py-2 text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:bg-pink-50 dark:hover:bg-slate-800">📊 Analitik Kelas</a>
+                        <a href="{{ route('subscription.index') }}" class="flex items-center justify-between gap-2 border-t border-pink-100 dark:border-slate-800 px-4 py-2 text-xs font-black text-pink-600 hover:bg-pink-50 dark:hover:bg-slate-800">
+                            Langganan PRO <span class="px-2 py-0.5 rounded-full text-[9px] bg-gradient-to-r from-amber-400 to-pink-500 text-white font-black">PRO</span>
+                        </a>
+                    @endunless
+
+                    <form method="POST" action="{{ route('logout') }}" class="border-t border-pink-100 dark:border-slate-800">
+                        @csrf
+                        <button type="submit" class="block w-full px-4 py-2 text-left text-xs font-black text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40">🚪 Keluar</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    {{-- RESPONSIVE SLIDING PILL NAVIGATION TABS --}}
+    @if (!empty($pembatas))
+        <div class="bg-gradient-to-r from-pink-200/80 via-purple-200/80 to-cyan-200/80 dark:from-slate-900/90 dark:via-purple-950/60 dark:to-slate-900/90 border-t border-pink-200 dark:border-slate-800 px-3 sm:px-6 py-2.5">
+            <nav class="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth" aria-label="Bagian">
+                @foreach ($pembatas as [$label, $tautan, $ini])
+                    <a href="{{ $tautan }}" @if($ini) aria-current="page" @endif
+                       class="shrink-0 transition-all text-[11px] sm:text-xs {{ $ini ? $pembatasAktif : $pembatasDiam }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </nav>
+        </div>
+    @endif
+</header>
+
+{{-- MAIN CONTENT WRAPPER --}}
+<main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6">
+    @include('partials.masa-otomasi')
+
+    <div class="card-colorful p-4 sm:p-8 lg:p-10">
+        @yield('content')
+    </div>
+</main>
+
+{{-- COMMAND PALETTE MODAL (CTRL+K) --}}
+<div x-show="showCmd" x-cloak @click.outside="showCmd = false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md">
+    <div class="w-full max-w-xl bg-white dark:bg-slate-900 border-2 border-pink-400 dark:border-purple-600 rounded-3xl p-5 sm:p-7 space-y-5 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-pink-100 dark:border-slate-800 pb-3">
+            <span class="font-black text-xs sm:text-sm text-pink-600 dark:text-pink-400">⚡ Pintasan Kilat (Command Palette)</span>
+            <button @click="showCmd = false" class="text-xs font-black text-slate-400 hover:text-slate-600">✕ ESC</button>
         </div>
 
-        {{-- Deret pembatas. Yang aktif menyatu dengan halaman di bawahnya. --}}
-        <nav class="pembatas -mb-px mt-2.5 flex gap-0.5 overflow-x-auto" aria-label="Bagian">
-            @foreach ($pembatas as [$label, $tautan, $ini])
-                <a href="{{ $tautan }}" @if($ini) aria-current="page" @endif
-                   class="shrink-0 px-3 py-1.5 text-xs font-medium transition-colors {{ $ini ? $pembatasAktif : $pembatasDiam }}">
-                    {{ $label }}
+        <div class="space-y-2 text-xs font-extrabold">
+            <a href="{{ route('dashboard') }}" class="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-pink-50 to-purple-50 dark:from-slate-800 dark:to-purple-950 text-purple-900 dark:text-purple-200">
+                <span>📊 Ke Dasbor Utama</span>
+                <span>&rsaquo;</span>
+            </a>
+            @if ($kelasAktif)
+                <a href="{{ route('classes.students.index', $kelasAktif) }}" class="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-slate-800 dark:to-indigo-950 text-indigo-900 dark:text-indigo-200">
+                    <span>📋 Kelola Daftar Siswa &amp; Form Biodata</span>
+                    <span>&rsaquo;</span>
                 </a>
-            @endforeach
-        </nav>
+                <a href="{{ route('classes.attendance-sessions.index', $kelasAktif) }}" class="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-emerald-950 text-emerald-900 dark:text-emerald-200">
+                    <span>📲 Buka Presensi WhatsApp 1-Klik</span>
+                    <span>&rsaquo;</span>
+                </a>
+                <a href="{{ route('classes.reports.index', $kelasAktif) }}" class="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-purple-950 text-purple-900 dark:text-purple-200">
+                    <span>🖨️ Cetak Laporan PDF 7 Bab</span>
+                    <span>&rsaquo;</span>
+                </a>
+            @endif
+            <a href="{{ route('whatsapp.index') }}" class="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-cyan-50 to-sky-50 dark:from-slate-800 dark:to-cyan-950 text-cyan-900 dark:text-cyan-200">
+                <span>💬 Status WhatsApp Bot</span>
+                <span>&rsaquo;</span>
+            </a>
+        </div>
     </div>
 </div>
 
-<main class="mx-auto w-full max-w-buku px-4 py-6 sm:px-6">
-    @include('partials.masa-otomasi')
-    @yield('content')
-</main>
+{{-- FOOTER --}}
+<footer class="py-6 sm:py-8 border-t border-pink-200 dark:border-purple-900 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl mt-8 sm:mt-14">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl flex items-center justify-center text-sm sm:text-base shrink-0"
+                 style="background: linear-gradient(135deg,#ff007a,#7928ca,#0070f3);">🎓</div>
+            <span class="font-black text-sm sm:text-base text-slate-900 dark:text-white" style="font-family:'Plus Jakarta Sans',sans-serif;">Wali Kelas Hebat ✨</span>
+        </div>
+        <p class="text-[11px] sm:text-xs text-slate-500 font-bold">© {{ date('Y') }} Wali Kelas Hebat · walas.my.id</p>
+    </div>
+</footer>
 
-{{-- Tiga view memakai @push('scripts') — notifikasi, pengaturan notifikasi, dan
-     analitik — tetapi tidak ada layout yang merender stack-nya, jadi seluruh
-     JS-nya tidak pernah sampai ke peramban. Cacat yang sama persis dengan
-     @stack('styles') di head. --}}
 @stack('scripts')
 
 </body>

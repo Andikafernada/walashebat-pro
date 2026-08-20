@@ -497,6 +497,86 @@
         </div>
     @endif
 
+    {{--
+        PENGINGAT IURAN BULANAN (SPP) — per kelas, bukan per guru.
+
+        Ditaruh di halaman ini, bukan di Buku Kas, karena targetnya grup
+        WhatsApp orang tua: seekor dengan seluruh pengaturan WA lain. Kelas
+        ajar tidak muncul di sini (dikecualikan di controller) — iuran adalah
+        urusan wali kelasnya.
+
+        Isinya teks bebas dan TIDAK menyebut siapa yang belum membayar.
+        Menyebut nama anak yang menunggak di grup yang dibaca seluruh orang
+        tua adalah keputusan yang jauh lebih besar daripada teknisnya.
+    --}}
+    @if ($kelasWali->isNotEmpty())
+        @foreach ($kelasWali as $kelas)
+            <div class="card space-y-4">
+                <div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+                    <div class="flex h-10 w-10 items-center justify-center rounded bg-emerald-100 text-emerald-700 shrink-0">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-semibold text-slate-900">Pengingat Iuran Bulanan — {{ $kelas->name }}</h3>
+                        <p class="text-xs text-slate-500">Terkirim otomatis ke grup WhatsApp orang tua kelas ini</p>
+                    </div>
+                </div>
+
+                @if (! $kelas->parent_group_wa)
+                    <p class="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                        Grup WhatsApp orang tua kelas <strong>{{ $kelas->name }}</strong> belum diatur di halaman Kelas, jadi pengingat belum bisa dikirim.
+                    </p>
+                @else
+                    <form method="POST" action="{{ route('classes.cashbook.pengingat', $kelas) }}" class="space-y-3">
+                        @csrf
+
+                        <label class="flex items-center gap-2.5 rounded border border-slate-200 bg-slate-50 p-3">
+                            <input type="hidden" name="spp_pengingat_aktif" value="0">
+                            <input type="checkbox" name="spp_pengingat_aktif" value="1"
+                                   @checked($kelas->spp_pengingat_aktif)
+                                   class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                            <span class="text-xs font-semibold text-slate-800">Kirim pengingat tiap bulan</span>
+                        </label>
+
+                        <div>
+                            <label for="spp_pengingat_tanggal_{{ $kelas->id }}" class="block eyebrow mb-1">Tanggal kirim</label>
+                            <input id="spp_pengingat_tanggal_{{ $kelas->id }}" type="number" name="spp_pengingat_tanggal" min="1" max="31"
+                                   value="{{ old('spp_pengingat_tanggal', $kelas->spp_pengingat_tanggal) }}"
+                                   class="h-9 w-24 rounded border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-800 focus:border-emerald-500 focus:outline-none">
+                            <span class="text-[11px] text-slate-500">tiap bulan, pukul 07.00</span>
+                            <p class="mt-1 text-[11px] text-slate-400">Bila bulannya lebih pendek, dikirim pada hari terakhir bulan itu.</p>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <label for="spp_pengingat_teks_{{ $kelas->id }}" class="block eyebrow mb-1">Isi pesan</label>
+                                <span class="text-[11px] font-semibold text-emerald-700">Tag: {nama_kelas}, {bulan}, {tahun}, {wali_kelas}</span>
+                            </div>
+                            {{--
+                                Pesan bawaan ditampilkan APA ADANYA di kotaknya,
+                                bukan disembunyikan di balik placeholder "kosongkan
+                                untuk bawaan" — guru berhak melihat persis apa yang
+                                akan dikirim sebelum menyalakannya.
+                            --}}
+                            <textarea id="spp_pengingat_teks_{{ $kelas->id }}" name="spp_pengingat_teks" rows="7" maxlength="1000"
+                                      class="form-textarea text-xs font-mono">{{ old('spp_pengingat_teks', $kelas->spp_pengingat_teks ?: \App\Console\Commands\KirimPengingatSpp::TEKS_BAWAAN) }}</textarea>
+                        </div>
+
+                        @if ($kelas->spp_pengingat_terkirim_pada)
+                            <p class="text-[11px] text-slate-500">
+                                Terakhir terkirim {{ $kelas->spp_pengingat_terkirim_pada->translatedFormat('d F Y') }}.
+                            </p>
+                        @endif
+
+                        <button type="submit" class="h-9 w-full rounded bg-emerald-600 text-xs font-semibold text-white transition-colors hover:bg-emerald-700">
+                            Simpan pengaturan pengingat
+                        </button>
+                    </form>
+                @endif
+            </div>
+        @endforeach
+    @endif
+
     <!-- CUSTOM KEYWORDS & TEMPLATE FORM -->
     <div class="card space-y-6">
         <div class="border-b border-slate-200 pb-3">
@@ -571,14 +651,14 @@
                         <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Untuk kabar IZIN</label>
                         <textarea name="wa_permission_template" rows="4"
                                   placeholder="Nuhun infona Bu, mugia urusan {nama} lancar.&#10;Baik Pak, izin {nama} sudah saya terima."
-                                  class="form-input form-input--sm">{{ auth()->user()->wa_permission_template }}</textarea>
+                                  class="form-textarea text-xs">{{ auth()->user()->wa_permission_template }}</textarea>
                     </div>
 
                     <div class="space-y-1.5">
                         <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Untuk kabar SAKIT</label>
                         <textarea name="wa_sick_template" rows="4"
                                   placeholder="Mugia {nama} enggal damang nya Bu.&#10;Semoga {nama} lekas sehat, salam dari saya."
-                                  class="form-input form-input--sm">{{ auth()->user()->wa_sick_template }}</textarea>
+                                  class="form-textarea text-xs">{{ auth()->user()->wa_sick_template }}</textarea>
                     </div>
                 </div>
             </div>
@@ -591,7 +671,7 @@
                 </div>
                 <textarea name="wa_magic_link_template" rows="5"
                           placeholder="Ketikkan templat pesan magic link..."
-                          class="form-input form-input--sm">{{ auth()->user()->wa_magic_link_template ?: "*Wali Kelas Hebat - Absensi Kelas {nama_kelas}*\n\nPetugas absensi, silakan isi kehadiran hari ini melalui tautan berikut:\n{magic_link}\n\nPIN Harian: *{pin}*\nBerlaku s/d: {jam_berlaku} WIB\n\nJangan bagikan PIN ini ke siapa pun." }}</textarea>
+                          class="form-textarea text-xs">{{ auth()->user()->wa_magic_link_template ?: "*Wali Kelas Hebat - Absensi Kelas {nama_kelas}*\n\nPetugas absensi, silakan isi kehadiran hari ini melalui tautan berikut:\n{magic_link}\n\nPIN Harian: *{pin}*\nBerlaku s/d: {jam_berlaku} WIB\n\nJangan bagikan PIN ini ke siapa pun." }}</textarea>
             </div>
 
             <div class="flex items-center justify-end border-t border-slate-200 pt-4">

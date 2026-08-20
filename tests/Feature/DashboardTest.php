@@ -88,7 +88,7 @@ class DashboardTest extends TestCase
         $this->get(route('dashboard'))
             ->assertOk()
             ->assertSee('75%')      // 3 masuk dari 4 isian
-            ->assertSee('Hadir 3');
+            ->assertSee('H 3');
     }
 
     /**
@@ -113,7 +113,7 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee('50%')
             // Persentase saja ambigu; cacah yang masuk harus ikut terbaca.
-            ->assertSee('Hadir 2');
+            ->assertSee('H 2');
     }
 
     /** Terlambat ikut dihitung masuk, konsisten dengan laporan. */
@@ -141,7 +141,7 @@ class DashboardTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Belum ada absensi');
+            ->assertSee('—');
     }
 
     /** Daftar perhatian menyebut alasannya, bukan cuma nama. */
@@ -190,5 +190,44 @@ class DashboardTest extends TestCase
         Classroom::factory()->create(['user_id' => $lain->id, 'name' => 'KELAS RAHASIA']);
 
         $this->get(route('dashboard'))->assertOk()->assertDontSee('KELAS RAHASIA');
+    }
+
+    /**
+     * Aksi Cepat dulu keempatnya menuju classes.index apa pun labelnya —
+     * "cepat"-nya cuma nama. Dengan satu kelas perwalian (pola paling umum),
+     * tombolnya harus loncat langsung ke kelas itu.
+     */
+    public function test_aksi_cepat_langsung_ke_kelas_utama_saat_perwalian_tunggal(): void
+    {
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(route('classes.attendance.index', $this->class), false)
+            ->assertSee(route('classes.students.index', $this->class), false)
+            ->assertSee(route('classes.character-portfolio.index', $this->class), false);
+    }
+
+    /** Tanpa kelas perwalian tunggal yang jelas, tidak ada yang bisa ditebak — jatuh balik ke daftar kelas. */
+    public function test_aksi_cepat_jatuh_balik_ke_daftar_kelas_saat_ambigu(): void
+    {
+        Classroom::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'X RPL 2',
+            'jenis' => Classroom::JENIS_AJAR,
+            'mapel' => ['Informatika'],
+        ]);
+
+        // Kelas perwalian dari setUp() + satu kelas ajar baru = tidak lagi satu-satunya kelas,
+        // tapi kelas perwaliannya tetap tunggal — jadi kasus ambigu sungguhan butuh kelas
+        // perwalian KEDUA.
+        Classroom::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'XII RPL 2',
+            'jenis' => Classroom::JENIS_PERWALIAN,
+        ]);
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(route('classes.index'), false)
+            ->assertDontSee(route('classes.attendance.index', $this->class), false);
     }
 }

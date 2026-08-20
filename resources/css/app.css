@@ -90,16 +90,18 @@
 }
 
 /* ============================================================================
-   BUKU ADMINISTRASI KELAS — lapisan komponen
+   TERANG MODERN — lapisan komponen
 
    Aturannya tiga, dan seluruh berkas ini tunduk padanya:
 
-   1. Pemisahan dikerjakan GARIS, bukan bayangan. Satu ketebalan (1px), satu
-      warna (slate-200). Bayangan hanya untuk yang benar-benar mengambang di
-      atas isi halaman.
-   2. Aksen (indigo) hanya untuk yang bisa diklik atau yang sedang aktif.
-      Angka, label, dan hiasan tidak pernah memakainya — kalau semuanya
-      ditandai, tidak ada yang tertandai.
+   1. Lembar putih MENGAMBANG di atas dasar abu terang: sudut membulat, garis
+      tipis, bayangan lembut. Bayangannya dua lapis dan bernada biru-gelap —
+      lihat boxShadow di tailwind.config.js. Halaman punya kedalaman, tetapi
+      tidak satu pun elemen yang berat.
+   2. Aksen (lembayung/indigo) hanya untuk yang bisa diklik atau yang sedang
+      aktif. Keadaan memakai warna semantik sendiri — hijau, kuning, merah.
+      Kalau aksen ikut menandai keadaan, tidak ada lagi yang membedakan "bisa
+      diklik" dari "perlu diperhatikan".
    3. Angka rata kolom. Setiap tabel dan setiap statistik memakai tabular-nums;
       tanpa itu deret angka bergoyang dan mata kehilangan kolomnya.
 
@@ -120,7 +122,7 @@
     }
 
     h1, h2, h3, h4 {
-        @apply font-semibold tracking-tight text-slate-900;
+        @apply font-display font-semibold tracking-tight text-slate-900;
         text-wrap: balance;
     }
     h1 { @apply text-xl sm:text-2xl; }
@@ -165,18 +167,27 @@
     /* selebar tetap supaya kolomnya lurus ke bawah dan bisa dipindai      */
     /* tanpa membaca.                                                     */
     /* ------------------------------------------------------------------ */
+    /*
+     * Bingkainya kini cincin di dalam, bukan garis di luar: pada sudut
+     * membulat 6px, border 1px menghasilkan tepi bergerigi di layar kerapatan
+     * rendah, sementara ring-inset tetap mulus. Lebar tetapnya dipertahankan —
+     * itulah yang membuat kolomnya lurus ke bawah.
+     */
     .kode {
-        @apply inline-flex h-5 min-w-[1.25rem] shrink-0 items-center justify-center;
-        @apply rounded-sm border border-slate-200 bg-white px-1;
+        @apply inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center;
+        @apply rounded-md bg-slate-100 px-1.5 ring-1 ring-inset ring-slate-900/5;
         @apply font-mono text-[11px] font-medium leading-none text-slate-500;
     }
-    .kode--hadir   { @apply border-emerald-200 bg-emerald-50 text-emerald-700; }
-    .kode--alfa    { @apply border-rose-200 bg-rose-50 text-rose-700; }
-    .kode--izin    { @apply border-amber-200 bg-amber-50 text-amber-700; }
-    .kode--sakit   { @apply border-amber-200 bg-amber-50 text-amber-700; }
-    .kode--telat   { @apply border-slate-300 bg-slate-100 text-slate-700; }
-    .kode--aksen   { @apply border-indigo-200 bg-indigo-50 text-indigo-700; }
-    .kode--kosong  { @apply border-dashed text-slate-300; }
+    .kode--hadir   { @apply bg-emerald-50 text-emerald-700 ring-emerald-600/15; }
+    .kode--alfa    { @apply bg-rose-50 text-rose-700 ring-rose-600/15; }
+    .kode--izin    { @apply bg-amber-50 text-amber-700 ring-amber-600/20; }
+    .kode--sakit   { @apply bg-amber-50 text-amber-700 ring-amber-600/20; }
+    .kode--telat   { @apply bg-slate-100 text-slate-600 ring-slate-900/10; }
+    .kode--aksen   { @apply bg-indigo-50 text-indigo-700 ring-indigo-600/15; }
+    /* Kosong dipertegas garis putus-putus, dan itu tidak bisa dikerjakan ring
+       (Tailwind tidak punya ring-dashed) — jadi khusus yang ini kembali ke
+       border, dengan ring dimatikan supaya keduanya tidak bertumpuk. */
+    .kode--kosong  { @apply border border-dashed border-slate-300 bg-transparent text-slate-300 ring-0; }
 
     /* Nomor urut di margin: tanpa kotak, hanya angka abu rata kanan. */
     .kode--urut {
@@ -208,25 +219,26 @@
     /* Pengganti "card". Namanya tetap .card karena 23 view memakainya.    */
     /* ------------------------------------------------------------------ */
     .card {
-        @apply rounded-lg border border-slate-200 bg-white;
+        @apply rounded-2xl border border-sky-200 bg-white; box-shadow: 0 1px 4px rgba(14,165,233,.08);
         @apply p-4 sm:p-5;
     }
 
-    /* Dulu berbayang; sekarang bedanya garis yang lebih tegas. */
+    /* Yang perlu terbaca selapis lebih tinggi: bayangannya yang naik, bukan
+       garisnya yang menebal. */
     .card-elevated {
-        @apply rounded-lg border border-slate-300 bg-white p-4 sm:p-5;
+        @apply rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-lg;
     }
 
     /* Kepala blok: judul + garis, menempel ke tepi atas blok. */
     .blok {
-        @apply overflow-hidden rounded-lg border border-slate-200 bg-white;
+        @apply overflow-hidden rounded-2xl border border-sky-200 bg-white; box-shadow: 0 1px 4px rgba(14,165,233,.08);
     }
     .blok__kepala {
         @apply flex flex-wrap items-center justify-between gap-3;
-        @apply border-b border-slate-200 bg-slate-50 px-4 py-2.5;
+        @apply border-b border-sky-100 bg-sky-50/50 px-5 py-3.5;
     }
     .blok__judul {
-        @apply text-sm font-semibold tracking-tight text-slate-900;
+        @apply font-display text-base font-semibold tracking-tight text-slate-900;
     }
     .blok__isi {
         @apply p-4 sm:p-5;
@@ -234,7 +246,7 @@
     /* Isi berupa daftar bergaris: tiap anak dipisah garis rambut, tanpa
        jarak — supaya rapat dan terbaca sebagai satu daftar. */
     .blok__daftar > * + * {
-        @apply border-t border-slate-200;
+        @apply border-t border-sky-100;
     }
 
     /* ------------------------------------------------------------------ */
@@ -275,33 +287,50 @@
     }
 
     /* Deret statistik: satu blok, dipisah garis, bukan empat kartu. */
+    /*
+     * Di ponsel DUA kolom, bukan satu.
+     *
+     * Satu kolom membuat lima angka jadi lima layar penuh yang harus digulir,
+     * dan angka yang tidak bisa dibandingkan tanpa menggulir berhenti menjadi
+     * ringkasan. Dua kolom memuat semuanya sekaligus dalam satu pandangan.
+     * Terlihat pada render 430px halaman sungguhan, bukan pada tiruan.
+     */
     .deret-angka {
-        @apply grid divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white;
-        @apply sm:grid-flow-col sm:auto-cols-fr sm:divide-x sm:divide-y-0;
+        @apply grid grid-cols-2 divide-x divide-y divide-slate-200 overflow-hidden;
+        @apply rounded-2xl border border-sky-200 bg-white; box-shadow: 0 1px 4px rgba(14,165,233,.08);
+        @apply sm:grid-flow-col sm:auto-cols-fr sm:grid-cols-none sm:divide-y-0;
     }
     .deret-angka > * {
         @apply px-4 py-3;
     }
 
-    /* Ikon statistik: kotak kecil bergaris, bukan lingkaran berwarna. */
+    /*
+     * Ubin ikon: sudut membulat, isian lembut, tanpa garis luar.
+     *
+     * Dipakai 15 halaman yang belum tersisir satu per satu — menyetelnya di
+     * sini membenahi kelimabelasnya sekaligus, dan itu jauh lebih sulit
+     * terlewat daripada menyunting satu per satu.
+     */
     .stat-icon {
-        @apply flex h-8 w-8 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-500;
+        @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500;
     }
     .stat-icon--primary,
     .stat-icon--indigo,
-    .stat-icon--sky   { @apply border-indigo-200 bg-indigo-50 text-indigo-600; }
-    .stat-icon--emerald { @apply border-emerald-200 bg-emerald-50 text-emerald-700; }
+    .stat-icon--sky   { @apply bg-indigo-50 text-indigo-600; }
+    .stat-icon--emerald { @apply bg-emerald-50 text-emerald-600; }
     .stat-icon--amber,
-    .stat-icon--orange { @apply border-amber-200 bg-amber-50 text-amber-700; }
+    .stat-icon--orange { @apply bg-amber-50 text-amber-600; }
     .stat-icon--rose,
-    .stat-icon--red   { @apply border-rose-200 bg-rose-50 text-rose-700; }
-    .stat-icon--slate { @apply border-slate-200 bg-slate-50 text-slate-500; }
+    .stat-icon--red   { @apply bg-rose-50 text-rose-600; }
+    .stat-icon--slate { @apply bg-slate-100 text-slate-500; }
 
     /* ------------------------------------------------------------------ */
     /* TOMBOL                                                             */
     /*                                                                    */
-    /* Satu tinggi, satu radius, garis 1px, tanpa bayangan dan tanpa       */
-    /* gradien. Yang membedakan tingkatannya hanya isian.                  */
+    /* Satu tinggi, satu radius membulat, garis 1px. Yang membedakan       */
+    /* tingkatannya isian — dan yang berisi penuh mendapat bayangan tipis  */
+    /* seukuran warnanya sendiri, supaya terbaca sebagai benda yang bisa   */
+    /* ditekan, bukan tempelan warna.                                     */
     /* ------------------------------------------------------------------ */
     .btn-primary,
     .btn-secondary,
@@ -310,17 +339,37 @@
     .btn-danger-ghost,
     .btn-success {
         @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap;
-        @apply h-9 rounded border px-3.5 text-sm font-medium;
-        @apply transition-colors duration-100;
+        @apply h-9 rounded-lg border px-3.5 text-sm font-medium;
         @apply disabled:pointer-events-none disabled:opacity-40;
+
+        /*
+         * Warna DAN bentuk ikut beralih, supaya jari yang menekan mendapat
+         * jawaban meski warnanya nyaris tak berubah di layar ponsel yang
+         * silau. 0,6% terlalu kecil untuk menggeser apa pun di sekitarnya,
+         * cukup besar untuk terasa. Satu tempat ini melayani seluruh tombol
+         * di 90 halaman.
+         */
+        @apply transition-[color,background-color,border-color,transform] duration-100;
     }
 
-    .btn-primary   { @apply border-indigo-600 bg-indigo-600 text-white hover:border-indigo-700 hover:bg-indigo-700; }
-    .btn-secondary { @apply border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50; }
+    /* Ditulis sebagai daftar pemilih, bukan sarang `&:active`: proyek ini
+       tidak memasang tailwindcss/nesting, dan sarang CSS asli baru ada di
+       Chrome 112+ — WebView di ponsel guru belum tentu setua itu. */
+    .btn-primary:active,
+    .btn-secondary:active,
+    .btn-ghost:active,
+    .btn-danger:active,
+    .btn-danger-ghost:active,
+    .btn-success:active {
+        transform: scale(0.994);
+    }
+
+    .btn-primary   { @apply border-indigo-600 bg-indigo-600 text-white shadow-sm hover:border-indigo-700 hover:bg-indigo-700; }
+    .btn-secondary { @apply border-slate-200 bg-white text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-50; }
     .btn-ghost     { @apply border-transparent bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900; }
-    .btn-danger    { @apply border-rose-600 bg-rose-600 text-white hover:border-rose-700 hover:bg-rose-700; }
+    .btn-danger    { @apply border-rose-600 bg-rose-600 text-white shadow-sm hover:border-rose-700 hover:bg-rose-700; }
     .btn-danger-ghost { @apply border-transparent bg-transparent text-rose-600 hover:bg-rose-50; }
-    .btn-success   { @apply border-emerald-600 bg-emerald-600 text-white hover:border-emerald-700 hover:bg-emerald-700; }
+    .btn-success   { @apply border-emerald-600 bg-emerald-600 text-white shadow-sm hover:border-emerald-700 hover:bg-emerald-700; }
 
     .btn-primary--sm,
     .btn-secondary--sm,
@@ -333,27 +382,32 @@
 
     /* Tombol ikon persegi. */
     .btn-icon {
-        @apply inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-500;
-        @apply transition-colors duration-100 hover:border-slate-400 hover:text-slate-900;
+        @apply inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-xs;
+        @apply transition-colors duration-100 hover:border-slate-300 hover:text-slate-900;
     }
 
     /* ------------------------------------------------------------------ */
-    /* LENCANA                                                            */
+    /* BADGE — penanda di dalam tabel dan daftar                          */
     /*                                                                    */
-    /* Bergaris, bukan berisi penuh: di tabel padat, lencana berisi penuh  */
-    /* menarik mata lebih kuat daripada datanya sendiri.                   */
+    /* Pil isian lembut dengan cincin di dalam. Bukan huruf besar mono     */
+    /* lagi: HURUF BESAR pada label dua-tiga kata memaksa mata mengeja,    */
+    /* dan penanda yang harus dieja berhenti menjadi penanda.              */
+    /*                                                                    */
+    /* Bedakan dari .lencana — yang itu menyatakan keadaan seluruh         */
+    /* halaman dan mendarat dengan gerak; yang ini duduk diam di dalam     */
+    /* baris data.                                                        */
     /* ------------------------------------------------------------------ */
     .badge {
-        @apply inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5;
-        @apply font-mono text-[10px] font-medium uppercase tracking-wider;
-        @apply border-slate-200 bg-slate-50 text-slate-600;
+        @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5;
+        @apply text-[11px] font-medium;
+        @apply bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-900/5;
     }
-    .badge--emerald { @apply border-emerald-200 bg-emerald-50 text-emerald-700; }
-    .badge--rose    { @apply border-rose-200 bg-rose-50 text-rose-700; }
-    .badge--amber   { @apply border-amber-200 bg-amber-50 text-amber-700; }
+    .badge--emerald { @apply bg-emerald-50 text-emerald-700 ring-emerald-600/15; }
+    .badge--rose    { @apply bg-rose-50 text-rose-700 ring-rose-600/15; }
+    .badge--amber   { @apply bg-amber-50 text-amber-700 ring-amber-600/20; }
     .badge--indigo,
-    .badge--sky     { @apply border-indigo-200 bg-indigo-50 text-indigo-700; }
-    .badge--slate   { @apply border-slate-200 bg-slate-50 text-slate-600; }
+    .badge--sky     { @apply bg-indigo-50 text-indigo-700 ring-indigo-600/15; }
+    .badge--slate   { @apply bg-slate-100 text-slate-600 ring-slate-900/5; }
 
     .status-dot { @apply inline-block h-1.5 w-1.5 rounded-full bg-slate-400; }
     .status-dot--emerald { @apply bg-emerald-600; }
@@ -519,6 +573,76 @@
     .bar__isi--emerald { @apply bg-emerald-600; }
     .bar__isi--amber   { @apply bg-amber-600; }
     .bar__isi--rose    { @apply bg-rose-600; }
+
+    /* ------------------------------------------------------------------ */
+    /* LAPISAN HIDUP                                                      */
+    /*                                                                    */
+    /* Empat hal, tidak lebih. Semuanya hanya menyentuh transform dan      */
+    /* opacity — digambar GPU tanpa menghitung ulang tata letak, jadi      */
+    /* ponsel kelas menengah yang dipakai guru tidak membayar apa pun.     */
+    /* Seluruhnya mati sendiri lewat prefers-reduced-motion di kaki        */
+    /* berkas ini.                                                        */
+    /* ------------------------------------------------------------------ */
+
+    /*
+     * Daftar yang muncul baris demi baris.
+     *
+     * Selisihnya 45ms dan berhenti bertingkat di baris kedelapan: lewat dari
+     * itu guru sudah menunggu, bukan menikmati. Di daftar 34 siswa, menunggu
+     * giliran ke-34 berarti setengah detik menatap layar kosong.
+     */
+    .hidup > * { @apply animate-naik; }
+    .hidup > *:nth-child(1) { animation-delay: 0ms; }
+    .hidup > *:nth-child(2) { animation-delay: 45ms; }
+    .hidup > *:nth-child(3) { animation-delay: 90ms; }
+    .hidup > *:nth-child(4) { animation-delay: 135ms; }
+    .hidup > *:nth-child(5) { animation-delay: 180ms; }
+    .hidup > *:nth-child(6) { animation-delay: 225ms; }
+    .hidup > *:nth-child(7) { animation-delay: 270ms; }
+    .hidup > *:nth-child(n+8) { animation-delay: 315ms; }
+
+    /*
+     * LENCANA KEADAAN — pil yang menyatakan keadaan hari ini.
+     *
+     * Menggantikan stempel karet miring dari arah desain sebelumnya. Warnanya
+     * semantik, bukan aksen: hijau untuk yang beres, merah untuk yang menuntut
+     * tindakan. Aksen lembayung sengaja TIDAK dipakai di sini — kalau warna
+     * aksen ikut menandai keadaan, tidak ada lagi yang membedakan "bisa
+     * diklik" dari "perlu diperhatikan".
+     */
+    .lencana {
+        @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1;
+        @apply text-xs font-medium;
+        @apply bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/15;
+        @apply animate-pop;
+    }
+    .lencana__titik { @apply h-1.5 w-1.5 rounded-full bg-current; }
+
+    .lencana--perlu {
+        @apply bg-rose-50 text-rose-700 ring-rose-600/15;
+    }
+    .lencana--perlu .lencana__titik { @apply animate-denyut; }
+
+    a.lencana { @apply transition-colors duration-100; }
+    a.lencana:hover { @apply bg-emerald-100; }
+    a.lencana.lencana--perlu:hover { @apply bg-rose-100; }
+
+    /*
+     * TULIS — garis bawah yang ditarik dari kiri saat disentuh, bukan menyala
+     * seketika. Gerak yang punya arah terbaca sebagai jawaban, bukan kedipan.
+     */
+    .tulis {
+        @apply relative no-underline;
+    }
+    .tulis::after {
+        content: '';
+        @apply absolute -bottom-0.5 left-0 h-px w-full bg-current;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .tulis:hover::after,
+    .tulis:focus-visible::after { transform: scaleX(1); }
 
 }
 

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Console\Commands\KirimPengingatSpp;
+use App\Models\Classroom;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -87,5 +89,75 @@ class HalamanWhatsAppTest extends TestCase
             substr_count($tanpaKomentar, 'window.location.reload()'),
             'Muat ulang otomatis hanya boleh ada di jalur peralihan sesudah pemindaian QR'
         );
+    }
+
+    /**
+     * Pengingat SPP pindah ke halaman ini (dulu di Buku Kas): targetnya grup
+     * WhatsApp, seekor dengan pengaturan WA lain.
+     */
+    public function test_kelas_tanpa_grup_wa_melihat_peringatan_bukan_formulir(): void
+    {
+        $guru = $this->guru('connected');
+        Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'XII RPL 1', 'parent_group_wa' => null]);
+
+        $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Pengingat Iuran Bulanan — XII RPL 1', $html);
+        $this->assertStringContainsString('belum diatur di halaman Kelas', $html);
+        $this->assertStringNotContainsString('name="spp_pengingat_teks"', $html);
+    }
+
+    /** Guru berhak melihat persis pesan yang akan dikirim, bukan kotak kosong. */
+    public function test_teks_kosong_menampilkan_pesan_bawaan_sungguhan(): void
+    {
+        $guru = $this->guru('connected');
+        Classroom::factory()->create([
+            'user_id' => $guru->id, 'name' => 'XII RPL 1',
+            'parent_group_wa' => '628111@g.us', 'spp_pengingat_teks' => null,
+        ]);
+
+        $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString(e(KirimPengingatSpp::TEKS_BAWAAN), $html);
+    }
+
+    public function test_teks_yang_sudah_diisi_guru_tidak_ditimpa_bawaan(): void
+    {
+        $guru = $this->guru('connected');
+        Classroom::factory()->create([
+            'user_id' => $guru->id, 'name' => 'XII RPL 1',
+            'parent_group_wa' => '628111@g.us', 'spp_pengingat_teks' => 'Mohon iuran bulan ini ya Bapak/Ibu.',
+        ]);
+
+        $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Mohon iuran bulan ini ya Bapak/Ibu.', $html);
+        $this->assertStringNotContainsString(e(KirimPengingatSpp::TEKS_BAWAAN), $html);
+    }
+
+    /** Iuran kelas ajar bukan urusan guru mapel — jangan ditawarkan sama sekali. */
+    public function test_kelas_ajar_tidak_menampilkan_pengingat_spp(): void
+    {
+        $guru = $this->guru('connected');
+        Classroom::factory()->create([
+            'user_id' => $guru->id, 'jenis' => Classroom::JENIS_AJAR, 'parent_group_wa' => '628111@g.us',
+        ]);
+
+        $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('Pengingat Iuran Bulanan', $html);
+    }
+
+    /** Wali kelas dengan lebih dari satu kelas perwalian mengatur keduanya di sini. */
+    public function test_dua_kelas_perwalian_menampilkan_dua_kartu_terpisah(): void
+    {
+        $guru = $this->guru('connected');
+        Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'X RPL 1', 'parent_group_wa' => '628111@g.us']);
+        Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'XI RPL 1', 'parent_group_wa' => '628222@g.us']);
+
+        $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Pengingat Iuran Bulanan — X RPL 1', $html);
+        $this->assertStringContainsString('Pengingat Iuran Bulanan — XI RPL 1', $html);
     }
 }
