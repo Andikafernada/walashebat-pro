@@ -40,10 +40,14 @@ class N8nWhatsAppChannel implements NotificationChannel
 
     /**
      * Cek apakah gateway tersedia (circuit tidak open).
+     *
+     * Sengaja bacaan tanpa efek samping: dipakai dasbor status dan penjaga awal,
+     * dan tidak boleh menghabiskan jatah pengintai half_open. Gerbang sungguhan
+     * ada di send().
      */
     public function isHealthy(): bool
     {
-        return $this->circuit->isAvailable();
+        return $this->circuit->isHealthy();
     }
 
     /**

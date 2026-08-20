@@ -265,15 +265,15 @@ class Audit02WhatsAppTest extends TestCase
      * baru, circuit tidak akan pernah terbuka di produksi berapa pun seringnya
      * gateway gagal.
      *
-     * CATATAN CACAT (tidak dikunci): dalam keadaan half_open, isAvailable()
-     * mengizinkan SELURUH permintaan lewat — probe lama mencatat 10 dari 10 —
-     * padahal komentar di kodenya menyebut "izinkan 1 request". Artinya begitu
-     * gateway pulih, seluruh antrean menyerbu sekaligus alih-alih satu
-     * percobaan pengintai.
+     * Dan begitu masa tunggu lewat, half_open hanya boleh meloloskan SATU
+     * pengintai. Bila seluruh antrean menyerbu bersamaan, gateway yang baru
+     * pulih langsung jatuh lagi.
      */
     public function test_circuit_terbuka_setelah_ambang_dan_bertahan_lintas_instance(): void
     {
-        $cb = new CircuitBreaker('audit-cb', failureThreshold: 3, resetTimeout: 60, successThreshold: 2);
+        $buatCb = fn () => new CircuitBreaker('audit-cb', failureThreshold: 3, resetTimeout: 60, successThreshold: 2);
+
+        $cb = $buatCb();
 
         $this->assertSame('closed', $cb->getStatus()['state']);
 
@@ -287,9 +287,35 @@ class Audit02WhatsAppTest extends TestCase
         $this->assertFalse($cb->isAvailable());
 
         // Instance baru harus melihat keadaan yang sama.
-        $cbLain = new CircuitBreaker('audit-cb', failureThreshold: 3, resetTimeout: 60, successThreshold: 2);
+        $cbLain = $buatCb();
         $this->assertSame('open', $cbLain->getStatus()['state']);
         $this->assertFalse($cbLain->isAvailable());
+
+        // Masa tunggu lewat, lalu sepuluh worker antrian berebut di detik yang
+        // sama — masing-masing instance sendiri, persis seperti di produksi.
+        cache()->put('circuit_breaker:audit-cb:opened_at', time() - 61, 600);
+
+        $pengintai = null;
+        $lolos = 0;
+        foreach (range(1, 10) as $ke) {
+            $worker = $buatCb();
+            if ($worker->isAvailable()) {
+                $lolos++;
+                $pengintai = $worker;
+            }
+        }
+
+        $this->assertSame(1, $lolos, 'hanya satu pengintai boleh menyentuh gateway yang baru pulih');
+        $this->assertSame('half_open', $cb->getStatus()['state']);
+
+        // Selama pengintai belum melapor, tidak ada yang boleh menyusul.
+        $this->assertFalse($buatCb()->isAvailable(), 'giliran kedua harus menunggu laporan pengintai pertama');
+
+        // Sukses pertama belum menutup circuit, tapi izinnya wajib dilepas —
+        // kalau tidak, pemulihan tertahan sampai izin itu kedaluwarsa sendiri.
+        $pengintai->recordSuccess();
+        $this->assertSame('half_open', $cb->getStatus()['state'], 'satu sukses belum cukup');
+        $this->assertTrue($buatCb()->isAvailable(), 'setelah pengintai melapor, giliran berikutnya jalan');
     }
 
     public function test_circuit_pulih_lewat_half_open_setelah_masa_tunggu(): void
@@ -315,13 +341,15 @@ class Audit02WhatsAppTest extends TestCase
     }
 
     /**
-     * CATATAN CACAT (tidak dikunci): bila kunci 'opened_at' kedaluwarsa lebih
-     * dulu daripada 'state' — TTL keduanya berbeda — circuit tinggal dalam
-     * keadaan open tanpa penanda waktu, dan isAvailable() selamanya false.
-     * Gateway yang sudah sehat tetap dianggap mati sampai cache-nya dibersihkan
-     * dengan tangan. Diuji di sini hanya sebagai catatan perilaku saat ini.
+     * Keadaan yang hilang sebagian tidak boleh berujung macet permanen.
+     *
+     * Bila kunci 'opened_at' lenyap sementara 'state' masih open — cache
+     * ditendang, TTL tak sinkron — circuit harus memperlakukannya sebagai masa
+     * tunggu yang sudah lewat dan mengirim satu pengintai. Kalau tidak, gateway
+     * yang sudah sehat tetap dianggap mati sampai ada yang membersihkan cache
+     * dengan tangan: pemadaman yang butuh turun tangan manual.
      */
-    public function test_circuit_open_tanpa_penanda_waktu_tidak_pernah_pulih_sendiri(): void
+    public function test_circuit_open_tanpa_penanda_waktu_pulih_sendiri(): void
     {
         $cb = new CircuitBreaker('audit-macet', failureThreshold: 3, resetTimeout: 60);
         $cb->trip();
@@ -329,11 +357,73 @@ class Audit02WhatsAppTest extends TestCase
         cache()->forget('circuit_breaker:audit-macet:opened_at');
 
         $this->assertSame('open', $cb->getStatus()['state']);
-        $this->assertFalse(
-            $cb->isAvailable(),
-            'perilaku saat ini: macet tertutup. Bila suatu saat diperbaiki agar '
-            .'pulih sendiri, test ini yang harus diperbarui — bukan dianggap regresi.',
+        $this->assertTrue($cb->isAvailable(), 'penanda waktu hilang tidak boleh mengunci circuit selamanya');
+        $this->assertSame('half_open', $cb->getStatus()['state']);
+
+        // Tetap satu pengintai saja — pemulihan darurat bukan alasan menyerbu.
+        $this->assertFalse((new CircuitBreaker('audit-macet', failureThreshold: 3, resetTimeout: 60))->isAvailable());
+    }
+
+    /** Kehilangan penanda waktu di tengah half_open pun tidak boleh mengunci. */
+    public function test_penanda_waktu_hilang_saat_half_open_tidak_mengunci_circuit(): void
+    {
+        $cb = new CircuitBreaker('audit-macet2', failureThreshold: 3, resetTimeout: 60);
+        $cb->trip();
+        cache()->put('circuit_breaker:audit-macet2:opened_at', time() - 61, 600);
+
+        $this->assertTrue($cb->isAvailable());
+        $cb->recordFailure(); // pengintai gagal → open lagi, penanda waktu baru
+        $this->assertSame('open', $cb->getStatus()['state']);
+
+        cache()->forget('circuit_breaker:audit-macet2:opened_at');
+        $this->assertTrue(
+            (new CircuitBreaker('audit-macet2', failureThreshold: 3, resetTimeout: 60))->isAvailable(),
+            'instance lain pun harus bisa mengintai ulang tanpa campur tangan manual',
         );
+    }
+
+    /**
+     * `walikelas:circuit-reset` harus benar-benar mengembalikan keadaan bersih.
+     *
+     * Perintah itu dulu menyusun sendiri daftar kunci cache mentah, sehingga
+     * selalu ketinggalan satu langkah dari kelasnya: kunci izin pengintai yang
+     * ditambahkan belakangan tidak ikut terhapus. Operator menjalankan reset,
+     * melihat "berhasil", padahal izin yang tertinggal masih menahan pengintai
+     * berikutnya — persis saat gateway sedang ditunggu pulih.
+     */
+    public function test_perintah_reset_membersihkan_seluruh_kunci_termasuk_izin_pengintai(): void
+    {
+        $cb = new CircuitBreaker('whatsapp-gateway', failureThreshold: 3, resetTimeout: 60);
+        $cb->trip();
+        cache()->put('circuit_breaker:whatsapp-gateway:opened_at', time() - 61, 600);
+        $this->assertTrue($cb->isAvailable(), 'ambil izin pengintai lebih dulu');
+        $this->assertNotNull(cache()->get('circuit_breaker:whatsapp-gateway:half_open_probe'));
+
+        $this->artisan('walikelas:circuit-reset')
+            ->expectsConfirmation('Reset semua circuit breaker?', 'yes')
+            ->assertSuccessful();
+
+        // Izin pengintai dan penanda waktu harus benar-benar lenyap; keduanya
+        // bermakna hanya selama circuit terbuka.
+        foreach (['opened_at', 'half_open_probe'] as $sisa) {
+            $this->assertNull(
+                cache()->get("circuit_breaker:whatsapp-gateway:{$sisa}"),
+                "kunci {$sisa} tertinggal setelah reset",
+            );
+        }
+
+        // `state` dan hitungannya sengaja DITULIS ke nilai bersih, bukan
+        // dihapus — keadaan tertutup yang tegas lebih baik daripada mengandalkan
+        // nilai bawaan saat kuncinya kebetulan tidak ada.
+        $status = (new CircuitBreaker('whatsapp-gateway'))->getStatus();
+        $this->assertSame('closed', $status['state']);
+        $this->assertSame(0, $status['failures']);
+
+        // Dan yang paling penting: pengintai berikutnya tidak tertahan sisa izin.
+        $lagi = new CircuitBreaker('whatsapp-gateway', failureThreshold: 3, resetTimeout: 60);
+        $lagi->trip();
+        cache()->put('circuit_breaker:whatsapp-gateway:opened_at', time() - 61, 600);
+        $this->assertTrue($lagi->isAvailable(), 'izin yang tertinggal akan menahan pengintai berikutnya');
     }
 
     // -- Channel n8n --------------------------------------------------------

@@ -19,6 +19,10 @@ use Illuminate\Support\Facades\Log;
  * Dengan circuit breaker: koneksi yang gagal cepat terdeteksi (timeout 3 detik)
  * dan setelah 3 kegagalan berturut-turut, sistem berhenti mencoba selama 60 detik
  * untuk memberi gateway waktu recovery.
+ *
+ * Circuit-nya satu untuk semua aksi, karena semua aksi menuju webhook yang sama
+ * dan pertanyaannya pun sama: apakah gateway masih bisa dihubungi? Yang TIDAK
+ * boleh masuk hitungan adalah balasan 404/501 — lihat call().
  */
 class N8nSessionManager implements WhatsAppSessionManager
 {
@@ -60,10 +64,13 @@ class N8nSessionManager implements WhatsAppSessionManager
 
     /**
      * Cek apakah gateway tersedia.
+     *
+     * Bacaan tanpa efek samping — tidak boleh menghabiskan jatah pengintai
+     * half_open. Gerbang sungguhan ada di call().
      */
     public function isHealthy(): bool
     {
-        return $this->circuit->isAvailable();
+        return $this->circuit->isHealthy();
     }
 
     /**
@@ -309,6 +316,45 @@ class N8nSessionManager implements WhatsAppSessionManager
                     'session_id' => $this->sessionId($user),
                     'msisdn' => $user->whatsapp_number,
                 ]);
+
+            /*
+             * Aksi yang belum punya cabang di workflow n8n dibalas 404 (atau
+             * 501). Itu BUKAN kabar buruk tentang kesehatan gateway: gateway
+             * hidup, menerima permintaan, dan menjawabnya — ia hanya belum
+             * mengenal aksi ini. Menghitungnya sebagai kegagalan membuat satu
+             * fitur yang belum dipasang menjatuhkan circuit milik semua aksi
+             * lain: halaman /whatsapp memanggil groups() dan autoreplyStatus()
+             * setiap kali dibuka, jadi tiga kali buka halaman sudah cukup untuk
+             * memblokir penautan nomor selama 60 detik dengan pesan "Gateway
+             * sedang tidak tersedia" — padahal pair/status tidak pernah gagal.
+             *
+             * Dipilih menyaring 404 alih-alih memecah circuit per aksi. Circuit
+             * ini menjawab satu pertanyaan — "apakah gateway masih bisa
+             * dihubungi?" — dan jawabannya sama untuk seluruh aksi karena
+             * semuanya menuju satu webhook yang sama. Memecahnya per aksi
+             * justru memperlemah perlindungannya: saat gateway benar-benar mati
+             * setiap aksi harus gagal sendiri-sendiri tiga kali dulu sebelum
+             * berhenti mencoba, sehingga tiap halaman tetap menggantung
+             * menunggu timeout. Yang keliru bukan cakupan circuit-nya,
+             * melainkan menganggap "tidak ada cabang" sebagai "gateway rusak".
+             *
+             * Sengaja tidak memanggil recordSuccess() juga: 404 tidak
+             * membuktikan aksi yang sesungguhnya berjalan, dan meresetnya akan
+             * membuat gateway yang setengah rusak tak pernah menjatuhkan
+             * circuit selama masih ada satu aksi tak dikenal yang dipanggil.
+             */
+            if (in_array($response->status(), [404, 501], true)) {
+                Log::info('[WA:sesi] Aksi belum ada cabangnya di gateway', [
+                    'action' => $action,
+                    'status' => $response->status(),
+                    'user_id' => $user->id,
+                ]);
+
+                return [
+                    'status' => 'disconnected',
+                    'error' => 'Fitur ini belum tersedia di gateway WhatsApp.',
+                ];
+            }
 
             if ($response->failed()) {
                 $this->circuit->recordFailure();

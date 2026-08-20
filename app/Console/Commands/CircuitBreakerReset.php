@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Support\CircuitBreaker;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Reset circuit breaker WhatsApp Gateway.
@@ -23,8 +23,11 @@ class CircuitBreakerReset extends Command
 
     public function handle(): int
     {
-        $gatewayStatus = $this->getCircuitStatus('whatsapp-gateway');
-        $sessionStatus = $this->getCircuitStatus('whatsapp-session');
+        $gateway = $this->circuit('whatsapp-gateway');
+        $session = $this->circuit('whatsapp-session');
+
+        $gatewayStatus = $gateway->getStatus();
+        $sessionStatus = $session->getStatus();
 
         $this->info('=== Circuit Breaker Status ===');
         $this->table(
@@ -49,30 +52,25 @@ class CircuitBreakerReset extends Command
             return Command::FAILURE;
         }
 
-        $this->resetCircuit('whatsapp-gateway');
-        $this->resetCircuit('whatsapp-session');
+        $gateway->reset();
+        $session->reset();
 
         $this->info('✓ Circuit breaker berhasil di-reset');
 
         return Command::SUCCESS;
     }
 
-    private function getCircuitStatus(string $name): array
+    /**
+     * Perintah ini dulu menyusun sendiri kunci cache `circuit_breaker:...`
+     * mentah dan mengulang masa tunggu 60 detik sebagai angka yang dikodekan
+     * keras. Akibatnya ia selalu ketinggalan satu langkah dari kelasnya:
+     * kunci izin pengintai yang ditambahkan belakangan tidak ikut terhapus,
+     * sehingga "reset" meninggalkan sisa yang masih menahan pengintai
+     * berikutnya. Dengan mendelegasikan ke CircuitBreaker, kunci apa pun yang
+     * ditambahkan nanti otomatis ikut terurus.
+     */
+    private function circuit(string $name): CircuitBreaker
     {
-        return [
-            'state' => Cache::get("circuit_breaker:{$name}:state", 'closed'),
-            'failures' => Cache::get("circuit_breaker:{$name}:failures", 0),
-            'time_until_retry' => Cache::has("circuit_breaker:{$name}:opened_at")
-                ? max(0, 60 - (time() - (int) Cache::get("circuit_breaker:{$name}:opened_at")))
-                : 0,
-        ];
-    }
-
-    private function resetCircuit(string $name): void
-    {
-        Cache::forget("circuit_breaker:{$name}:state");
-        Cache::forget("circuit_breaker:{$name}:failures");
-        Cache::forget("circuit_breaker:{$name}:opened_at");
-        Cache::forget("circuit_breaker:{$name}:half_open_successes");
+        return new CircuitBreaker($name);
     }
 }
