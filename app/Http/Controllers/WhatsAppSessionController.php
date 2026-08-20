@@ -188,7 +188,7 @@ class WhatsAppSessionController extends Controller
              * wali kelasnya, bukan guru mapel (lihat kelasAjar()).
              */
             'kelasWali' => Classroom::where('is_active', true)
-                ->get(['id', 'name', 'jenis', 'parent_group_wa', 'spp_pengingat_aktif', 'spp_pengingat_tanggal', 'spp_pengingat_teks', 'spp_pengingat_terkirim_pada'])
+                ->get(['id', 'name', 'jenis', 'parent_group_wa', 'public_token', 'spp_pengingat_aktif', 'spp_pengingat_tanggal', 'spp_pengingat_teks', 'spp_pengingat_terkirim_pada'])
                 ->reject(fn (Classroom $k) => $k->kelasAjar()),
         ]);
     }

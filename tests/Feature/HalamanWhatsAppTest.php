@@ -160,4 +160,48 @@ class HalamanWhatsAppTest extends TestCase
         $this->assertStringContainsString('Pengingat Iuran Bulanan — X RPL 1', $html);
         $this->assertStringContainsString('Pengingat Iuran Bulanan — XI RPL 1', $html);
     }
+
+    /**
+     * Balasan otomatis bot tidak bisa dipaksa selalu menyertakan tautan
+     * (server pemilih kalimatnya di luar aplikasi ini, memilih acak). Yang
+     * bisa dilakukan dari sini: menaruh tautan pada kalimat tambahan guru
+     * SUPAYA ADA PELUANG ia terpilih — hanya bila kelasnya tidak ambigu.
+     */
+    public function test_templat_izin_sakit_terisi_tautan_saat_kelas_tunggal(): void
+    {
+        $guru = $this->guru('connected');
+        $kelas = Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'X RPL 1']);
+
+        $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
+
+        $link = route('public.excuse.show', $kelas->tokenPublik());
+        $this->assertStringContainsString($link, $html);
+    }
+
+    public function test_templat_izin_sakit_kosong_saat_kelas_ganda(): void
+    {
+        $guru = $this->guru('connected');
+        $satu = Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'X RPL 1']);
+        $dua = Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'XI RPL 1']);
+
+        $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
+
+        // Tidak boleh menebak kelas mana yang dimaksud pada guru dengan lebih
+        // dari satu kelas perwalian — tautan mana pun tidak boleh otomatis
+        // terisi ke kolom templat.
+        $this->assertStringNotContainsString(route('public.excuse.show', $satu->tokenPublik()), $html);
+        $this->assertStringNotContainsString(route('public.excuse.show', $dua->tokenPublik()), $html);
+    }
+
+    /** Guru yang sudah menulis templatnya sendiri tidak boleh ditimpa bawaan. */
+    public function test_templat_izin_sakit_yang_sudah_diisi_guru_tidak_ditimpa(): void
+    {
+        $guru = $this->guru('connected');
+        $guru->forceFill(['wa_permission_template' => 'Kalimat saya sendiri, {nama}.'])->save();
+        Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'X RPL 1']);
+
+        $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Kalimat saya sendiri, {nama}.', $html);
+    }
 }
