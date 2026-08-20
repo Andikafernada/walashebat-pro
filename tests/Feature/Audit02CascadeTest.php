@@ -14,13 +14,15 @@ use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /**
- * Satu kegagalan gateway menghentikan sisa perulangan penjadwal absensi.
+ * Kegagalan gateway pada satu kelas TIDAK BOLEH menghentikan kelas lain.
  *
- * GenerateScheduledAttendance memanggil dispatchMagicLink() DI LUAR try/catch
- * mana pun (baris ~254; try di atasnya hanya menangkap QueryException). Begitu
+ * GenerateScheduledAttendance dulu memanggil dispatchMagicLink() DI LUAR
+ * try/catch mana pun (try di atasnya hanya menangkap QueryException). Begitu
  * panggilan itu melempar, seluruh kelas yang belum sempat diproses pagi itu
- * tidak mendapat sesi sama sekali — dan tidak ada satu pun galat yang sampai ke
- * wali kelasnya. Yang terlihat hanyalah absensi yang "tidak muncul hari ini".
+ * tidak mendapat sesi sama sekali — dan tidak ada satu pun galat yang sampai
+ * ke wali kelasnya. Yang terlihat hanyalah absensi yang "tidak muncul hari
+ * ini". Sudah diperbaiki: dispatchMagicLink() kini di dalam try/catch yang
+ * sama, menangkap \Throwable apa pun di luar tabrakan unique.
  *
  * Di test QUEUE_CONNECTION=sync sehingga kegagalan gateway langsung melempar.
  * Di produksi antreannya redis, jadi kegagalan gateway sendiri tidak menembus
@@ -65,14 +67,8 @@ class Audit02CascadeTest extends TestCase
         return $class;
     }
 
-    /**
-     * CATATAN CACAT: merekam perilaku yang ADA, bukan yang diinginkan.
-     *
-     * Bila perulangannya nanti dilindungi try/catch per kelas, test ini akan
-     * gagal — dan itu tanda perbaikan, bukan regresi. Ubah harapannya menjadi
-     * ketiga kelas mendapat sesi.
-     */
-    public function test_kegagalan_di_kelas_pertama_menghentikan_sisa_kelas(): void
+    /** Gateway mati total untuk SEMUA kelas — ketiganya tetap dapat sesi sendiri-sendiri. */
+    public function test_kegagalan_gateway_tidak_menghentikan_sisa_kelas(): void
     {
         config(['walikelas.whatsapp.driver' => 'log']);
 
@@ -97,21 +93,16 @@ class Audit02CascadeTest extends TestCase
         // Senin 06:55 -> jendela kirim mencakup jam pertama 07:00 (lead 10).
         Carbon::setTestNow(Carbon::parse('next monday 06:55', config('app.timezone')));
 
-        try {
-            $this->artisan('walikelas:generate-attendance --lead=10')->run();
-        } catch (\Throwable) {
-            // Kegagalannya justru yang diselidiki; lihat docblock soal queue sync.
-        }
+        $this->artisan('walikelas:generate-attendance --lead=10')->assertSuccessful();
 
         $sesi = AttendanceSession::withoutTenant()->pluck('class_id')->all();
 
         Carbon::setTestNow();
 
-        $this->assertCount(1, $sesi,
-            'perilaku saat ini: perulangan berhenti di kelas pertama yang gagal');
-        $this->assertSame([$kelasA->id], $sesi);
-        $this->assertNotContains($kelasB->id, $sesi, 'kelas B tidak pernah tersentuh');
-        $this->assertNotContains($kelasC->id, $sesi, 'kelas C tidak pernah tersentuh');
+        $this->assertCount(3, $sesi, 'ketiga kelas tetap mendapat sesi walau gateway mati total');
+        $this->assertContains($kelasA->id, $sesi);
+        $this->assertContains($kelasB->id, $sesi);
+        $this->assertContains($kelasC->id, $sesi);
     }
 
     /** Pembanding: bila gateway sehat, ketiga kelas dapat sesi. */

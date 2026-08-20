@@ -208,6 +208,18 @@ class GenerateScheduledAttendance extends Command
                 continue;
             }
 
+            /*
+             * SETIAP KELAS DIJAGA SENDIRI-SENDIRI.
+             *
+             * Jam pertama sekolah nyaris seragam pukul 07:00, jadi satu
+             * jalannya perintah ini memproses hampir seluruh kelas sekaligus.
+             * Sebelumnya hanya QueryException (tabrakan unique) yang tertahan
+             * di sini -- galat lain (mis. dispatchMagicLink gagal, atau bug
+             * apa pun di jalur pembuatan sesi) menghentikan SELURUH
+             * perulangan, dan setiap kelas yang antre di belakangnya tidak
+             * mendapat sesi sama sekali pagi itu, tanpa satu pun galat yang
+             * menjelaskan mengapa.
+             */
             try {
                 // Sesi berlaku sampai pelajaran terakhir hari itu selesai.
                 // Diambil dari ringkasan yang sudah dikumpulkan di atas.
@@ -229,6 +241,24 @@ class GenerateScheduledAttendance extends Command
                     // scheduler berjalan bersamaan.
                     sequence: 1,
                 );
+
+                if ($problem) {
+                    // Tidak senyap: sesi tetap dibuat (wali kelas masih bisa
+                    // membuka tautannya sendiri), tapi ditandai gagal agar
+                    // muncul sebagai peringatan di dashboard.
+                    $session->update([
+                        'delivery_status' => 'failed',
+                        'delivery_error' => $problem,
+                    ]);
+
+                    $this->warn("{$classroom->name}: {$problem}");
+
+                    continue;
+                }
+
+                $service->dispatchMagicLink($session, $target, $pin, $sender);
+
+                $this->info("Diantrikan -> {$classroom->name} | {$sender} -> {$target}");
             } catch (QueryException $e) {
                 /*
                  * Hanya tabrakan unique(class_id, session_date) yang wajar
@@ -253,25 +283,21 @@ class GenerateScheduledAttendance extends Command
                 $this->error("Gagal membuat sesi untuk kelas {$first->class_id}: {$e->getMessage()}");
 
                 continue;
-            }
-
-            if ($problem) {
-                // Tidak senyap: sesi tetap dibuat (wali kelas masih bisa
-                // membuka tautannya sendiri), tapi ditandai gagal agar muncul
-                // sebagai peringatan di dashboard.
-                $session->update([
-                    'delivery_status' => 'failed',
-                    'delivery_error' => $problem,
+            } catch (\Throwable $e) {
+                // Galat APA PUN di luar tabrakan unique -- dispatchMagicLink
+                // gagal, bug pada resolveNumbers, dsb. Kelas ini dilewati
+                // dengan catatan lengkap, kelas berikutnya tetap dilayani.
+                Log::error('[absensi] Kelas dilewati karena galat tak terduga', [
+                    'class_id' => $first->class_id,
+                    'class_name' => $classroom->name,
+                    'jenis' => get_class($e),
+                    'error' => $e->getMessage(),
                 ]);
 
-                $this->warn("{$classroom->name}: {$problem}");
+                $this->error("Kelas {$classroom->name} dilewati: {$e->getMessage()}");
 
                 continue;
             }
-
-            $service->dispatchMagicLink($session, $target, $pin, $sender);
-
-            $this->info("Diantrikan -> {$classroom->name} | {$sender} -> {$target}");
         }
 
         return self::SUCCESS;

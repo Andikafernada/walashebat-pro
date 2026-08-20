@@ -10,9 +10,11 @@ use App\Models\OrganizationStructure;
 use App\Models\Schedule;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\AttendanceSessionService;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -163,6 +165,52 @@ class ScheduledAttendanceTest extends TestCase
         $this->artisan('walikelas:generate-attendance')->assertSuccessful();
 
         $this->assertSame(0, AttendanceSession::withoutTenant()->count());
+    }
+
+    /**
+     * Sebelumnya hanya QueryException (tabrakan unique) yang tertahan per
+     * kelas -- galat lain di jalur pembuatan sesi (di sini: dispatchMagicLink,
+     * yang dulu berada DI LUAR blok try) menghentikan seluruh perulangan.
+     * Kelas kedua yang antre di belakang kelas bermasalah tidak boleh ikut
+     * kehilangan sesinya.
+     */
+    public function test_kelas_lain_tetap_terlayani_walau_satu_kelas_gagal_dengan_galat_non_query(): void
+    {
+        $kelasBermasalah = Classroom::factory()->create([
+            'user_id' => $this->user->id, 'auto_attendance' => true, 'homeroom_wa' => '6289999999999',
+        ]);
+        Schedule::create([
+            'user_id' => $this->user->id, 'class_id' => $kelasBermasalah->id,
+            'day_of_week' => 1, 'subject' => 'Matematika', 'start_time' => '09:30', 'end_time' => '15:00',
+        ]);
+
+        $this->jadwalkan(1, '09:30');
+
+        Log::spy();
+
+        $this->partialMock(AttendanceSessionService::class, function ($mock) use ($kelasBermasalah) {
+            $mock->shouldReceive('dispatchMagicLink')
+                ->withArgs(fn (AttendanceSession $session) => $session->class_id === $kelasBermasalah->id)
+                ->andThrow(new \RuntimeException('Galat tak terduga simulasi test'));
+
+            $mock->shouldReceive('dispatchMagicLink')->passthru();
+        });
+
+        $this->travelTo($this->senin('09:25'));
+        $this->artisan('walikelas:generate-attendance')->assertSuccessful();
+
+        // Sesi tetap dibuat untuk KEDUA kelas -- create() sendiri tidak gagal.
+        $this->assertSame(2, AttendanceSession::withoutTenant()->count());
+
+        // Hanya kelas yang sehat yang benar-benar mengirim pesan.
+        Queue::assertPushed(SendWhatsAppMessage::class, function (SendWhatsAppMessage $job) {
+            return $job->to === '6285700000001';
+        });
+        Queue::assertPushed(SendWhatsAppMessage::class, 1);
+
+        Log::shouldHaveReceived('error')
+            ->withArgs(fn ($message) => str_contains($message, 'galat tak terduga'))
+            ->once();
     }
 
     public function test_hanya_satu_sesi_per_hari_meski_dijalankan_berkali_kali(): void
