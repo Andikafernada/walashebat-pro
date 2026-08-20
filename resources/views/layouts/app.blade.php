@@ -213,6 +213,62 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        /* LIVE PULSE DOT — dipakai badge "aktif" & indikator koneksi realtime */
+        .pulse-rainbow {
+            position: relative;
+            display: inline-flex;
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #ff007a, #7928ca, #0070f3);
+            box-shadow: 0 0 6px rgba(255, 0, 122, 0.8);
+        }
+        .pulse-rainbow::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            background: inherit;
+            animation: pulseRing 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(2.6); opacity: 0; }
+        }
+
+        /* ENTRANCE — kartu muncul bertahap, bukan sekaligus */
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fadeSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .animate-in-1 { animation-delay: 0ms; }
+        .animate-in-2 { animation-delay: 80ms; }
+        .animate-in-3 { animation-delay: 160ms; }
+        .animate-in-4 { animation-delay: 240ms; }
+        .animate-in-5 { animation-delay: 320ms; }
+        .animate-in-6 { animation-delay: 400ms; }
+        .animate-in-7 { animation-delay: 480ms; }
+        .animate-in-8 { animation-delay: 560ms; }
+
+        /* KARTU STATISTIK terangkat halus saat disentuh */
+        .papan-tugas {
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .papan-tugas:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 32px -12px rgba(244, 114, 182, 0.35);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .animate-in, .pulse-rainbow::before, .papan-tugas {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
     </style>
 </head>
 

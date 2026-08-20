@@ -4,7 +4,7 @@
 <div class="space-y-8">
     
     {{-- BARIS 1: GAMIFIKASI & PROFIL KELAS SUPER --}}
-    <div class="card-colorful p-6 sm:p-8 bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white relative overflow-hidden">
+    <div class="animate-in animate-in-1 card-colorful p-6 sm:p-8 bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white relative overflow-hidden">
         <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div class="space-y-2">
                 <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black bg-purple-500/30 border border-purple-400/40 text-purple-200">
@@ -19,14 +19,17 @@
                 </p>
             </div>
 
-            {{-- Progress Bar Kelengkapan Administrasi --}}
-            <div class="w-full md:w-72 bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 space-y-2.5">
+            {{-- Progress Bar Kelengkapan Administrasi — mulai dari 0% lalu
+                 bergerak ke angka aslinya sesaat setelah halaman dimuat,
+                 bukan langsung diam di posisi akhir. --}}
+            <div class="w-full md:w-72 bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 space-y-2.5"
+                 x-data="{ lebar: 0 }" x-init="setTimeout(() => lebar = {{ max($stats['biodata_percent'] ?? 85, 15) }}, 150)">
                 <div class="flex items-center justify-between text-xs font-bold">
                     <span class="text-purple-300">Kelengkapan Administrasi</span>
                     <span class="text-amber-400 font-extrabold">{{ $stats['biodata_percent'] ?? 85 }}%</span>
                 </div>
                 <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-                    <div class="bg-gradient-to-r from-emerald-400 via-purple-400 to-pink-500 h-3 rounded-full transition-all duration-1000" style="width: {{ max($stats['biodata_percent'] ?? 85, 15) }}%"></div>
+                    <div class="bg-gradient-to-r from-emerald-400 via-purple-400 to-pink-500 h-3 rounded-full transition-all duration-1000 ease-out motion-reduce:transition-none" :style="'width: ' + lebar + '%'"></div>
                 </div>
                 <div class="flex items-center justify-between text-[10px] text-slate-400 font-semibold">
                     <span>🏆 3 Lencana Diraih</span>
@@ -36,33 +39,39 @@
         </div>
     </div>
 
-    {{-- BARIS 2: STATISTIK RINGKASAN HARIAN --}}
+    {{-- BARIS 2: STATISTIK RINGKASAN HARIAN — angka persen berhitung naik
+         dari 0 ke nilai aslinya, bukan langsung muncul jadi. --}}
     <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="papan-tugas space-y-2">
+        <div class="animate-in animate-in-2 papan-tugas space-y-2">
             <dt class="stat-label">Kehadiran Hari Ini</dt>
-            <dd class="stat-value text-emerald-600">{{ $stats['hadir_percent'] ?? 0 }}%</dd>
+            <dd class="stat-value text-emerald-600" x-data="hitungNaik({{ (int) ($stats['hadir_percent'] ?? 0) }})" x-init="mulai()" x-text="tampil + '%'">{{ $stats['hadir_percent'] ?? 0 }}%</dd>
             <p class="stat-sub">
-                Hadir {{ $stats['hadir'] ?? 0 }} · Sakit/Izin {{ ($stats['sakit'] ?? 0) + ($stats['izin'] ?? 0) }} · 
+                Hadir {{ $stats['hadir'] ?? 0 }} · Sakit/Izin {{ ($stats['sakit'] ?? 0) + ($stats['izin'] ?? 0) }} ·
                 <strong class="{{ ($stats['alfa'] ?? 0) > 0 ? 'font-semibold text-rose-600' : '' }}">Alfa {{ $stats['alfa'] ?? 0 }}</strong>
             </p>
         </div>
 
-        <div class="papan-tugas space-y-2">
+        <div class="animate-in animate-in-3 papan-tugas space-y-2">
             <dt class="stat-label">Biodata Mandiri Siswa</dt>
-            <dd class="stat-value text-indigo-600">{{ $stats['biodata_percent'] ?? 0 }}%</dd>
+            <dd class="stat-value text-indigo-600" x-data="hitungNaik({{ (int) ($stats['biodata_percent'] ?? 0) }})" x-init="mulai()" x-text="tampil + '%'">{{ $stats['biodata_percent'] ?? 0 }}%</dd>
             <p class="stat-sub">dari {{ $stats['siswa_perwalian'] ?? 0 }} siswa perwalian</p>
         </div>
 
-        <div class="papan-tugas space-y-2">
+        <div class="animate-in animate-in-4 papan-tugas space-y-2">
             <dt class="stat-label">Portofolio Karakter P5</dt>
-            <dd class="stat-value text-amber-600">{{ $stats['character_percent'] ?? 0 }}%</dd>
+            <dd class="stat-value text-amber-600" x-data="hitungNaik({{ (int) ($stats['character_percent'] ?? 0) }})" x-init="mulai()" x-text="tampil + '%'">{{ $stats['character_percent'] ?? 0 }}%</dd>
             <p class="stat-sub">dari {{ $stats['siswa_perwalian'] ?? 0 }} siswa perwalian</p>
         </div>
 
-        <div class="papan-tugas space-y-2">
+        <div class="animate-in animate-in-5 papan-tugas space-y-2">
             <dt class="stat-label">Status Gateway WhatsApp</dt>
             <dd class="text-xl font-black text-emerald-600 flex items-center gap-2 pt-1">
-                <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></span>
+                {{-- Titik hidup ala siaran langsung: cincin memudar keluar
+                     terus-menerus di belakang titik solid. --}}
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></span>
+                </span>
                 <span>Terhubung ✓</span>
             </dd>
             <p class="stat-sub">OTP &amp; Rekap WA Siap Kirim</p>
@@ -71,9 +80,9 @@
 
     {{-- BARIS 3: TREN KEHADIRAN & RADAR CHART 6 DIMENSI P5 --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        
+
         {{-- Tren Kehadiran Line Chart --}}
-        <section class="blok lg:col-span-7">
+        <section class="animate-in animate-in-6 blok lg:col-span-7">
             <div class="blok__kepala flex items-center justify-between">
                 <h2 class="blok__judul text-base">📈 Tren Kehadiran (7 Hari Terakhir)</h2>
                 <span class="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950 px-3 py-1 rounded-full">Realtime</span>
@@ -86,7 +95,7 @@
         </section>
 
         {{-- Radar Chart 6 Dimensi P5 Karakter --}}
-        <section class="blok lg:col-span-5">
+        <section class="animate-in animate-in-7 blok lg:col-span-5">
             <div class="blok__kepala flex items-center justify-between">
                 <h2 class="blok__judul text-base">🌟 Radar 6 Dimensi P5 Merdeka</h2>
                 <span class="text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950 px-3 py-1 rounded-full">Profil Pancasila</span>
@@ -105,7 +114,7 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
         {{-- EWS Siswa Perlu Perhatian --}}
-        <section id="perlu-perhatian" class="blok scroll-mt-24">
+        <section id="perlu-perhatian" class="animate-in animate-in-8 blok scroll-mt-24">
             <div class="blok__kepala flex items-center justify-between">
                 <h2 class="blok__judul text-base">🛡️ Early Warning System (Siswa Berisiko)</h2>
                 <span class="badge {{ ($perluPerhatian ?? collect())->isEmpty() ? 'badge--emerald' : 'badge--rose' }}">{{ ($perluPerhatian ?? collect())->count() }} Siswa</span>
@@ -135,7 +144,7 @@
         </section>
 
         {{-- Catatan Disiplin & Apresiasi --}}
-        <section class="blok">
+        <section class="animate-in animate-in-8 blok">
             <div class="blok__kepala flex items-center justify-between">
                 <h2 class="blok__judul text-base">🏅 Catatan Disiplin &amp; Apresiasi Siswa</h2>
                 <a href="{{ route('violation-types.index') }}" class="text-xs font-bold text-indigo-600 hover:underline">Kelola Jenis &rsaquo;</a>
@@ -173,6 +182,33 @@
 <script src="/vendor/chart.umd.min.js?v=4.4.0"></script>
 
 <script>
+/*
+ * Komponen Alpine kecil: angka persen berhitung naik dari 0 ke nilai
+ * aslinya begitu kartu tampil, bukan langsung muncul jadi. Dideklarasikan
+ * di lingkup global (bukan di dalam DOMContentLoaded) karena harus sudah
+ * ada SEBELUM Alpine memindai atribut x-data="hitungNaik(...)" pada kartu
+ * di atas — dan skrip biasa (bukan module) dieksekusi begitu parser
+ * sampai ke sini, lebih awal daripada modul Alpine yang ditunda.
+ */
+function hitungNaik(target, durasiMs = 900) {
+    return {
+        tampil: 0,
+        mulai() {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                this.tampil = target;
+                return;
+            }
+            const mulaiWaktu = performance.now();
+            const langkah = (ts) => {
+                const progres = Math.min((ts - mulaiWaktu) / durasiMs, 1);
+                this.tampil = Math.round(progres * target);
+                if (progres < 1) requestAnimationFrame(langkah);
+            };
+            requestAnimationFrame(langkah);
+        },
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // 1. Line Chart Tren Kehadiran
     const ctx = document.getElementById('attendanceChart');
