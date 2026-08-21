@@ -76,7 +76,39 @@ class BalasanOtomatisTest extends TestCase
         $mock = $this->palsukanManager();
         $mock->shouldReceive('autoreplySave')
             ->once()
-            ->with(Mockery::type(User::class), true, ['120363321166050533@g.us'], [], [], Mockery::type('array'), Mockery::type('array'))
+            ->with(Mockery::type(User::class), true, ['120363321166050533@g.us'], [], [], Mockery::type('array'), Mockery::type('array'), Mockery::type('array'))
+            ->andReturn(true);
+
+        $this->post(route('whatsapp.autoreply'), [
+            'enabled' => '1',
+            'groups' => ['120363321166050533@g.us'],
+        ])->assertRedirect()->assertSessionHas('success');
+    }
+
+    /**
+     * REGRESI: tautan formulir izin/sakit dulu hanya nongol sesekali di
+     * balasan otomatis (tersimpan sebagai bagian dari salah satu ragam
+     * kalimat acak). Sekarang dikirim terpisah, per grup, supaya gateway bisa
+     * menempelkannya di SETIAP balasan izin/sakit — lihat linkIzinPerGrup().
+     */
+    public function test_tautan_izin_sakit_dikirim_per_grup(): void
+    {
+        $kelas = \App\Models\Classroom::factory()->create([
+            'user_id' => $this->user->id,
+            'parent_group_wa' => '120363321166050533@g.us',
+        ]);
+
+        $mock = $this->palsukanManager();
+        $mock->shouldReceive('autoreplySave')
+            ->once()
+            ->with(
+                Mockery::type(User::class), true, ['120363321166050533@g.us'], [], [],
+                Mockery::type('array'), Mockery::type('array'),
+                Mockery::on(function (array $links) use ($kelas) {
+                    return ($links['120363321166050533@g.us'] ?? null)
+                        === route('public.excuse.show', $kelas->tokenPublik());
+                })
+            )
             ->andReturn(true);
 
         $this->post(route('whatsapp.autoreply'), [
@@ -90,7 +122,7 @@ class BalasanOtomatisTest extends TestCase
         $mock = $this->palsukanManager();
         $mock->shouldReceive('autoreplySave')
             ->once()
-            ->with(Mockery::type(User::class), false, [], [], [], Mockery::type('array'), Mockery::type('array'))
+            ->with(Mockery::type(User::class), false, [], [], [], Mockery::type('array'), Mockery::type('array'), Mockery::type('array'))
             ->andReturn(true);
 
         $this->post(route('whatsapp.autoreply'), ['enabled' => '0'])
@@ -169,7 +201,7 @@ class BalasanOtomatisTest extends TestCase
         $mock = $this->palsukanManager();
         $mock->shouldReceive('autoreplySave')
             ->once()
-            ->with(Mockery::type(User::class), true, ['120363111@g.us', '120363222@g.us'], [], [], Mockery::type('array'), Mockery::type('array'))
+            ->with(Mockery::type(User::class), true, ['120363111@g.us', '120363222@g.us'], [], [], Mockery::type('array'), Mockery::type('array'), Mockery::type('array'))
             ->andReturn(true);
 
         $this->post(route('whatsapp.autoreply'), [
@@ -200,7 +232,7 @@ class BalasanOtomatisTest extends TestCase
         $mock = $this->palsukanManager();
         $mock->shouldReceive('autoreplySave')
             ->once()
-            ->with(Mockery::type(User::class), false, ['120363321166050533@g.us'], [], [], [], Mockery::type('array'))
+            ->with(Mockery::type(User::class), false, ['120363321166050533@g.us'], [], [], [], Mockery::type('array'), Mockery::type('array'))
             ->andReturn(true);
 
         // Persis yang dikirim peramban saat centang DILEPAS: hidden 0 saja,

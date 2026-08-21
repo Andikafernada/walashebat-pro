@@ -64,7 +64,7 @@ class NullSessionManager implements WhatsAppSessionManager
         ];
     }
 
-    public function autoreplySave(User $user, bool $enabled, array $groups, array $permissionKeywords = [], array $sickKeywords = [], array $students = [], array $ragam = []): bool
+    public function autoreplySave(User $user, bool $enabled, array $groups, array $permissionKeywords = [], array $sickKeywords = [], array $students = [], array $ragam = [], array $links = []): bool
     {
         return false;
     }

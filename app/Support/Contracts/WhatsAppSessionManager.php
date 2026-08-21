@@ -116,8 +116,13 @@ interface WhatsAppSessionManager
      *                                           anak, dipakai gateway untuk menyapa
      *                                           dengan nama. Hanya berisi nomor yang
      *                                           menunjuk ke SATU siswa.
+     * @param  array<string, string>  $links  JID grup => tautan formulir izin/sakit
+     *                                        kelas itu. Ditempel gateway di SETIAP
+     *                                        balasan kategori izin/sakit untuk grup
+     *                                        itu, di luar kalimat acaknya — beda dari
+     *                                        $ragam yang hanya sesekali terpilih.
      */
-    public function autoreplySave(User $user, bool $enabled, array $groups, array $permissionKeywords = [], array $sickKeywords = [], array $students = [], array $ragam = []): bool;
+    public function autoreplySave(User $user, bool $enabled, array $groups, array $permissionKeywords = [], array $sickKeywords = [], array $students = [], array $ragam = [], array $links = []): bool;
 
     /** Putuskan sesi dan lupakan kredensialnya di gateway. */
     public function disconnect(User $user): bool;

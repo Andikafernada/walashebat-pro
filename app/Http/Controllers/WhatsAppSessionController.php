@@ -107,7 +107,33 @@ class WhatsAppSessionController extends Controller
                 'izin' => $this->variasiDariTeks($user->wa_permission_template),
                 'sakit' => $this->variasiDariTeks($user->wa_sick_template),
             ],
+            $this->linkIzinPerGrup(),
         );
+    }
+
+    /**
+     * Peta JID grup WhatsApp => tautan formulir izin/sakit kelas itu.
+     *
+     * Gateway menempelkan tautan ini di SETIAP balasan izin/sakit untuk grup
+     * bersangkutan, di luar kalimat acak mana pun yang terpilih — beda dari
+     * "Variasi Balasan Anda Sendiri" yang cuma sesekali terpilih.
+     *
+     * Hanya kelas perwalian (bukan kelas ajar, lihat kelasAjar()) yang punya
+     * formulir izin/sakit, dan hanya yang grup orang tuanya sudah dipilih.
+     *
+     * @return array<string, string>
+     */
+    private function linkIzinPerGrup(): array
+    {
+        return Classroom::where('is_active', true)
+            ->whereNotNull('parent_group_wa')
+            ->where('parent_group_wa', '<>', '')
+            ->get()
+            ->reject(fn (Classroom $k) => $k->kelasAjar())
+            ->mapWithKeys(fn (Classroom $k) => [
+                $k->parent_group_wa => route('public.excuse.show', $k->tokenPublik()),
+            ])
+            ->all();
     }
 
     /**

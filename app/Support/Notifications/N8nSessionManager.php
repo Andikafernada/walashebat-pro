@@ -253,7 +253,7 @@ class N8nSessionManager implements WhatsAppSessionManager
         ];
     }
 
-    public function autoreplySave(User $user, bool $enabled, array $groups, array $permissionKeywords = [], array $sickKeywords = [], array $students = [], array $ragam = []): bool
+    public function autoreplySave(User $user, bool $enabled, array $groups, array $permissionKeywords = [], array $sickKeywords = [], array $students = [], array $ragam = [], array $links = []): bool
     {
         $data = $this->call('autoreply-set', $user, [
             'enabled' => $enabled,
@@ -267,9 +267,14 @@ class N8nSessionManager implements WhatsAppSessionManager
              * tanpa pemilik.
              */
             'students' => (object) $students,
-            // Variasi kalimat milik wali kelas, per kategori. Menambah ragam
-            // bawaan gateway, bukan menggantikannya.
+            // Variasi kalimat milik wali kelas, per kategori. Menggantikan
+            // ragam bawaan gateway saat diisi, bukan menambahinya — lihat
+            // catatan di tanganiPesanMasuk() pada gateway.
             'ragam' => (object) array_filter($ragam, fn ($v) => is_array($v) && $v !== []),
+            // Tautan formulir izin/sakit per grup (JID -> URL). TIDAK memakai
+            // array_values() untuk alasan yang sama seperti students: kuncinya
+            // adalah JID grup yang harus dipertahankan.
+            'links' => (object) $links,
         ]);
 
         return ($data['ok'] ?? false) === true;

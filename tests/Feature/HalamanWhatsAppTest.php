@@ -162,35 +162,47 @@ class HalamanWhatsAppTest extends TestCase
     }
 
     /**
-     * Balasan otomatis bot tidak bisa dipaksa selalu menyertakan tautan
-     * (server pemilih kalimatnya di luar aplikasi ini, memilih acak). Yang
-     * bisa dilakukan dari sini: menaruh tautan pada kalimat tambahan guru
-     * SUPAYA ADA PELUANG ia terpilih — hanya bila kelasnya tidak ambigu.
+     * Tautan formulir izin/sakit kini ditempel GATEWAY di setiap balasan
+     * (lihat linkIzinPerGrup() di WhatsAppSessionController dan
+     * balasan.tambahkanTautan() di /opt/wa-gateway/balasan.js), bukan lagi
+     * disisipkan ke kalimat tambahan guru — jadi kolom templat tidak boleh
+     * lagi diisi otomatis dengan tautan apa pun, termasuk untuk guru dengan
+     * satu kelas perwalian.
      */
-    public function test_templat_izin_sakit_terisi_tautan_saat_kelas_tunggal(): void
+    public function test_templat_izin_sakit_tidak_lagi_disisipi_tautan_otomatis(): void
     {
         $guru = $this->guru('connected');
-        $kelas = Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'X RPL 1']);
+        $kelas = Classroom::factory()->create([
+            'user_id' => $guru->id,
+            'name' => 'X RPL 1',
+            'parent_group_wa' => '628111@g.us',
+        ]);
 
         $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
 
-        $link = route('public.excuse.show', $kelas->tokenPublik());
-        $this->assertStringContainsString($link, $html);
+        $this->assertStringNotContainsString(route('public.excuse.show', $kelas->tokenPublik()), $html);
     }
 
-    public function test_templat_izin_sakit_kosong_saat_kelas_ganda(): void
+    /** Halaman memberi tahu guru bahwa tautan ditempel otomatis begitu grupnya sudah dipilih. */
+    public function test_info_tautan_otomatis_saat_grup_sudah_dipilih(): void
     {
         $guru = $this->guru('connected');
-        $satu = Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'X RPL 1']);
-        $dua = Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'XI RPL 1']);
+        Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'X RPL 1', 'parent_group_wa' => '628111@g.us']);
 
         $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
 
-        // Tidak boleh menebak kelas mana yang dimaksud pada guru dengan lebih
-        // dari satu kelas perwalian — tautan mana pun tidak boleh otomatis
-        // terisi ke kolom templat.
-        $this->assertStringNotContainsString(route('public.excuse.show', $satu->tokenPublik()), $html);
-        $this->assertStringNotContainsString(route('public.excuse.show', $dua->tokenPublik()), $html);
+        $this->assertStringContainsString('selalu ditambahkan otomatis', $html);
+    }
+
+    /** Sebelum grup dipilih, guru diarahkan ke halaman Kelas untuk memilihnya, bukan disuguhi janji kosong. */
+    public function test_info_tautan_menunjuk_ke_pemilihan_grup_bila_belum_ada(): void
+    {
+        $guru = $this->guru('connected');
+        Classroom::factory()->create(['user_id' => $guru->id, 'name' => 'X RPL 1', 'parent_group_wa' => null]);
+
+        $html = $this->actingAs($guru)->get(route('whatsapp.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Bagikan Link Izin/Sakit', $html);
     }
 
     /** Guru yang sudah menulis templatnya sendiri tidak boleh ditimpa bawaan. */

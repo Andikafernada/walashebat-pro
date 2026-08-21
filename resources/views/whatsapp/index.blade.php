@@ -642,16 +642,18 @@
                     <span class="text-[11px] font-semibold text-indigo-600 shrink-0">Tag: {nama}</span>
                 </div>
                 @php
-                    // Hanya diisi bila wali kelasnya persis satu kelas perwalian —
-                    // tautan izin/sakit itu per kelas, jadi pada guru dengan lebih
-                    // dari satu kelas kolom ini tidak bisa menebak yang mana.
-                    $kelasTunggal = $kelasWali->count() === 1 ? $kelasWali->first() : null;
-                    $linkIzinBawaan = $kelasTunggal ? route('public.excuse.show', $kelasTunggal->tokenPublik()) : null;
+                    $kelasBerlink = $kelasWali->filter(fn ($k) => filled($k->parent_group_wa));
                 @endphp
 
                 <div class="flex items-start gap-2 text-[11px] text-slate-600 bg-slate-50 rounded p-2.5">
                     <span> </span>
-                    <p>Balasan sudah berganti-ganti otomatis dari 8 kalimat bawaan, jadi kolom ini <strong>boleh dikosongkan</strong>. Isi hanya bila ingin menambah kalimat dengan gaya bahasa Anda sendiri — <strong>satu kalimat per baris</strong>. Tulis <span class="font-mono">{nama}</span> untuk menyebut nama anaknya. Kalimat Anda <strong>ditambahkan</strong>, tidak menggantikan yang bawaan — jadi tautan izin/sakit di bawah <strong>tidak muncul di setiap balasan</strong>, hanya sesekali saat kalimat ini yang terpilih.</p>
+                    <p>Balasan sudah berganti-ganti otomatis dari 8 kalimat bawaan, jadi kolom ini <strong>boleh dikosongkan</strong>. Isi bila ingin memakai kalimat Anda sendiri — <strong>satu kalimat per baris</strong>, boleh lebih dari satu untuk tetap bergilir. Begitu diisi, balasan <strong>hanya memakai kalimat Anda</strong>, kalimat bawaan tidak lagi ikut dipilih. Tulis <span class="font-mono">{nama}</span> untuk menyebut nama anaknya.
+                        @if($kelasBerlink->isNotEmpty())
+                            Tautan formulir izin/sakit kelasnya <strong>selalu ditambahkan otomatis</strong> di baris terakhir balasan — tidak perlu, dan tidak perlu ditulis ulang di sini.
+                        @else
+                            Tautan formulir izin/sakit akan otomatis ditambahkan begitu grup WhatsApp orang tua sudah dipilih untuk kelasnya (halaman Kelas → Bagikan Link Izin/Sakit).
+                        @endif
+                    </p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -659,14 +661,14 @@
                         <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Untuk kabar IZIN</label>
                         <textarea name="wa_permission_template" rows="4"
                                   placeholder="Nuhun infona Bu, mugia urusan {nama} lancar.&#10;Baik Pak, izin {nama} sudah saya terima."
-                                  class="form-textarea text-xs">{{ old('wa_permission_template', auth()->user()->wa_permission_template ?: ($linkIzinBawaan ? "Baik, izin {nama} sudah kami terima. Mohon lengkapi juga laporannya di sini ya: {$linkIzinBawaan}" : '')) }}</textarea>
+                                  class="form-textarea text-xs">{{ old('wa_permission_template', auth()->user()->wa_permission_template) }}</textarea>
                     </div>
 
                     <div class="space-y-1.5">
                         <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Untuk kabar SAKIT</label>
                         <textarea name="wa_sick_template" rows="4"
                                   placeholder="Mugia {nama} enggal damang nya Bu.&#10;Semoga {nama} lekas sehat, salam dari saya."
-                                  class="form-textarea text-xs">{{ old('wa_sick_template', auth()->user()->wa_sick_template ?: ($linkIzinBawaan ? "Semoga {nama} lekas sembuh. Mohon lengkapi juga laporannya di sini ya: {$linkIzinBawaan}" : '')) }}</textarea>
+                                  class="form-textarea text-xs">{{ old('wa_sick_template', auth()->user()->wa_sick_template) }}</textarea>
                     </div>
                 </div>
             </div>

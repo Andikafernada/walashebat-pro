@@ -52,7 +52,7 @@ class NamaAnakPadaBalasanTest extends TestCase
         {
             public function __construct(private $uji) {}
 
-            public function autoreplySave(User $user, bool $enabled, array $groups, array $permissionKeywords = [], array $sickKeywords = [], array $students = [], array $ragam = []): bool
+            public function autoreplySave(User $user, bool $enabled, array $groups, array $permissionKeywords = [], array $sickKeywords = [], array $students = [], array $ragam = [], array $links = []): bool
             {
                 $this->uji->rekamPeta($students);
 
