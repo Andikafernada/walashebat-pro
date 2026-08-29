@@ -1,15 +1,12 @@
 @extends('layouts.guest')
 @section('title', 'Lupa Kata Sandi')
+@section('page-title', 'Lupa kata sandi')
+@section('page-subtitle', 'Masukkan email akun Anda untuk menerima tautan reset kata sandi')
+
 @section('content')
-
-    <h2 class="mb-1 text-xl font-semibold text-slate-900">Lupa kata sandi</h2>
-    <p class="mb-8 text-sm text-slate-500">
-        Masukkan email akun Anda. Kami akan mengirim tautan reset ke email tersebut.
-    </p>
-
     <form method="POST"
           action="{{ route('password.otp.send') }}"
-          class="space-y-5"
+          class="space-y-4"
           x-data="{ loading: false }"
           @submit="loading = true">
 
@@ -34,20 +31,20 @@
         </div>
 
         <button type="submit"
-                class="btn-primary w-full justify-center py-3.5"
+                class="btn-primary"
                 :disabled="loading"
                 :class="loading ? 'opacity-70 cursor-not-allowed' : ''">
             <span x-show="!loading">Kirim tautan reset</span>
             <span x-show="loading" x-cloak class="inline-flex items-center gap-2">
-                <span class="spinner spinner--white"></span>
+                <span class="spinner"></span>
                 Mengirim...
             </span>
         </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-slate-500">
-        <a href="{{ route('login') }}" class="font-medium text-indigo-600 hover:text-indigo-700">
-            Kembali ke halaman masuk
+    <p class="mt-6 text-center text-xs sm:text-sm text-slate-600">
+        <a href="{{ route('login') }}" class="font-bold text-emerald-800 hover:underline">
+            ← Kembali ke halaman masuk
         </a>
     </p>
 @endsection

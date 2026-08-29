@@ -1,197 +1,273 @@
 @extends('layouts.app')
 
-@section('title', 'Integrasi WhatsApp & Balasan Otomatis')
+@section('title', 'WhatsApp Gateway')
+
+@push('styles')
+<style>
+/* Fullscreen QR Modal for PWA */
+.qr-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+.qr-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.qr-modal-close {
+    position: absolute;
+    top: max(20px, env(safe-area-inset-top));
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+@endpush
 
 @section('content')
 <script src="/vendor/qrcode.min.js?v=1.4.4"></script>
 
-<div class="space-y-6 pb-12" x-data="waSession({ connected: {{ auth()->user()->whatsappConnected() ? 'true' : 'false' }}, statusUrl: '{{ route('whatsapp.status') }}' })">
-    <!-- Header -->
-    <div class="page-header">
+<!-- Fullscreen QR Modal for PWA -->
+<div class="qr-modal-overlay" id="qrModal" x-show="qr" x-cloak>
+    <button class="qr-modal-close" onclick="closeQrModal()" aria-label="Tutup">✕</button>
+    <div class="text-center text-white space-y-4 max-w-xs mx-auto">
+        <p class="text-xs uppercase tracking-wider opacity-70 font-semibold">Scan dengan WhatsApp</p>
+        <div class="bg-white p-4 rounded-2xl inline-block shadow-2xl">
+            <canvas id="wa-qr-canvas-fullscreen"></canvas>
+        </div>
+        <p class="text-sm opacity-80">Arahkan kamera HP ke kode QR di atas</p>
+        <p class="text-xs opacity-50">Halaman akan terhubung otomatis setelah dipindai</p>
+    </div>
+</div>
+
+<!-- Pairing Code Modal for HP-only users -->
+<div class="qr-modal-overlay" id="pairingModal" x-show="pairingCode" x-cloak>
+    <button class="qr-modal-close" onclick="closePairingModal()" aria-label="Tutup">✕</button>
+    <div class="text-center text-white space-y-6 max-w-xs mx-auto">
         <div>
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
-                Integrasi WhatsApp &amp; Balasan Otomatis
-            </h1>
-            <p class="mt-1 text-sm text-slate-500">Tautkan nomor WhatsApp Anda, atur kata kunci patokan izin/sakit, dan tentukan grup mana yang dibalas otomatis.</p>
+            <p class="text-xs uppercase tracking-wider opacity-70 font-semibold">Masukkan kode ini di WhatsApp</p>
+            <h2 class="text-2xl font-bold mt-2 tracking-widest" x-text="pairingCode"></h2>
+        </div>
+        <div class="bg-white/10 backdrop-blur rounded-2xl p-4 text-left">
+            <p class="text-xs font-semibold mb-2">Langkah:</p>
+            <ol class="text-xs space-y-1 opacity-90">
+                <li>1. Buka WhatsApp di HP ini</li>
+                <li>2. <strong>⋮ Setelan</strong> → <strong>Perangkat Tertaut</strong></li>
+                <li>3. Ketuk <strong>Tautkan Perangkat</strong></li>
+                <li>4. Pilih <strong>"Tautkan dengan nomor telepon"</strong></li>
+                <li>5. Masukkan kode di atas</li>
+            </ol>
+        </div>
+        <p class="text-xs opacity-50">Kode berlaku beberapa menit</p>
+    </div>
+</div>
+
+<div class="space-y-4 lg:space-y-6 pb-12 lg:pb-6"
+     x-data="waSession({
+         connected: {{ auth()->user()->whatsappConnected() ? 'true' : 'false' }},
+         statusUrl: '{{ route('whatsapp.status') }}'
+     })">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <h1 class="text-lg lg:text-xl font-semibold tracking-tight text-slate-900">
+                    WhatsApp Gateway
+                </h1>
+                <p class="mt-1 text-xs lg:text-sm text-slate-500">
+                    Tautkan nomor untuk mengirim pesan &amp; balasan otomatis
+                </p>
+            </div>
+            <!-- WhatsApp Icon -->
+            <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 lg:w-7 lg:h-7 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+            </div>
         </div>
     </div>
 
     <!-- Flash Messages -->
     @include('partials.flash')
 
-    <!-- PAIRING / CONNECTION STATUS CARD -->
-    <div class="card space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+    <!-- STATUS CARD - Mobile Optimized -->
+    <div class="bg-white rounded-2xl lg:rounded-lg border border-slate-200 overflow-hidden shadow-xs">
+        <!-- Status Header -->
+        <div class="flex items-center justify-between p-4 lg:p-5 border-b border-slate-100">
             <div class="flex items-center gap-3">
+                <div class="w-10 h-10 lg:w-11 lg:h-11 rounded-xl flex items-center justify-center"
+                     :class="status === 'connected' ? 'bg-emerald-100' : (status === 'pairing' ? 'bg-amber-100' : 'bg-rose-100')">
+                    <span class="text-lg lg:text-xl" x-text="status === 'connected' ? '✓' : (status === 'pairing' ? '⏳' : '⚠')"></span>
+                </div>
                 <div>
-                    <h3 class="text-base font-semibold text-slate-900">Status Koneksi WhatsApp</h3>
-                    <p class="text-xs text-slate-500">Nomor Guru: <strong class="text-slate-800">{{ auth()->user()->whatsapp_number ?: 'Belum diisi' }}</strong></p>
+                    <p class="text-sm font-semibold text-slate-900" x-text="label()"></p>
+                    <p class="text-xs text-slate-500">{{ auth()->user()->whatsapp_number ?: 'Nomor belum diatur' }}</p>
                 </div>
             </div>
-
-            <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+            <span class="hidden lg:inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
                   :class="status === 'connected' ? 'bg-emerald-100 text-emerald-800' : (status === 'pairing' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')"
-                  x-text="label()">
+                  x-text="status === 'connected' ? 'Tersambung' : (status === 'pairing' ? 'Menunggu...' : 'Terputus')">
             </span>
         </div>
 
         @if(!auth()->user()->whatsappConnected())
-            <div class="bg-amber-50 p-4 rounded border border-amber-200 text-xs text-amber-900 space-y-3">
-                <div>
-                    <p class="font-semibold text-sm text-amber-950">Nomor WhatsApp Belum Tersambung</p>
-                    <p class="text-slate-600 mt-0.5">Pilih cara menautkan yang sesuai dengan perangkat yang sedang Anda pakai.</p>
+            <!-- Not Connected State -->
+            <div class="p-4 lg:p-5 space-y-4">
+                <!-- Desktop Required Notice -->
+                <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="text-xs">
+                            <p class="font-semibold text-indigo-900">Pilih metode penautan:</p>
+                            <p class="text-indigo-700 mt-1">
+                                <strong>QR Code</strong> - Butuh komputer/laptop untuk buka halaman ini.<br>
+                                <strong>Kode 8 Digit</strong> - Bisa dari HP yang sama (buka di tab baru).
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                {{--
-                    Dua jalan, karena QR menuntut sesuatu yang tidak selalu ada:
-                    layar kedua. Guru yang membuka halaman ini DARI ponselnya
-                    tidak mungkin memindai layar ponsel itu dengan ponsel yang
-                    sama — sebelumnya ia berhenti di jalan buntu. Pilihan
-                    diserahkan kepada guru, bukan ditebak dari user agent:
-                    salah tebak mengunci dia pada satu-satunya cara yang justru
-                    tidak bisa ia pakai.
-                --}}
-                <div class="grid gap-2.5 sm:grid-cols-2">
-                    <form method="POST" action="{{ route('whatsapp.pair') }}" class="contents">
-                        @csrf
-                        <input type="hidden" name="metode" value="kode">
-                        <button type="submit"
-                                class="btn-success h-auto whitespace-normal py-3 text-left">
-                            <span class="block text-sm">Saya memakai HP ini</span>
-                            <span class="block font-medium text-emerald-50/90 mt-0.5 leading-snug">
-                                Dapatkan kode 8 karakter untuk diketik di WhatsApp. Tanpa memindai apa pun.
-                            </span>
-                        </button>
-                    </form>
-
+                <!-- Two Methods -->
+                <div class="grid gap-3">
+                    <!-- QR Code Method -->
                     <form method="POST" action="{{ route('whatsapp.pair') }}" class="contents">
                         @csrf
                         <input type="hidden" name="metode" value="qr">
-                        <button type="submit"
-                                class="h-auto py-3 px-4 rounded border-2 border-emerald-600 bg-white hover:bg-emerald-50 text-emerald-800 font-semibold text-xs transition-colors text-left">
-                            <span class="block text-sm">Saya memakai laptop/komputer</span>
-                            <span class="block font-medium text-slate-500 mt-0.5 leading-snug">
-                                Terbitkan Kode QR untuk dipindai dengan WhatsApp di HP Anda.
-                            </span>
+                        <button type="submit" class="h-auto p-4 rounded-xl border-2 border-emerald-200 bg-white hover:bg-emerald-50 transition-colors text-left">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-900">Pindai QR Code</p>
+                                    <p class="text-xs text-slate-500 mt-0.5">Butuh komputer/laptop untuk buka halaman ini</p>
+                                </div>
+                            </div>
+                        </button>
+                    </form>
+
+                    <!-- Pairing Code Method -->
+                    <form method="POST" action="{{ route('whatsapp.pair') }}" class="contents">
+                        @csrf
+                        <input type="hidden" name="metode" value="kode">
+                        <button type="submit" class="h-auto p-4 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 transition-colors text-left">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-900">Kode 8 Digit</p>
+                                    <p class="text-xs text-slate-500 mt-0.5">Bisa dari HP yang sama - buka di tab baru</p>
+                                </div>
+                            </div>
                         </button>
                     </form>
                 </div>
+
+                <!-- Instructions based on method -->
+                <div class="bg-amber-50 rounded-xl p-3 text-xs text-amber-900">
+                    <p class="font-semibold mb-2">Tips:</p>
+                    <ul class="space-y-1">
+                        <li>• <strong>QR Code</strong>: Buka halaman ini di komputer, pindai dengan HP</li>
+                        <li>• <strong>Kode 8 Digit</strong>: Buka di tab baru di HP yang sama, masukkan kode di WhatsApp</li>
+                        <li>• Tidak punya komputer? <strong>Pinjam HP teman 5 detik</strong> untuk scan QR</li>
+                    </ul>
+                </div>
             </div>
         @else
-            <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-3 rounded">
-                <span class="font-semibold text-emerald-700">✓ WhatsApp Aktif &amp; Siap Mengirim Pesan / Balas Otomatis</span>
-                <form method="POST" action="{{ route('whatsapp.disconnect') }}">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" onclick="return confirm('Putus koneksi WhatsApp ini?')" class="text-xs font-semibold text-rose-600 hover:underline">
-                        Putus Koneksi
-                    </button>
-                </form>
+            <!-- Connected State -->
+            <div class="p-4 lg:p-5 bg-emerald-50/50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500 text-white text-xs">✓</span>
+                        <span class="text-sm font-semibold text-emerald-800">WhatsApp Tersambung</span>
+                    </div>
+                    <form method="POST" action="{{ route('whatsapp.disconnect') }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" onclick="return confirm('Putuskan koneksi WhatsApp?')"
+                                class="text-xs font-medium text-slate-500 hover:text-rose-600 transition-colors">
+                            Putus
+                        </button>
+                    </form>
+                </div>
             </div>
         @endif
     </div>
 
-    {{-- KARTU KODE PENAUTAN — jalur "saya memakai HP ini" --}}
-    <div class="rounded-lg border-2 border-emerald-500 bg-white p-6 text-center space-y-4"
-         x-show="status !== 'connected' && kodePairing" x-cloak>
-        <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
-            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-            <span>Kode Penautan Berhasil Diterbitkan</span>
+    <!-- QR CODE CARD - Improved for Mobile -->
+    <div class="bg-white rounded-2xl lg:rounded-lg border-2 border-emerald-500 overflow-hidden shadow-sm"
+         x-show="status !== 'connected' && qr" x-cloak>
+        <div class="p-4 lg:p-5 text-center border-b border-emerald-100 bg-emerald-50/50">
+            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 mb-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                QR Aktif
+            </div>
+            <h3 class="text-sm lg:text-base font-semibold text-slate-900">Pindai dengan WhatsApp</h3>
         </div>
 
-        <h3 class="text-xl font-semibold text-slate-900">Ketik Kode Ini di WhatsApp Anda</h3>
-
-        {{-- Dipecah per karakter: kode ini diketik ulang oleh guru sambil
-             berpindah aplikasi, dan deretan 8 huruf-angka tanpa jeda paling
-             mudah salah baca. --}}
-        <div class="flex justify-center gap-1.5 sm:gap-2 py-1 flex-wrap">
-            <template x-for="(huruf, i) in String(kodePairing).split('')" :key="i">
-                <span class="inline-flex h-12 w-9 sm:h-14 sm:w-11 items-center justify-center rounded border-2 border-slate-900 bg-slate-50 text-xl sm:text-2xl font-semibold tracking-widest text-slate-900"
-                      x-text="huruf"></span>
-            </template>
-        </div>
-
-        {{--
-            Kode ini diterbitkan UNTUK satu nomor tertentu. Kalau nomor yang
-            tersimpan bukan nomor WhatsApp di HP ini — salah ketik satu digit
-            saat mendaftar sudah cukup — kodenya tidak akan pernah diterima,
-            dan yang guru lihat hanya kode yang diam sampai kedaluwarsa.
-            Validasi tidak bisa menangkap ini: nomornya sah, cuma bukan
-            miliknya. Yang bisa menangkapnya hanya mata guru, jadi nomornya
-            ditaruh di sini, di detik ia menunggu.
-        --}}
-        <div class="mx-auto max-w-md rounded border border-amber-200 bg-amber-50 p-3 text-left text-xs text-amber-900">
-            Kode ini hanya berlaku untuk WhatsApp bernomor
-            <strong class="font-mono">{{ auth()->user()->whatsapp_number }}</strong>.
-            Bukan nomor di HP ini?
-            <a href="{{ route('profile.edit') }}" class="font-semibold underline">Betulkan dulu nomornya</a>,
-            lalu terbitkan kode baru.
-        </div>
-
-        <div class="mx-auto max-w-md rounded bg-slate-50 border border-slate-200 p-3.5 text-left text-xs text-slate-700 space-y-1.5">
-            <p class="font-semibold text-slate-900">Langkahnya:</p>
-            <p>1. Buka <strong>WhatsApp</strong> di HP ini.</p>
-            <p>2. Android: ketuk <strong>Titik Tiga (⋮)</strong> &rarr; <strong>Perangkat Tertaut</strong>.
-               iPhone: <strong>Setelan</strong> &rarr; <strong>Perangkat Tertaut</strong>.</p>
-            <p>3. Ketuk <strong>Tautkan Perangkat</strong>. Kamera pemindai QR akan terbuka &mdash; itu wajar, jangan ditutup.</p>
-            {{--
-                Langkah 4 dulu berbunyi "pilih Tautkan dengan nomor telepon"
-                seolah ia item menu di sebelah Tautkan Perangkat. Bukan: ia
-                tombol di DALAM layar kamera QR. Guru yang mencarinya di menu
-                hanya menemukan pemindai QR, menyimpulkan fiturnya tidak ada,
-                lalu bertanya. Yang mahal bukan kalimatnya, tapi guru yang
-                menyerah sebelum sempat bertanya.
-            --}}
-            <p>4. <strong>Tetap di layar kamera itu.</strong> Di bagian bawahnya ada tulisan biru
-               <strong>&ldquo;Tautkan dengan nomor telepon&rdquo;</strong> &mdash; ketuk itu.
-               (Di sebagian HP letaknya di pojok kanan atas.)</p>
-            <p>5. Masukkan kode 8 huruf di atas.</p>
-        </div>
-
-        <p class="mx-auto max-w-md text-left text-[11px] text-slate-500">
-            Tulisan itu tidak ada sama sekali? WhatsApp Anda terlalu lama &mdash; perbarui lewat
-            Play Store atau App Store. WhatsApp tiruan (GB/FM WhatsApp) memang tidak punya fitur ini;
-            pakai jalur <strong>pindai QR</strong> di bawah sebagai gantinya.
-        </p>
-
-        <p class="text-xs font-semibold text-indigo-600">
-            ⏳ Menunggu kode dimasukkan… Halaman akan otomatis terhubung.
-        </p>
-
-        <p class="text-[11px] text-slate-400">
-            Kode berlaku sebentar. Bila kedaluwarsa, tekan &ldquo;Saya memakai HP ini&rdquo; sekali lagi untuk kode baru.
-        </p>
-    </div>
-
-    <!-- DYNAMIC REAL-TIME QR CODE DISPLAY CARD -->
-    <div class="rounded-lg border-2 border-emerald-500 bg-white p-6 text-center space-y-4"
-         x-show="status !== 'connected' && qr">
-        <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
-            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-            <span>Kode QR WhatsApp Berhasil Diterbitkan</span>
-        </div>
-
-        <h3 class="text-xl font-semibold text-slate-900">Pindai Kode QR Ini Menggunakan WhatsApp HP</h3>
-
-        <p class="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-            Buka aplikasi WhatsApp di HP Anda &rarr; Ketuk <strong>Setelan (atau Titik Tiga)</strong> &rarr; <strong>Perangkat Tertaut</strong> &rarr; <strong>Tautkan Perangkat</strong>.
-        </p>
-
-        <!-- QR CODE CANVAS CONTAINER -->
-        <div class="py-2 flex justify-center">
-            <div class="p-3 bg-white border-2 border-slate-900 rounded-lg inline-block">
+        <!-- QR Display -->
+        <div class="p-4 lg:p-6 flex flex-col items-center">
+            <!-- Tap to expand on mobile -->
+            <button onclick="openQrModal()" class="block lg:hidden mb-3">
+                <div class="p-3 bg-white border-2 border-slate-900 rounded-xl shadow-md">
+                    <canvas id="wa-qr-canvas-dynamic" class="max-w-[200px]"></canvas>
+                </div>
+                <p class="mt-2 text-xs text-slate-500 flex items-center gap-1.5 justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                    Ketuk untuk tampilan penuh
+                </p>
+            </button>
+            <!-- Normal display on desktop -->
+            <div class="hidden lg:block p-4 bg-white border-2 border-slate-900 rounded-xl shadow-lg">
                 <canvas id="wa-qr-canvas-dynamic"></canvas>
             </div>
-        </div>
 
-        <p class="text-xs font-semibold text-indigo-600">
-            ⏳ Menunggu pemindaian dari HP... Halaman akan otomatis terhubung begitu dipindai.
-        </p>
+            <!-- Expand hint for mobile -->
+            <p class="lg:hidden mt-3 text-xs text-slate-500 flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                Ketuk QR untuk tampilan penuh
+            </p>
+
+            <!-- Loading indicator -->
+            <p class="hidden lg:block mt-4 text-xs text-slate-500 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Menunggu pemindaian...
+            </p>
+        </div>
     </div>
 
-    <!-- AUTOREPLY GROUPS SELECTION & EDITING (IF WA CONNECTED) -->
+    <!-- AUTOREPLY GROUPS (When Connected) -->
     @if(auth()->user()->whatsappConnected())
-        <div class="rounded-lg border-2 border-indigo-200 bg-white p-6 space-y-5"
+        <div class="bg-white rounded-2xl lg:rounded-lg border border-slate-200 overflow-hidden shadow-xs"
              x-data="autoreply({
                 grupUrl: '{{ route('whatsapp.groups') }}',
                 terpilih: {{ json_encode($autoreply['groups'] ?? []) }},
@@ -199,303 +275,113 @@
              })"
              x-init="awal()">
 
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-4">
-                <div>
-                    <h3 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <span>Pilih &amp; Kelola Grup WhatsApp yang Dibalas Otomatis</span>
-                    </h3>
-                    <p class="mt-1 text-sm text-slate-500">Centang grup WhatsApp orang tua yang ingin diaktifkan. Anda bisa menambah, mengurangi, atau mengedit kapan saja.</p>
-                </div>
-
-                <div class="shrink-0 flex items-center gap-2">
-                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                        <span x-text="terpilih.length"></span> Grup Terkoneksi
-                    </span>
-                    {{-- Memindai grup itu mahal: WhatsApp membatasi laju
-                         groupFetchAllParticipating dengan ketat. Selama guru
-                         hanya membuka halaman untuk melihat pilihannya, tidak
-                         ada yang perlu dipindai — jadi tombol inilah satu-satunya
-                         jalan masuk ke pemindaian. --}}
+            <div class="p-4 lg:p-5 border-b border-slate-100">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-900">Pilih &amp; Kelola Grup WhatsApp yang Dibalas Otomatis</h3>
+                            <p class="text-xs text-slate-500"><span x-text="terpilih.length">0</span> Grup Terkoneksi</p>
+                        </div>
+                    </div>
                     <template x-if="mode === 'ringkas'">
                         <button type="button" @click="bukaPemilih()"
-                                class="text-xs text-indigo-600 hover:underline font-semibold">
-                Ubah pilihan grup
-                        </button>
-                    </template>
-                    <template x-if="mode === 'pilih'">
-                        <button type="button" @click="muat(true)" :disabled="memuat"
-                                class="text-xs text-indigo-600 hover:underline font-semibold disabled:opacity-50">
-                Refresh Grup
+                                class="px-3 py-1.5 text-xs font-medium rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors">
+                            Ubah
                         </button>
                     </template>
                 </div>
+
+                @php
+                    $gatewayTerjangkau = blank($autoreply['error'] ?? null);
+                @endphp
+
+                @unless ($gatewayTerjangkau)
+                    <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-900">
+                        <p class="font-bold">⚠️ Status: Tidak diketahui (Gateway tidak terjangkau)</p>
+                        <p class="mt-1 text-[11px]">Pengaturan Anda tidak hilang, coba muat ulang dalam 45 detik.</p>
+                    </div>
+                @endunless
             </div>
 
-            @php
-                /*
-                 * Pengaturan yang ditampilkan hanya bisa dipercaya bila gateway
-                 * benar-benar menjawab. Bila tidak, autoreplyStatus() membalas
-                 * "mati, tanpa grup" — kebetulan sama persis dengan tampilan
-                 * seorang guru yang memang mematikannya. Menyajikannya sebagai
-                 * fakta membuat guru menyangka pengaturannya hilang dan menyetel
-                 * ulang sesuatu yang sebenarnya utuh.
-                 */
-                $gatewayTerjangkau = blank($autoreply['error'] ?? null);
-                $tungguDetik = (int) ($gatewayStatus['circuit']['time_until_retry'] ?? 0);
-                $kirimTerganggu = ! ($channelStatus['healthy'] ?? true);
-            @endphp
-
-            @unless ($gatewayTerjangkau)
-                <div class="rounded border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950 space-y-1">
-                    <p class="font-semibold">Pengaturan di bawah belum bisa dibaca</p>
-                    <p>Sistem sedang tidak bisa menghubungi layanan WhatsApp, jadi keadaan balasan otomatis Anda <strong>tidak diketahui</strong> — bukan berarti mati, dan pilihan grup Anda <strong>tidak hilang</strong>.</p>
-                    <p class="text-amber-800">Ini gangguan di sisi kami, bukan pengaturan Anda.
-                        @if ($tungguDetik > 0)
-                            Sistem mencoba lagi otomatis dalam <strong>{{ $tungguDetik }} detik</strong>.
-                        @else
-                            Sistem mencoba lagi otomatis. Muat ulang halaman ini beberapa saat lagi.
-                        @endif
-                    </p>
-                    <p class="text-amber-800">Selama gangguan ini, <strong>jangan menekan Simpan</strong> — biarkan pengaturan lama tetap berjalan.</p>
-                </div>
-            @endunless
-
-            @if ($gatewayTerjangkau && $kirimTerganggu)
-                {{-- Sirkuit berbeda: yang ini soal MENGIRIM pesan, bukan membaca
-                     pengaturan. Magic link absensi lewat jalur yang sama. --}}
-                <div class="rounded border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950">
-                    <p class="font-semibold">Pengiriman WhatsApp sedang terganggu</p>
-                    <p>Pengaturan Anda terbaca normal, tetapi pesan keluar (balasan otomatis dan magic link absensi) sedang gagal terkirim. Sistem mencoba lagi otomatis.</p>
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('whatsapp.autoreply') }}" class="space-y-4">
+            <form method="POST" action="{{ route('whatsapp.autoreply') }}" class="p-4 lg:p-5 space-y-4">
                 @csrf
-
-                {{--
-                    Pasangan hidden + checkbox adalah pola baku Laravel: tidak
-                    dicentang mengirim 0, dicentang mengirim 1.
-
-                    Desain ulang 1 Agustus menghapus checkbox-nya dan menyisakan
-                    hidden value="1", sehingga formulir SELALU mengirim "nyala".
-                    Melepas semua centang grup pun tidak menolong — controller
-                    menolaknya dengan peringatan dan tidak menyimpan apa pun.
-                    Akibatnya wali kelas bisa menyalakan bot yang membalas orang
-                    tua di grup, tetapi tidak punya satu pun cara mematikannya
-                    selain memutus seluruh sambungan WhatsApp — yang sekalian
-                    mematikan magic link absensi.
-                --}}
                 <input type="hidden" name="enabled" value="0">
 
-                <label class="flex items-start gap-2.5 rounded border border-slate-200 bg-white p-3 cursor-pointer hover:bg-slate-50 transition-colors">
+                <label class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 cursor-pointer hover:bg-slate-100 transition-colors">
                     <input type="checkbox" name="enabled" value="1" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                            @checked($autoreply['enabled'] ?? false)>
-                    <span class="text-xs">
-                        <span class="font-semibold text-slate-800">Nyalakan balasan otomatis</span>
-                        @if ($gatewayTerjangkau)
-                            <span class="ml-1.5 align-middle inline-block rounded-sm px-2 py-0.5 text-[10px] font-semibold {{ ($autoreply['enabled'] ?? false) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
-                                {{ ($autoreply['enabled'] ?? false) ? 'Sedang aktif' : 'Sedang mati' }}
-                            </span>
-                        @else
-                            {{-- Jangan mengaku tahu. "Mati" di sini akan keliru. --}}
-                            <span class="ml-1.5 align-middle inline-block rounded-sm px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-800">
-                                Tidak diketahui
-                            </span>
-                        @endif
-                        <span class="block text-slate-500 mt-0.5">Lepas centang ini untuk menghentikan balasan tanpa memutus sambungan WhatsApp.</span>
-                    </span>
+                    <div class="text-xs">
+                        <span class="font-semibold text-slate-800">Balasan Otomatis</span>
+                        <span class="block text-slate-500 mt-0.5">Membalas pesan izin/sakit dari grup orang tua</span>
+                    </div>
                 </label>
 
-                {{--
-                    RINGKAS — keadaan biasa: grup sudah dipilih dan disimpan.
-
-                    Menampilkan pilihan yang tersimpan dari nama yang sudah
-                    diingat server, tanpa satu pun permintaan ke WhatsApp.
-                    Hidden input di bawah WAJIB ada: tanpa itu formulir ini
-                    terkirim tanpa groups[] sama sekali, dan autoreplySave
-                    membacanya sebagai "tidak ada grup" — menyimpan kata kunci
-                    saja akan menghapus seluruh pilihan grup guru.
-                --}}
+                <!-- Groups List (Ringkasan) -->
                 <template x-if="mode === 'ringkas'">
                     <div class="space-y-2">
-                        <div class="rounded border border-slate-200 bg-white divide-y divide-slate-200">
-                            <template x-for="id in terpilih" :key="id">
-                                <div class="flex items-center justify-between gap-3 p-3">
-                                    <input type="hidden" name="groups[]" :value="id">
-
-                                    <div class="min-w-0">
-                                        <span class="block truncate text-xs font-semibold text-slate-900" x-text="namaGrup(id)"></span>
-                                        <span class="block text-[10px] text-slate-400" x-text="ketGrup(id)"></span>
-                                    </div>
-
-                                    <div class="flex items-center gap-2 shrink-0">
-                                        <button type="button" @click.prevent="periksa(id)" :disabled="memeriksa === id"
-                                                class="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50">
-                                            <span x-show="memeriksa !== id">Cek status</span>
-                                            <span x-show="memeriksa === id">Memeriksa…</span>
-                                        </button>
-                                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                                            ✓ Terkoneksi (Aktif)
-                                        </span>
-                                    </div>
+                        <template x-for="id in terpilih" :key="id">
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold text-slate-900 truncate" x-text="namaGrup(id)"></p>
+                                    <p class="text-[10px] text-slate-500" x-text="ketGrup(id)"></p>
                                 </div>
-                            </template>
-                        </div>
-
-                        <p class="text-[10px] text-slate-400">
-                            Pilihan tersimpan, ditampilkan tanpa memindai WhatsApp.
-                            Tekan <b>Ubah pilihan grup</b> di atas bila ingin menambah atau mengganti grup.
+                                <span class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[10px] shrink-0 ml-2">✓</span>
+                            </div>
+                        </template>
+                        <p x-show="terpilih.length === 0" class="text-xs text-slate-500 text-center py-4">
+                            Belum ada grup dipilih. Ketuk "Ubah" untuk memilih.
                         </p>
                     </div>
                 </template>
 
-                {{--
-                    PEMILIH — hanya dirender setelah guru menekan "Ubah pilihan".
-
-                    x-if, BUKAN x-show. Checkbox name="groups[]" yang sekadar
-                    disembunyikan tetap ikut terkirim, sehingga blok ini dan
-                    blok ringkas di atas akan mengirim groups[] ganda.
-                --}}
+                <!-- Groups Selection (Pemilih) -->
                 <template x-if="mode === 'pilih'">
-                <div class="space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <input type="text" x-model="cari" placeholder="Cari nama grup WhatsApp..."
+                                   class="flex-1 h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-indigo-500 focus:outline-none">
+                            <button type="button" @click="muat(true)" :disabled="memuat"
+                                    class="h-10 px-3 rounded-lg border border-slate-200 bg-white text-xs font-medium hover:bg-slate-50 disabled:opacity-50">
+                                <span x-show="!memuat">↻</span>
+                                <span x-show="memuat" class="animate-spin">⟳</span>
+                            </button>
+                        </div>
 
-                <div class="flex gap-2">
-                    <input type="text" x-model="cari" placeholder=" Cari nama grup WhatsApp..."
-                           class="flex-1 h-10 rounded border border-slate-200 bg-slate-50 px-3.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:outline-none">
-                    {{-- Daftar grup di-cache 5 menit untuk menghindari batas laju
-                         WhatsApp; tombol ini untuk guru yang baru menambah grup. --}}
-                    <button type="button" @click="muat(true)" :disabled="memuat" title="Ambil ulang daftar grup dari WhatsApp"
-                            class="h-10 shrink-0 rounded border border-slate-200 bg-white hover:bg-slate-50 px-3 text-xs font-semibold text-slate-700 transition-colors disabled:opacity-50">
-                        <span x-show="!memuat">↻ Muat ulang</span>
-                        <span x-show="memuat">Memuat…</span>
-                    </button>
-                </div>
-
-                <p x-show="dariCache && !memuat && !galat && !catatan" class="text-[10px] text-slate-400 -mt-1">
-                    Daftar dari simpanan sementara. Tekan “Muat ulang” bila ada grup baru.
-                </p>
-
-                {{-- Muat ulang gagal tapi daftar lama masih ada: tampilkan daftarnya,
-                     jangan dikosongkan, dan beri tahu bahwa datanya belum tersegarkan. --}}
-                <p x-show="catatan && !memuat && !galat" x-text="catatan"
-                   class="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 -mt-1"></p>
-
-                <div x-show="memuat" class="flex items-center justify-center gap-2 py-8 text-xs text-slate-500 bg-slate-50 rounded">
-                    <span class="h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
-                    <span>Memuat daftar grup WhatsApp dari ponsel...</span>
-                </div>
-
-                <div x-show="!memuat && tersaring.length > 0" class="max-h-72 overflow-y-auto divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-                    <template x-for="g in tersaring" :key="g.id">
-                        <label class="flex cursor-pointer items-center justify-between gap-3 p-3 hover:bg-indigo-50/50 transition-colors"
-                               :class="terpilih.includes(g.id) ? 'bg-emerald-50/30' : ''">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <input type="checkbox" name="groups[]" :value="g.id" x-model="terpilih"
-                                       class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                                <div class="min-w-0">
-                                    <span class="block truncate text-xs font-semibold text-slate-900" x-text="g.subject"></span>
-                                    <span class="block text-[10px] text-slate-400" x-text="g.peserta + ' Anggota'"></span>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-2 shrink-0">
-                                {{-- Diagnosa, bukan uji kirim: tidak ada pesan yang masuk ke
-                                     grup orang tua, jadi aman ditekan berkali-kali. --}}
-                                <button type="button" x-show="terpilih.includes(g.id)"
-                                        @click.prevent="periksa(g.id)" :disabled="memeriksa === g.id"
-                                        class="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50">
-                                    <span x-show="memeriksa !== g.id">Cek status</span>
-                                    <span x-show="memeriksa === g.id">Memeriksa…</span>
-                                </button>
-
-                                <span x-show="terpilih.includes(g.id)"
-                                      class="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                                    ✓ Terkoneksi (Aktif)
-                                </span>
-                                <span x-show="!terpilih.includes(g.id)"
-                                      class="inline-flex items-center text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                                    Tidak Aktif
-                                </span>
-                            </div>
-                        </label>
-                    </template>
-                </div>
-
-                {{-- Gagal memuat BUKAN sama dengan tidak punya grup. Dulu keduanya
-                     tampil sebagai pesan "tidak ditemukan grup" yang menyesatkan. --}}
-                <div x-show="!memuat && galat" class="py-6 px-4 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800 space-y-2">
-                    <p class="font-semibold">Daftar grup gagal dimuat.</p>
-                    <p x-text="galat"></p>
-                    <button type="button" @click="muat(true)"
-                            class="btn-danger btn-danger--sm">
-                        Coba muat ulang
-                    </button>
-                </div>
-
-                <div x-show="!memuat && !galat && tersaring.length === 0" class="py-8 text-center bg-slate-50 rounded text-xs text-slate-500">
-                    Tidak ditemukan grup WhatsApp. Pastikan WhatsApp ponsel Anda sudah bergabung di grup.
-                </div>
-
-                </div>
+                        <div class="max-h-64 overflow-y-auto space-y-1.5">
+                            <template x-for="g in tersaring" :key="g.id">
+                                <label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-indigo-50/50 cursor-pointer transition-colors"
+                                       :class="terpilih.includes(g.id) ? 'bg-indigo-50/50' : ''">
+                                    <input type="checkbox" name="groups[]" :value="g.id" x-model="terpilih"
+                                           class="h-4 w-4 rounded border-slate-300 text-indigo-600">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium text-slate-900 truncate" x-text="g.subject"></p>
+                                        <p class="text-[10px] text-slate-500" x-text="g.peserta + ' anggota'"></p>
+                                    </div>
+                                    <button type="button" @click.stop.prevent="periksa(g.id)" class="px-2 py-1 text-[10px] font-bold rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-colors">
+                                        Cek status
+                                    </button>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
                 </template>
 
-                {{-- Hasil "Cek status": daftar syarat yang bisa ditindaklanjuti guru,
-                     bukan sekadar aktif/tidak. --}}
-                <div x-show="hasilCek" x-cloak class="rounded border p-3 text-xs space-y-2"
-                     :class="hasilCek && hasilCek.siap ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'">
-                    <div class="flex items-start justify-between gap-2">
-                        <p class="font-semibold" :class="hasilCek && hasilCek.siap ? 'text-emerald-800' : 'text-amber-800'">
-                            <span x-text="hasilCek && hasilCek.siap ? '✓ Siap membalas' : '⚠ Belum siap membalas'"></span>
-                            — <span x-text="hasilCek ? hasilCek.grup : ''"></span>
-                        </p>
-                        <button type="button" @click.prevent="hasilCek = null" class="text-slate-400 hover:text-slate-600 font-semibold">✕</button>
-                    </div>
-
-                    <p x-show="hasilCek && hasilCek.pesan" x-text="hasilCek ? hasilCek.pesan : ''" class="text-amber-800"></p>
-
-                    <template x-if="hasilCek && hasilCek.syarat">
-                        <div class="space-y-1">
-                            <template x-for="[kunci, label] in [
-                                ['sesi_tersambung', 'Nomor WhatsApp tersambung'],
-                                ['fitur_menyala', 'Balasan otomatis dinyalakan'],
-                                ['grup_terdaftar', 'Grup ini terdaftar'],
-                                ['dalam_jam_kerja', 'Sekarang di dalam jam aktif'],
-                            ]" :key="kunci">
-                                <p class="flex items-center gap-1.5 text-slate-700">
-                                    <span x-text="hasilCek.syarat[kunci] ? '✓' : '✕'"
-                                          :class="hasilCek.syarat[kunci] ? 'text-emerald-600' : 'text-rose-600'"
-                                          class="font-semibold w-3"></span>
-                                    <span x-text="label"></span>
-                                </p>
-                            </template>
-                            <p class="flex items-center gap-1.5 text-slate-700">
-                                <span class="font-semibold w-3"
-                                      x-text="hasilCek.syarat.kuota_tersisa > 0 ? '✓' : '✕'"
-                                      :class="hasilCek.syarat.kuota_tersisa > 0 ? 'text-emerald-600' : 'text-rose-600'"></span>
-                                <span>Kuota harian tersisa
-                                    <strong x-text="hasilCek.syarat.kuota_tersisa"></strong>
-                                    dari <span x-text="hasilCek.kuota"></span>
-                                </span>
-                            </p>
-                            <p class="text-[10px] text-slate-500 pt-1">
-                                Jam aktif <strong x-text="hasilCek.jam"></strong>.
-                                Pemeriksaan ini tidak mengirim pesan ke grup.
-                            </p>
-                        </div>
-                    </template>
-                </div>
-
-                <div class="flex items-center justify-between border-t border-slate-200 pt-3">
-                    <span class="text-xs text-slate-500">
-                        Total terpilih: <strong class="text-indigo-600" x-text="terpilih.length"></strong> grup.
-                    </span>
-                    <button type="submit" class="btn-primary w-full">
-                Simpan Perubahan Grup WA
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="w-full lg:w-auto px-6 h-10 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors shadow-sm">
+                        Simpan
                     </button>
                 </div>
             </form>
-        </div>
     @endif
+
 
     {{--
         PENGINGAT IURAN BULANAN (SPP) — per kelas, bukan per guru.
@@ -697,19 +583,16 @@
         return {
             status: cfg.connected ? 'connected' : 'disconnected',
             qr: @json(session('wa_qr')),
-            kodePairing: @json(session('wa_pairing_code')),
+            pairingCode: @json(session('wa_pairing_code')),
             timer: null,
             lastQrRendered: null,
             init() {
                 if (this.qr) this.renderQr(this.qr);
+                if (this.pairingCode) openPairingModal();
 
-                /*
-                 * Polling hanya berguna selama menunggu guru memindai QR.
-                 * Kalau sesi SUDAH tersambung saat halaman dibuka, tidak ada
-                 * yang perlu ditunggu — dan menjalankan poll() di sini justru
-                 * langsung memicu window.location.reload() di bawah, sehingga
-                 * halaman memuat ulang tanpa henti.
-                 */
+                // Polling hanya berguna selama menunggu guru memindai QR/pairing.
+                // Kalau sesi SUDAH tersambung saat halaman dibuka, tidak ada
+                // yang perlu ditunggu.
                 if (this.status === 'connected') return;
 
                 this.poll();
@@ -717,50 +600,42 @@
             },
             label() {
                 if (this.status === 'connected') return 'Tersambung ✓';
-                // Menyebut "pemindaian QR" pada jalur kode akan menyuruh guru
-                // melakukan hal yang justru tidak bisa ia lakukan.
-                if (this.status === 'pairing') {
-                    return this.kodePairing ? 'Menunggu Kode Dimasukkan' : 'Menunggu Pemindaian QR';
-                }
+                if (this.status === 'pairing') return 'Menunggu Pemindaian QR';
                 return 'Belum Tersambung';
             },
             renderQr(qrStr) {
                 if (!qrStr || this.lastQrRendered === qrStr) return;
                 this.lastQrRendered = qrStr;
                 this.$nextTick(() => {
-                    const canvas = document.getElementById('wa-qr-canvas-dynamic');
-                    if (canvas && typeof qrcode === 'function') {
-                        // Clear previous QR
-                        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-
-                        // Generate QR code using qrcode-generator library
-                        const typeNumber = 0; // Auto-detect
-                        const errorCorrectionLevel = 'M';
-                        const qr = qrcode(typeNumber, errorCorrectionLevel);
-                        qr.addData(qrStr);
-                        qr.make();
-
-                        // Calculate cell size to fit canvas
-                        const cellSize = Math.floor(260 / qr.getModuleCount());
-                        const qrSize = cellSize * qr.getModuleCount();
-
-                        canvas.width = qrSize;
-                        canvas.height = qrSize;
-
-                        const ctx = canvas.getContext('2d');
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, qrSize, qrSize);
-                        ctx.fillStyle = '#0f172a';
-
-                        for (let row = 0; row < qr.getModuleCount(); row++) {
-                            for (let col = 0; col < qr.getModuleCount(); col++) {
-                                if (qr.isDark(row, col)) {
-                                    ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-                                }
-                            }
+                    this._drawQr('wa-qr-canvas-dynamic', qrStr, 260);
+                    this._drawQr('wa-qr-canvas-fullscreen', qrStr, 320);
+                });
+            },
+            _drawQr(canvasId, qrStr, maxSize) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas || typeof qrcode !== 'function') return;
+                const typeNumber = 0;
+                const errorCorrectionLevel = 'M';
+                const qr = qrcode(typeNumber, errorCorrectionLevel);
+                qr.addData(qrStr);
+                qr.make();
+                const cellSize = Math.floor(maxSize / qr.getModuleCount());
+                const qrSize = cellSize * qr.getModuleCount();
+                canvas.width = qrSize;
+                canvas.height = qrSize;
+                canvas.style.width = qrSize + 'px';
+                canvas.style.height = qrSize + 'px';
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, qrSize, qrSize);
+                ctx.fillStyle = '#0f172a';
+                for (let row = 0; row < qr.getModuleCount(); row++) {
+                    for (let col = 0; col < qr.getModuleCount(); col++) {
+                        if (qr.isDark(row, col)) {
+                            ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
                         }
                     }
-                });
+                }
             },
             async poll() {
                 try {
@@ -771,30 +646,64 @@
                         if (data.qr) {
                             this.qr = data.qr;
                             this.renderQr(data.qr);
+                        } else {
+                            this.qr = null;
                         }
-                        /*
-                         * Kode pairing terbit beberapa detik setelah /pair
-                         * menjawab (Baileys harus berjabat tangan dulu). Tanpa
-                         * dipungut di sini, guru yang menekan tombol tepat
-                         * sebelum kodenya siap hanya melihat halaman diam.
-                         */
-                        if (data.pairing_code) {
-                            this.kodePairing = data.pairing_code;
-                        }
-                        // Hanya tercapai bila halaman dibuka dalam keadaan belum
-                        // tersambung, jadi ini benar-benar peralihan: QR baru
-                        // saja dipindai. Muat ulang sekali untuk menampilkan
-                        // tampilan tersambung, lalu berhenti.
+                        // QR baru dipindai atau pairing code terbit
                         if (data.status === 'connected') {
                             clearInterval(this.timer);
                             this.timer = null;
                             window.location.reload();
+                        }
+                        if (data.pairing_code && !this.pairingCode) {
+                            this.pairingCode = data.pairing_code;
+                            openPairingModal();
                         }
                     }
                 } catch (e) {}
             }
         }
     }
+
+    function openQrModal() {
+        const modal = document.getElementById('qrModal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function openPairingModal() {
+        const modal = document.getElementById('pairingModal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closePairingModal() {
+        const modal = document.getElementById('pairingModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    function closeQrModal() {
+        const modal = document.getElementById('qrModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeQrModal();
+            closePairingModal();
+        }
+    });
 
     function autoreply(cfg) {
         return {
@@ -904,7 +813,8 @@
                         pesan: null,
                     };
                 } catch (e) {
-                    this.hasilCek = { grup: idGrup, siap: false, pesan: 'Tidak bisa menghubungi server.', syarat: null };
+                    console.error('[WA] periksa() gagal:', e);
+                    this.hasilCek = { grup: idGrup, siap: false, pesan: e.message || 'Tidak bisa联系的server.', syarat: null };
                 } finally {
                     this.memeriksa = '';
                 }

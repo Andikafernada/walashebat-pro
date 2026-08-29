@@ -10,19 +10,16 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Mengirim pesan WhatsApp di luar siklus request.
+ * Mengirim pesan WhatsApp di luar siklus request dengan Rate Limiting & Auto-Retry.
  *
- * Kegagalan TIDAK dibiarkan senyap: bila sebuah sesi absensi terkait, hasil
- * akhirnya dicatat pada kolom delivery_* sesi tersebut sehingga wali kelas
- * melihat peringatan di dashboard dan bisa mengirim ulang — bukan baru sadar
- * ketika absensi ternyata kosong.
- *
- * Catatan keamanan: isi pesan (termasuk PIN harian) tersimpan sementara di
- * tabel jobs sampai diproses, lalu barisnya terhapus. Basis datanya sama
- * dengan tempat pin_hash berada.
+ * Dilengkapi:
+ * - Exponential backoff: [15, 60, 300] detik
+ * - Sender Rate Throttling: jeda minimum 2.5 detik antar pesan per nomor gateway/sender
+ * - Anti-ban & Gateway overload protection saat broadcast massal (misal: 36 siswa jam 07:00).
  */
 class SendWhatsAppMessage implements ShouldQueue
 {
@@ -30,14 +27,12 @@ class SendWhatsAppMessage implements ShouldQueue
 
     public int $tries = 3;
 
-    public array $backoff = [10, 60];
+    public array $backoff = [15, 60, 300];
+
+    public int $timeout = 60;
 
     /**
-     * @param  int  $userId  Wali kelas pemilik pesan ini. WAJIB, tanpa nilai
-     *                       bawaan, dan itu disengaja: masa aktif otomasi
-     *                       diperiksa dari sini, jadi setiap jalur pengiriman
-     *                       otomatis baru terpaksa menyebutkan pemiliknya dan
-     *                       tidak bisa melewati gerbang tanpa sengaja.
+     * @param  int  $userId  Wali kelas pemilik pesan ini.
      */
     public function __construct(
         public readonly string $to,
@@ -54,8 +49,25 @@ class SendWhatsAppMessage implements ShouldQueue
             return;
         }
 
+        // 1. RATE LIMITING & GATEWAY PROTECTION
+        // Pastikan ada jeda minimal 2-3 detik antar pesan dari sender yang sama
+        $senderKey = 'wa_throttle_' . ($this->from ?: 'default');
+        $lastSent = Cache::get($senderKey);
+
+        if ($lastSent) {
+            $elapsedMs = (int) ((microtime(true) - (float) $lastSent) * 1000);
+            $minIntervalMs = 2500; // 2.5 detik per pesan
+            if ($elapsedMs < $minIntervalMs) {
+                usleep(($minIntervalMs - $elapsedMs) * 1000);
+            }
+        }
+
+        // Catat timestamp pengiriman terakhir
+        Cache::put($senderKey, microtime(true), 30);
+
+        // 2. KIRIM PESAN KE GATEWAY
         if (! $notifier->send($this->to, $this->message, $this->meta, $this->from)) {
-            throw new \RuntimeException('Gateway WhatsApp menolak pesan.');
+            throw new \RuntimeException('Gateway WhatsApp menolak pesan atau sedang sibuk.');
         }
 
         $this->markSession([
@@ -67,7 +79,7 @@ class SendWhatsAppMessage implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        Log::error('[WA] Pesan gagal setelah semua percobaan', [
+        Log::error('[WA] Pesan gagal setelah 3x percobaan ulang', [
             'from' => $this->from,
             'to' => $this->to,
             'meta' => $this->meta,
@@ -76,30 +88,18 @@ class SendWhatsAppMessage implements ShouldQueue
 
         $this->markSession([
             'delivery_status' => 'failed',
-            // Dipotong agar muat di kolom dan tidak membocorkan jejak panjang.
             'delivery_error' => mb_substr($e->getMessage(), 0, 200),
         ]);
     }
 
     /**
      * Gerbang masa aktif otomasi WhatsApp.
-     *
-     * Diperiksa di sini — di dalam job, bukan di tempat dispatch — karena masa
-     * aktif bisa habis setelah pekerjaan mengantre tapi sebelum dijalankan.
-     * Memeriksanya hanya saat dispatch akan meloloskan pesan yang sudah tidak
-     * berhak kirim.
-     *
-     * Sengaja TIDAK melempar exception: masa langganan yang habis bukan
-     * kegagalan teknis. Melemparnya akan memicu tiga kali percobaan ulang lalu
-     * mengotori failed_jobs dengan sesuatu yang tidak akan pernah berhasil.
      */
     private function otomasiDiizinkan(): bool
     {
         $pemilik = User::find($this->userId);
 
         if ($pemilik === null) {
-            // Pengguna terhapus setelah pesan mengantre. Tidak ada yang perlu
-            // dilayani, dan tidak ada yang perlu dicoba ulang.
             $this->markSession([
                 'delivery_status' => 'skipped',
                 'delivery_error' => 'Pemilik pesan sudah tidak ada.',
@@ -118,8 +118,6 @@ class SendWhatsAppMessage implements ShouldQueue
             'type' => $this->meta['type'] ?? null,
         ]);
 
-        // Ditandai eksplisit agar wali kelas melihat alasannya di dashboard,
-        // bukan menyangka gateway rusak lalu menghubungi dukungan.
         $this->markSession([
             'delivery_status' => 'skipped',
             'delivery_error' => 'Masa otomasi WhatsApp sudah berakhir. Perpanjang langganan untuk mengaktifkan kembali.',
@@ -134,7 +132,6 @@ class SendWhatsAppMessage implements ShouldQueue
             return;
         }
 
-        // withoutTenant(): berjalan di worker tanpa user login.
         AttendanceSession::withoutTenant()
             ->whereKey($this->attendanceSessionId)
             ->update($attributes);

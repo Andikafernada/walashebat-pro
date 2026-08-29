@@ -1,68 +1,56 @@
 @extends('layouts.guest')
 
 @section('title', 'Verifikasi Nomor WhatsApp')
+@section('page-title', 'Masukkan kode verifikasi')
+@section('page-subtitle', 'Kode enam digit dikirim lewat WhatsApp ke nomor Anda')
 
 @section('content')
-    <div class="mb-6">
-        <h2 class="text-xl font-semibold tracking-tight text-slate-900">Masukkan kode verifikasi</h2>
-        <p class="mt-1 text-sm text-slate-500">
-            Kode enam digit dikirim lewat WhatsApp ke
-            <strong class="font-mono text-slate-700">{{ $nomorSamar }}</strong>.
-            Buka WhatsApp Anda, lalu ketik kodenya di sini.
-        </p>
+    <div class="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 font-medium">
+        Kode dikirim ke: <strong class="font-mono text-slate-900 font-bold">{{ $nomorSamar }}</strong>. Buka WhatsApp Anda, lalu ketik kodenya di bawah ini.
     </div>
 
     @if (session('success'))
-        <div class="alert alert--success mb-4">
-            <div class="alert__body">{{ session('success') }}</div>
-        </div>
+        <div class="alert mb-4">{{ session('success') }}</div>
     @endif
 
     @if ($errors->any())
-        <div class="alert alert--danger mb-4">
-            <div class="alert__body">
-                <ul class="list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+        <div class="alert mb-4">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
-    {{--
-        Satu kolom, bukan enam kotak.
-
-        Versi sebelumnya memecah kode menjadi enam kotak yang saling melempar
-        fokus — dan tidak pernah bekerja, karena x-model menunjuk 'otpInputs'
-        yang tak pernah didefinisikan. Enam kotak juga memusuhi cara kode ini
-        sampai: guru menyalin kodenya dari WhatsApp di ponsel yang sama, dan
-        tempel ke enam kotak terpisah hanya mengisi kotak pertama.
-
-        autocomplete="one-time-code" membiarkan papan ketik menawarkan kodenya
-        sendiri bila peramban mengenalinya.
-    --}}
     <form method="POST" action="{{ route('register.verifikasi') }}" class="space-y-4">
         @csrf
 
-        <div>
-            <label for="otp" class="form-label form-label--required">Kode verifikasi</label>
+        <div class="form-group">
+            <label for="otp" class="form-label form-label--required">Kode verifikasi WhatsApp</label>
             <input type="text" id="otp" name="otp" required autofocus
                    inputmode="numeric" autocomplete="one-time-code"
                    maxlength="6" pattern="[0-9]{6}"
-                   placeholder="6 digit"
-                   class="form-input text-center text-2xl tracking-[0.4em]">
+                   placeholder="123456"
+                   class="form-input text-center text-xl font-bold tracking-[0.3em]"
+                   style="letter-spacing: 0.3em;">
         </div>
 
-        <button type="submit" class="btn-primary w-full">Verifikasi &amp; buat akun</button>
+        <button type="submit" class="btn-primary">Verifikasi &amp; Buat Akun</button>
     </form>
 
     <form method="POST" action="{{ route('register.kirim-ulang') }}" class="mt-4 text-center">
         @csrf
-        <button type="submit" class="btn-ghost btn-ghost--sm">Kirim ulang kode</button>
+        <button type="submit" class="text-xs font-bold text-emerald-800 hover:underline bg-transparent border-0 cursor-pointer">
+            Kirim ulang kode OTP
+        </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-slate-500">
-        Salah mengetik nomor? <a href="{{ route('register') }}" class="font-semibold text-indigo-600 hover:text-indigo-700">Ulangi pendaftaran</a>
+    <p class="mt-6 text-center text-xs sm:text-sm text-slate-600">
+        Salah mengetik nomor? <a href="{{ route('register') }}" class="font-bold text-emerald-800 hover:underline">Ulangi pendaftaran</a>
     </p>
+@endsection
+
+@section('footer')
+<a href="/" class="text-emerald-800 font-bold hover:underline">← Kembali ke Beranda</a>
 @endsection

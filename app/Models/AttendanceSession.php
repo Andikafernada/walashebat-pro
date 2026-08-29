@@ -47,6 +47,11 @@ class AttendanceSession extends Model
         return $this->hasMany(Attendance::class);
     }
 
+    public function formattedDate(): string
+    {
+        return $this->session_date ? $this->session_date->translatedFormat('d F Y') : '';
+    }
+
     /** Jumlah sesi yang sudah ada untuk sebuah kelas pada satu tanggal. */
     public static function countForDay(int $classId, ?\DateTimeInterface $date = null): int
     {

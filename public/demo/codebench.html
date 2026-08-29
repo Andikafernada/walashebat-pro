@@ -1,0 +1,1126 @@
+<title>CodeBench</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   TOKENS — deliberate single dark world (per brief): a workshop
+   bench at night. Painted explicitly so the page holds on any
+   host ground; no light variant, this is the one visual world.
+   ============================================================ */
+:root{
+  --zinc-950:#09090b;
+  --slate-900:#0f172a;
+  --slate-850:#141f36;
+  --slate-800:#1e293b;
+  --slate-750:#243247;
+  --slate-700:#334155;
+  --border:rgba(51,65,85,.8);
+  --border-soft:rgba(51,65,85,.45);
+  --text-hi:#e6e9f0;
+  --text-mid:#a8b3c7;
+  --text-dim:#6b7893;
+  --text-faint:#4b5773;
+
+  --indigo:#6366f1;
+  --indigo-soft:rgba(99,102,241,.14);
+  --indigo-line:rgba(99,102,241,.55);
+  --cyan:#06b6d4;
+  --cyan-soft:rgba(6,182,212,.14);
+
+  --success:#10b981;
+  --success-soft:rgba(16,185,129,.14);
+  --warning:#f59e0b;
+  --warning-soft:rgba(245,158,11,.14);
+  --danger:#f43f5e;
+  --danger-soft:rgba(244,63,94,.14);
+
+  --lang-html:#fb923c;
+  --lang-css:#38bdf8;
+  --lang-js:#facc15;
+  --lang-json:#94a3b8;
+  --lang-md:#94a3b8;
+
+  --font-ui:'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif;
+  --font-code:'JetBrains Mono', 'Fira Code', ui-monospace, Consolas, monospace;
+
+  --radius-sm:6px;
+  --radius-md:9px;
+  --topbar-h:50px;
+  --tabbar-h:38px;
+  --statusbar-h:26px;
+  --shadow-pop:0 12px 28px -8px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.35);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background:var(--zinc-950);
+  color:var(--text-hi);
+  font-family:var(--font-ui);
+  font-size:13px;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+button{ font-family:inherit; color:inherit; }
+::selection{ background:var(--indigo-line); color:#fff; }
+
+:focus{ outline:none; }
+:focus-visible{
+  outline:2px solid var(--indigo);
+  outline-offset:2px;
+  border-radius:4px;
+}
+
+/* scrollbars */
+.scroll{ scrollbar-width:thin; scrollbar-color:var(--slate-700) transparent; }
+.scroll::-webkit-scrollbar{ width:10px; height:10px; }
+.scroll::-webkit-scrollbar-track{ background:transparent; }
+.scroll::-webkit-scrollbar-thumb{ background:var(--slate-700); border-radius:8px; border:2.5px solid transparent; background-clip:padding-box; }
+.scroll::-webkit-scrollbar-thumb:hover{ background:#3f4e69; background-clip:padding-box; }
+
+.icon{ width:16px; height:16px; flex:none; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.icon-sm{ width:13px; height:13px; }
+.icon-lg{ width:20px; height:20px; }
+
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+
+.tt{ position:relative; }
+.tt::after{
+  content:attr(data-tt);
+  position:absolute; left:50%; top:calc(100% + 8px); transform:translateX(-50%) translateY(-2px);
+  background:#050608; color:var(--text-hi); border:1px solid var(--border);
+  padding:5px 8px; border-radius:6px; font-size:11px; white-space:nowrap;
+  box-shadow:var(--shadow-pop);
+  opacity:0; pointer-events:none; transition:opacity .12s ease, transform .12s ease; z-index:80;
+}
+.tt:hover::after,.tt:focus-visible::after{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app{
+  height:100vh;
+  display:grid;
+  grid-template-rows:var(--topbar-h) 1fr var(--statusbar-h);
+  background:var(--zinc-950);
+}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex; align-items:center; gap:14px;
+  padding:0 12px;
+  background:var(--zinc-950);
+  border-bottom:1px solid var(--border);
+  min-width:0;
+}
+.crumb{
+  display:flex; align-items:center; gap:6px; min-width:0;
+  color:var(--text-dim); font-size:12.5px; font-weight:500;
+}
+.crumb .to-dash{
+  display:flex; align-items:center; gap:5px; color:var(--text-mid);
+  background:none; border:0; padding:4px 6px; border-radius:6px; cursor:pointer;
+}
+.crumb .to-dash:hover{ background:var(--slate-800); color:var(--text-hi); }
+.crumb .sep{ color:var(--text-faint); }
+.crumb .current{ color:var(--text-hi); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.brand{
+  display:flex; align-items:center; gap:8px; padding-right:10px; margin-right:2px;
+  border-right:1px solid var(--border-soft);
+  font-weight:800; letter-spacing:.01em; font-size:13.5px; color:var(--text-hi);
+}
+.brand .mark{
+  width:22px; height:22px; border-radius:6px;
+  background:linear-gradient(155deg, var(--indigo), #4338ca);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 0 1px rgba(99,102,241,.35), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.brand .mark svg{ width:13px; height:13px; stroke:#fff; }
+
+.topbar-actions{ display:flex; align-items:center; gap:6px; margin-left:auto; }
+
+.branch-pill{
+  display:flex; align-items:center; gap:6px;
+  background:var(--slate-800); border:1px solid var(--border);
+  padding:5px 10px 5px 8px; border-radius:999px; font-size:12px; color:var(--text-mid);
+  cursor:pointer; transition:border-color .12s ease, color .12s ease;
+}
+.branch-pill:hover{ border-color:var(--slate-700); color:var(--text-hi); }
+.branch-pill .icon{ color:var(--cyan); }
+.branch-pill b{ color:var(--text-hi); font-weight:600; }
+.branch-pill .dirty{ width:6px; height:6px; border-radius:50%; background:var(--warning); box-shadow:0 0 0 2px var(--warning-soft); }
+
+.btn{
+  display:flex; align-items:center; gap:6px;
+  height:32px; padding:0 12px; border-radius:var(--radius-sm);
+  border:1px solid var(--border); background:var(--slate-800);
+  font-size:12.5px; font-weight:600; color:var(--text-mid); cursor:pointer;
+  transition:background .12s ease, color .12s ease, border-color .12s ease, transform .05s ease;
+}
+.btn:hover{ background:var(--slate-750); color:var(--text-hi); border-color:var(--slate-700); }
+.btn:active{ transform:translateY(1px); }
+.btn-icon{ width:32px; padding:0; justify-content:center; }
+.btn-primary{
+  background:var(--indigo); border-color:var(--indigo); color:#fff;
+  box-shadow:0 1px 0 rgba(255,255,255,.12) inset, 0 6px 14px -6px rgba(99,102,241,.65);
+}
+.btn-primary:hover{ background:#5457e5; color:#fff; }
+.btn-primary .icon{ stroke:#fff; }
+.btn-ghost{ background:transparent; border-color:transparent; }
+.btn-ghost:hover{ background:var(--slate-800); border-color:var(--border-soft); }
+
+.divider-v{ width:1px; align-self:stretch; margin:9px 2px; background:var(--border-soft); }
+
+/* ============================================================
+   MAIN GRID
+   ============================================================ */
+.main{
+  display:grid;
+  grid-template-columns:240px 1fr 340px;
+  min-height:0;
+  background:var(--slate-900);
+}
+.main.sidebar-collapsed{ grid-template-columns:56px 1fr 340px; }
+.main.preview-collapsed{ grid-template-columns:240px 1fr 0px; }
+.main.sidebar-collapsed.preview-collapsed{ grid-template-columns:56px 1fr 0px; }
+
+/* ---------- sidebar ---------- */
+.sidebar{
+  background:var(--slate-850);
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column; min-height:0;
+}
+.sidebar-head{
+  display:flex; align-items:center; gap:8px;
+  padding:10px 12px; border-bottom:1px solid var(--border-soft);
+  flex:none;
+}
+.sidebar-head .label{
+  font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--text-dim); white-space:nowrap; overflow:hidden;
+}
+.main.sidebar-collapsed .sidebar-head .label,
+.main.sidebar-collapsed .tree,
+.main.sidebar-collapsed .sidebar-foot .proj-meta{ display:none; }
+.main.sidebar-collapsed .sidebar-head{ justify-content:center; padding:10px 0; }
+.main.sidebar-collapsed .sidebar-icons{ display:flex; }
+
+.sidebar-icons{ display:none; flex-direction:column; align-items:center; gap:4px; padding:8px 0; flex:1; }
+.rail-btn{
+  width:38px; height:38px; border-radius:var(--radius-sm); border:0; background:none;
+  display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer;
+  position:relative;
+}
+.rail-btn:hover{ background:var(--slate-800); color:var(--text-hi); }
+.rail-btn.active{ color:var(--indigo); background:var(--indigo-soft); }
+.rail-btn .dot{ position:absolute; top:6px; right:6px; width:6px; height:6px; border-radius:50%; background:var(--warning); }
+
+.tree{ flex:1; overflow-y:auto; overflow-x:hidden; padding:6px 6px 12px; min-height:0; }
+.tree ul{ list-style:none; margin:0; padding-left:15px; }
+.tree > ul{ padding-left:0; }
+.tree-row{
+  display:flex; align-items:center; gap:6px; width:100%;
+  padding:5px 8px; border:0; background:none; border-radius:6px; cursor:pointer;
+  color:var(--text-mid); font-size:12.5px; text-align:left;
+}
+.tree-row:hover{ background:var(--slate-800); color:var(--text-hi); }
+.tree-row.is-active{ background:var(--indigo-soft); color:var(--text-hi); }
+.tree-row .chev{ width:12px; height:12px; color:var(--text-faint); transition:transform .14s ease; flex:none; }
+.tree-row[aria-expanded="false"] .chev{ transform:rotate(-90deg); }
+.tree-row .icon{ flex:none; }
+.tree-row .name{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tree-row .lang-dot{ width:6px; height:6px; border-radius:50%; flex:none; }
+.tree-row .git-flag{ font-size:10px; font-weight:800; width:13px; text-align:center; flex:none; }
+.folder-icon{ color:#7dabff; }
+.tree [role="group"][hidden]{ display:none; }
+
+.sidebar-foot{ border-top:1px solid var(--border-soft); padding:10px 12px; flex:none; }
+.proj-meta{ display:flex; flex-direction:column; gap:3px; }
+.proj-meta .p-name{ font-size:12px; font-weight:700; color:var(--text-hi); }
+.proj-meta .p-sub{ font-size:11px; color:var(--text-dim); }
+
+/* ---------- center column ---------- */
+.center{ display:flex; flex-direction:column; min-width:0; min-height:0; background:var(--slate-900); }
+
+.tabbar{
+  display:flex; align-items:stretch; height:var(--tabbar-h); flex:none;
+  background:var(--slate-800); border-bottom:1px solid var(--border);
+  overflow-x:auto; overflow-y:hidden;
+}
+.tabbar::-webkit-scrollbar{ height:0; }
+.tab{
+  display:flex; align-items:center; gap:7px;
+  padding:0 10px 0 12px; border:0; border-right:1px solid var(--border-soft);
+  background:transparent; color:var(--text-dim); font-size:12.5px; cursor:pointer;
+  white-space:nowrap; position:relative; flex:none;
+}
+.tab:hover{ color:var(--text-hi); background:rgba(255,255,255,.02); }
+.tab.is-active{ background:var(--slate-900); color:var(--text-hi); }
+.tab.is-active::after{
+  content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--indigo);
+}
+.tab .lang-dot{ width:7px; height:7px; border-radius:50%; flex:none; }
+.tab .dirty-dot{ width:6px; height:6px; border-radius:50%; background:var(--text-mid); flex:none; }
+.tab .close{
+  width:18px; height:18px; border-radius:5px; border:0; background:none; color:var(--text-faint);
+  display:flex; align-items:center; justify-content:center; flex:none;
+}
+.tab .close:hover{ background:var(--slate-700); color:var(--text-hi); }
+.tab-new{ display:flex; align-items:center; justify-content:center; width:34px; flex:none; color:var(--text-dim); border:0; background:none; }
+.tab-new:hover{ color:var(--text-hi); background:var(--slate-750); }
+
+.editor-wrap{ flex:1; min-height:0; display:flex; flex-direction:column; }
+.code-scroll{ flex:1; overflow:auto; min-height:0; }
+.code-panel{ display:none; }
+.code-panel.is-active{ display:block; }
+
+.code{
+  font-family:var(--font-code);
+  font-feature-settings:"calt" 1, "liga" 1;
+  font-variant-ligatures:contextual;
+  font-size:13px; line-height:1.7;
+  counter-reset:ln;
+  padding:14px 0 40px;
+  min-width:max-content;
+}
+.code-line{ display:flex; counter-increment:ln; }
+.code-line.line-hl{ background:var(--indigo-soft); box-shadow:inset 3px 0 0 var(--indigo); }
+.code-line::before{
+  content:counter(ln);
+  flex:none; width:46px; padding-right:16px; text-align:right;
+  color:var(--text-faint); font-variant-numeric:tabular-nums; user-select:none;
+}
+.code-line .code-content{ padding-right:24px; white-space:pre; color:var(--text-mid); }
+.tk-kw{ color:#c084fc; } .tk-str{ color:#86efac; } .tk-com{ color:var(--text-faint); font-style:italic; }
+.tk-fn{ color:#7dd3fc; } .tk-tag{ color:#fb923c; } .tk-attr{ color:#fbbf24; }
+.tk-val{ color:#86efac; } .tk-num{ color:#f0abfc; } .tk-prop{ color:#93c5fd; }
+.tk-punc{ color:var(--text-dim); } .tk-var{ color:var(--text-hi); } .tk-op{ color:#f472b6; }
+
+.editor-gutter-fade{ position:relative; }
+
+/* ---------- terminal drawer ---------- */
+.termdock{
+  flex:none; border-top:1px solid var(--border); background:var(--slate-850);
+  display:flex; flex-direction:column; min-height:0;
+  height:220px; transition:height .16s ease;
+}
+.termdock.is-collapsed{ height:38px; }
+.termdock.is-collapsed .term-body{ display:none; }
+.resize-handle{
+  height:5px; margin-top:-5px; cursor:row-resize; flex:none;
+  background:transparent;
+}
+.resize-handle:hover, .resize-handle.active{ background:var(--indigo-line); }
+
+.term-head{
+  display:flex; align-items:center; height:38px; padding:0 6px 0 12px; flex:none;
+  border-bottom:1px solid var(--border-soft);
+}
+.term-tabs{ display:flex; align-items:center; gap:2px; height:100%; }
+.term-tab{
+  border:0; background:none; color:var(--text-dim); font-size:12px; font-weight:600;
+  height:100%; padding:0 10px; display:flex; align-items:center; gap:6px; cursor:pointer;
+  border-bottom:2px solid transparent;
+}
+.term-tab.is-active{ color:var(--text-hi); border-bottom-color:var(--cyan); }
+.term-tab:hover{ color:var(--text-hi); }
+.term-tab .badge{
+  font-size:9.5px; font-weight:800; background:var(--slate-700); color:var(--text-mid);
+  border-radius:999px; padding:1px 6px;
+}
+.term-head-actions{ display:flex; align-items:center; gap:2px; margin-left:auto; }
+
+.term-body{ flex:1; min-height:0; position:relative; }
+.term-panel{ display:none; height:100%; overflow-y:auto; padding:10px 14px 16px; }
+.term-panel.is-active{ display:block; }
+.term-line{
+  font-family:var(--font-code); font-size:12.5px; line-height:1.85;
+  white-space:pre-wrap; word-break:break-word; display:flex; gap:8px;
+}
+.term-line .ts{ color:var(--text-faint); flex:none; }
+.term-line .prompt{ color:var(--cyan); flex:none; }
+.term-line.lv-info .msg{ color:var(--text-mid); }
+.term-line.lv-warn .msg{ color:var(--warning); }
+.term-line.lv-error .msg{ color:var(--danger); }
+.term-line.lv-ok .msg{ color:var(--success); }
+.term-line .msg b{ color:var(--text-hi); }
+.term-cursor{
+  display:inline-block; width:7px; height:15px; background:var(--cyan); margin-left:2px;
+  vertical-align:-3px; animation:blink 1s step-end infinite;
+}
+@keyframes blink{ 50%{ opacity:0; } }
+
+/* ---------- right panel ---------- */
+.preview{
+  border-left:1px solid var(--border); background:var(--slate-850);
+  display:flex; flex-direction:column; min-height:0; overflow:hidden;
+}
+.main.preview-collapsed .preview{ display:none; }
+.preview-head{
+  display:flex; align-items:center; gap:4px; padding:8px; flex:none;
+  border-bottom:1px solid var(--border-soft);
+}
+.seg{
+  display:flex; background:var(--slate-900); border:1px solid var(--border); border-radius:8px; padding:2px; flex:1;
+}
+.seg button{
+  flex:1; border:0; background:none; color:var(--text-dim); font-size:11.5px; font-weight:700;
+  padding:6px 8px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px;
+}
+.seg button.is-active{ background:var(--slate-750); color:var(--text-hi); box-shadow:0 1px 0 rgba(255,255,255,.04) inset; }
+
+.pv-panel{ display:none; flex:1; min-height:0; flex-direction:column; }
+.pv-panel.is-active{ display:flex; }
+
+/* live preview browser chrome */
+.fake-browser{ flex:1; display:flex; flex-direction:column; margin:12px; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:#fff; min-height:0; }
+.fb-bar{ display:flex; align-items:center; gap:8px; padding:8px 10px; background:#e7eaef; flex:none; }
+.fb-dots{ display:flex; gap:5px; }
+.fb-dots span{ width:8px; height:8px; border-radius:50%; }
+.fb-dots span:nth-child(1){ background:#ff5f57; } .fb-dots span:nth-child(2){ background:#febc2e; } .fb-dots span:nth-child(3){ background:#28c840; }
+.fb-url{ flex:1; background:#fff; border-radius:6px; padding:4px 10px; font-size:10.5px; color:#5b6474; font-family:var(--font-code); display:flex; align-items:center; gap:6px; }
+.fb-url .lock{ color:#22a15b; }
+.fb-body{ flex:1; overflow:auto; background:#f6f7fb; padding:22px 20px; color:#1c2333; font-family:var(--font-ui); }
+.demo-app h1{ font-size:17px; margin:0 0 3px; color:#12172a; }
+.demo-app .lede{ font-size:11.5px; color:#6b7385; margin:0 0 16px; }
+.demo-row{ display:flex; gap:8px; margin-bottom:14px; }
+.demo-row input{ flex:1; border:1px solid #d9dce4; border-radius:7px; padding:8px 10px; font-size:12px; font-family:inherit; }
+.demo-row button{ border:0; background:#6366f1; color:#fff; font-weight:700; font-size:12px; border-radius:7px; padding:8px 14px; cursor:default; }
+.demo-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px; }
+.demo-list li{ display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #e6e8ee; border-radius:8px; padding:9px 11px; font-size:12.5px; }
+.demo-list li.done{ color:#98a0b3; text-decoration:line-through; }
+.demo-check{ width:16px; height:16px; border-radius:50%; border:1.6px solid #c7cbdb; flex:none; }
+.demo-list li.done .demo-check{ background:#10b981; border-color:#10b981; position:relative; }
+.demo-list li.done .demo-check::after{ content:''; position:absolute; inset:0; }
+.demo-count{ margin-top:14px; font-size:10.5px; color:#8a92a6; }
+
+/* assignment panel */
+.assign{ flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:14px; }
+.student-card{ display:flex; align-items:center; gap:10px; }
+.avatar{
+  width:38px; height:38px; border-radius:50%; flex:none;
+  background:linear-gradient(155deg, var(--cyan), #0891b2);
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#04222a;
+}
+.student-card .s-name{ font-size:13px; font-weight:700; color:var(--text-hi); }
+.student-card .s-sub{ font-size:11px; color:var(--text-dim); }
+
+.card{ background:var(--slate-900); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; }
+.card h3{ margin:0 0 2px; font-size:12px; color:var(--text-hi); }
+.card .due{ font-size:11px; color:var(--warning); font-weight:600; }
+
+.rubric{ list-style:none; margin:10px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.rubric li{ display:flex; align-items:flex-start; gap:8px; font-size:11.5px; color:var(--text-mid); }
+.r-stat{ width:16px; height:16px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+.r-stat.pass{ background:var(--success-soft); color:var(--success); }
+.r-stat.pending{ background:var(--slate-800); color:var(--text-faint); border:1px dashed var(--text-faint); }
+.r-stat.fail{ background:var(--danger-soft); color:var(--danger); }
+.rubric li b{ color:var(--text-hi); display:block; font-weight:600; }
+
+.assign-actions{ display:flex; gap:8px; margin-top:auto; }
+.assign-actions .btn{ flex:1; justify-content:center; }
+
+/* ---------- status bar ---------- */
+.statusbar{
+  display:flex; align-items:center; gap:16px; padding:0 12px;
+  background:var(--indigo); color:#eef0ff; font-size:11px; font-weight:600;
+}
+.statusbar .grp{ display:flex; align-items:center; gap:6px; }
+.statusbar .icon{ width:12px; height:12px; }
+.statusbar .grp.right{ margin-left:auto; }
+.statusbar .live{ display:flex; align-items:center; gap:6px; }
+.statusbar .live .pulse{ width:6px; height:6px; border-radius:50%; background:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,.35); animation:pulse 1.8s ease-in-out infinite; }
+@keyframes pulse{ 50%{ opacity:.45; } }
+
+/* ============================================================
+   MOBILE (<768px) — single active pane + bottom nav + drawers
+   ============================================================ */
+.mobile-nav{ display:none; }
+.scrim{ display:none; }
+.mobile-quickkeys{ display:none; }
+
+@media (max-width:1023px){
+  .main{ grid-template-columns:64px 1fr !important; }
+  .preview{ display:none; }
+}
+
+@media (max-width:1023px) and (min-width:768px){
+  .sidebar{ width:64px; }
+  .sidebar-head .label{ display:none; }
+  .sidebar-head{ justify-content:center; }
+  .tree{ display:none; }
+  .sidebar-icons{ display:flex; }
+  .sidebar-foot .proj-meta{ display:none; }
+}
+
+@media (max-width:767px){
+  .app{ grid-template-rows:48px 1fr 0; }
+  .statusbar{ display:none; }
+  .main{ grid-template-columns:1fr !important; }
+  .sidebar, .preview{ position:fixed; inset:0 auto 0 0; width:280px; max-width:82vw; z-index:60; transform:translateX(-100%); transition:transform .2s ease; box-shadow:var(--shadow-pop); }
+  .preview{ inset:0 0 0 auto; left:auto; width:320px; transform:translateX(100%); display:flex; }
+  .sidebar.open{ transform:translateX(0); }
+  .preview.open{ transform:translateX(0); }
+  .sidebar .tree{ display:block; }
+  .sidebar-icons{ display:none; }
+
+  .scrim{ display:block; position:fixed; inset:0; background:rgba(3,4,8,.6); opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:55; }
+  .scrim.show{ opacity:1; pointer-events:auto; }
+
+  .crumb .current{ max-width:34vw; }
+  .branch-pill span:not(.dirty){ display:none; }
+  .btn span.lbl{ display:none; }
+  .topbar .btn{ width:32px; padding:0; justify-content:center; }
+  .btn-primary{ width:auto !important; padding:0 12px !important; }
+  .btn-primary span.lbl{ display:inline; }
+
+  .pane{ display:none; }
+  .pane.is-current{ display:flex; flex-direction:column; min-height:0; height:100%; }
+  .center{ height:100%; }
+  .termdock{ height:100%; border-top:0; }
+  .termdock.is-collapsed{ height:100%; }
+  .termdock.is-collapsed .term-body{ display:block; }
+  .resize-handle{ display:none; }
+
+  .mobile-nav{
+    display:flex; align-items:stretch; height:56px; flex:none;
+    background:var(--zinc-950); border-top:1px solid var(--border);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .mnav-btn{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    border:0; background:none; color:var(--text-dim); font-size:10px; font-weight:700; min-height:44px;
+  }
+  .mnav-btn.is-active{ color:var(--indigo); }
+  .mnav-btn .icon{ width:18px; height:18px; }
+
+  .mobile-quickkeys{
+    display:flex; gap:6px; padding:7px 8px; background:var(--slate-800);
+    border-top:1px solid var(--border); overflow-x:auto; flex:none;
+  }
+  .qk{
+    flex:none; min-width:44px; height:38px; border-radius:8px; border:1px solid var(--border);
+    background:var(--slate-750); color:var(--text-hi); font-family:var(--font-code); font-size:13px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; padding:0 10px;
+  }
+  .qk:active{ background:var(--slate-700); }
+}
+@media (min-width:768px){ .mobile-only{ display:none !important; } }
+</style>
+
+<div class="app">
+
+  <!-- ================= TOP BAR ================= -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8 4 12l5 4"/><path d="m15 8 5 4-5 4"/></svg></span>
+      <span class="mobile-only" aria-hidden="true">CB</span>
+      <span style="display:none" class="desktop-word">CodeBench</span>
+    </div>
+    <nav class="crumb" aria-label="Breadcrumb">
+      <button class="to-dash tt" data-tt="Back to dashboard" aria-label="Back to dashboard">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        <span>Classroom</span>
+      </button>
+      <span class="sep">/</span>
+      <span>Web Dev 101</span>
+      <span class="sep">/</span>
+      <span class="current">Maya Chen — Week 4</span>
+    </nav>
+
+    <div class="topbar-actions">
+      <button class="branch-pill tt" data-tt="Switch branch" aria-label="Current branch: main, 3 uncommitted changes">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="9" r="2.4"/><path d="M6 8.4V15.6M6 8.4C6 12 9 9 12 9h3.6"/></svg>
+        <span><b>main</b></span>
+        <span class="dirty" aria-hidden="true"></span>
+      </button>
+
+      <div class="divider-v"></div>
+
+      <button class="btn btn-ghost btn-icon tt" data-tt="Save (⌘S)" aria-label="Save file">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5a2 2 0 0 1 2-2h9l3 3v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2Z"/><path d="M9 3v5h7V3"/><path d="M8 21v-6h8v6"/></svg>
+      </button>
+      <button id="runBtn" class="btn btn-primary tt" data-tt="Run project (⌘⏎)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5v14l11-7Z"/></svg>
+        <span class="lbl">Run</span>
+      </button>
+      <button class="btn btn-ghost btn-icon tt" data-tt="Workspace settings" aria-label="Settings">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.26.63.82 1.1 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
+      </button>
+
+      <div class="divider-v mobile-only" style="display:none"></div>
+      <button class="btn btn-ghost btn-icon mobile-only" style="display:none" id="mSidebarBtn" aria-label="Open file explorer">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN GRID ================= -->
+  <div class="main" id="mainGrid">
+
+    <!-- SCRIM for mobile drawers -->
+    <div class="scrim" id="scrim"></div>
+
+    <!-- ---------------- SIDEBAR ---------------- -->
+    <aside class="sidebar pane" id="sidebarPane" aria-label="File explorer">
+      <div class="sidebar-head">
+        <button class="btn btn-ghost btn-icon tt" id="collapseBtn" data-tt="Collapse sidebar" aria-label="Collapse sidebar" aria-pressed="false">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+        </button>
+        <span class="label">Explorer</span>
+        <button class="btn btn-ghost btn-icon tt" style="margin-left:auto" data-tt="New file" aria-label="New file">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+
+      <!-- icon-only rail shown at tablet width -->
+      <div class="sidebar-icons" aria-hidden="true">
+        <button class="rail-btn active tt" data-tt="Files"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/></svg></button>
+        <button class="rail-btn tt" data-tt="Search"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+        <button class="rail-btn tt" data-tt="Source control"><span class="dot"></span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="6" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="9" r="2.2"/><path d="M6 8.2V15.8M6 8.2C6 11.6 9 9 12 9h3.6"/></svg></button>
+      </div>
+
+      <div class="tree scroll" role="tree" aria-label="Project files">
+        <ul>
+          <li>
+            <button class="tree-row" role="treeitem" aria-expanded="true" data-toggle="f1">
+              <svg class="chev icon" viewBox="0 0 24 24" fill="none" stroke-width="2.2"><path d="m9 6 6 6-6 6"/></svg>
+              <svg class="icon folder-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+              <span class="name">public</span>
+            </button>
+            <ul id="f1" role="group">
+              <li>
+                <button class="tree-row is-active" role="treeitem" data-file="index.html">
+                  <span style="width:12px"></span>
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" style="color:var(--lang-html)"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v13H6z"/></svg>
+                  <span class="name">index.html</span>
+                  <span class="lang-dot" style="background:var(--lang-html)"></span>
+                  <span class="git-flag" style="color:var(--warning)">M</span>
+                </button>
+              </li>
+              <li>
+                <button class="tree-row" role="treeitem" data-file="styles.css">
+                  <span style="width:12px"></span>
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" style="color:var(--lang-css)"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v13H6z"/></svg>
+                  <span class="name">styles.css</span>
+                  <span class="lang-dot" style="background:var(--lang-css)"></span>
+                </button>
+              </li>
+              <li>
+                <button class="tree-row" role="treeitem" data-file="app.js">
+                  <span style="width:12px"></span>
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" style="color:var(--lang-js)"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v13H6z"/></svg>
+                  <span class="name">app.js</span>
+                  <span class="lang-dot" style="background:var(--lang-js)"></span>
+                  <span class="git-flag" style="color:var(--warning)">M</span>
+                </button>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <button class="tree-row" role="treeitem" data-file="server.js">
+              <span style="width:12px"></span>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" style="color:var(--lang-js)"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v13H6z"/></svg>
+              <span class="name">server.js</span>
+              <span class="lang-dot" style="background:var(--lang-js)"></span>
+              <span class="git-flag" style="color:var(--success)">U</span>
+            </button>
+          </li>
+          <li>
+            <button class="tree-row" role="treeitem" data-file="package.json">
+              <span style="width:12px"></span>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" style="color:var(--lang-json)"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v13H6z"/></svg>
+              <span class="name">package.json</span>
+              <span class="lang-dot" style="background:var(--lang-json)"></span>
+            </button>
+          </li>
+          <li>
+            <button class="tree-row" role="treeitem" data-file="README.md">
+              <span style="width:12px"></span>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" style="color:var(--lang-md)"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v13H6z"/></svg>
+              <span class="name">README.md</span>
+              <span class="lang-dot" style="background:var(--lang-md)"></span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-foot">
+        <div class="proj-meta">
+          <span class="p-name">todo-app-week4</span>
+          <span class="p-sub">Node 20 · npm · 3 changes</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ---------------- CENTER: TABS + EDITOR + TERMINAL ---------------- -->
+    <section class="center pane is-current" aria-label="Code editor">
+
+      <div class="tabbar" role="tablist" aria-label="Open files" id="tabbar">
+        <button class="tab is-active" role="tab" aria-selected="true" data-tabfile="index.html">
+          <span class="lang-dot" style="background:var(--lang-html)"></span>
+          <span>index.html</span>
+          <span class="dirty-dot" aria-label="unsaved changes"></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-tabfile="styles.css">
+          <span class="lang-dot" style="background:var(--lang-css)"></span>
+          <span>styles.css</span>
+          <button class="close tt" data-tt="Close" aria-label="Close styles.css" onclick="event.stopPropagation()"><svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-tabfile="app.js">
+          <span class="lang-dot" style="background:var(--lang-js)"></span>
+          <span>app.js</span>
+          <span class="dirty-dot" aria-label="unsaved changes"></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-tabfile="server.js">
+          <span class="lang-dot" style="background:var(--lang-js)"></span>
+          <span>server.js</span>
+          <button class="close tt" data-tt="Close" aria-label="Close server.js" onclick="event.stopPropagation()"><svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </button>
+        <button class="tab-new tt" data-tt="New tab" aria-label="New tab">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+
+      <div class="editor-wrap">
+        <div class="code-scroll scroll">
+
+          <div class="code-panel is-active" id="panel-index.html" role="tabpanel">
+            <div class="code"><div class="code-line"><span class="code-content"><span class="tk-punc">&lt;!doctype</span> <span class="tk-tag">html</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">&lt;</span><span class="tk-tag">html</span> <span class="tk-attr">lang</span><span class="tk-op">=</span><span class="tk-str">"en"</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">&lt;</span><span class="tk-tag">head</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-punc">&lt;</span><span class="tk-tag">meta</span> <span class="tk-attr">charset</span><span class="tk-op">=</span><span class="tk-str">"utf-8"</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-punc">&lt;</span><span class="tk-tag">title</span><span class="tk-punc">&gt;</span>Todo — Week 4<span class="tk-punc">&lt;/</span><span class="tk-tag">title</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-punc">&lt;</span><span class="tk-tag">link</span> <span class="tk-attr">rel</span><span class="tk-op">=</span><span class="tk-str">"stylesheet"</span> <span class="tk-attr">href</span><span class="tk-op">=</span><span class="tk-str">"styles.css"</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">&lt;/</span><span class="tk-tag">head</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">&lt;</span><span class="tk-tag">body</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line line-hl"><span class="code-content">  <span class="tk-punc">&lt;</span><span class="tk-tag">main</span> <span class="tk-attr">class</span><span class="tk-op">=</span><span class="tk-str">"demo-app"</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">    <span class="tk-punc">&lt;</span><span class="tk-tag">h1</span><span class="tk-punc">&gt;</span>My tasks<span class="tk-punc">&lt;/</span><span class="tk-tag">h1</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">    <span class="tk-punc">&lt;</span><span class="tk-tag">form</span> <span class="tk-attr">id</span><span class="tk-op">=</span><span class="tk-str">"addForm"</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">      <span class="tk-punc">&lt;</span><span class="tk-tag">input</span> <span class="tk-attr">id</span><span class="tk-op">=</span><span class="tk-str">"taskInput"</span> <span class="tk-attr">placeholder</span><span class="tk-op">=</span><span class="tk-str">"Add a task…"</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">      <span class="tk-punc">&lt;</span><span class="tk-tag">button</span><span class="tk-punc">&gt;</span>Add<span class="tk-punc">&lt;/</span><span class="tk-tag">button</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">    <span class="tk-punc">&lt;/</span><span class="tk-tag">form</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">    <span class="tk-punc">&lt;</span><span class="tk-tag">ul</span> <span class="tk-attr">id</span><span class="tk-op">=</span><span class="tk-str">"list"</span><span class="tk-punc">&gt;&lt;/</span><span class="tk-tag">ul</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-punc">&lt;/</span><span class="tk-tag">main</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-punc">&lt;</span><span class="tk-tag">script</span> <span class="tk-attr">src</span><span class="tk-op">=</span><span class="tk-str">"app.js"</span><span class="tk-punc">&gt;&lt;/</span><span class="tk-tag">script</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">&lt;/</span><span class="tk-tag">body</span><span class="tk-punc">&gt;</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">&lt;/</span><span class="tk-tag">html</span><span class="tk-punc">&gt;</span></span></div>
+</div>
+          </div>
+
+          <div class="code-panel" id="panel-styles.css" role="tabpanel">
+            <div class="code"><div class="code-line"><span class="code-content"><span class="tk-com">/* layout */</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-tag">.demo-app</span> <span class="tk-punc">{</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-prop">max-width</span><span class="tk-punc">:</span> <span class="tk-num">420px</span><span class="tk-punc">;</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-prop">margin</span><span class="tk-punc">:</span> <span class="tk-num">48px</span> <span class="tk-kw">auto</span><span class="tk-punc">;</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-prop">font-family</span><span class="tk-punc">:</span> <span class="tk-str">system-ui</span><span class="tk-punc">;</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">}</span></span></div>
+<div class="code-line"><span class="code-content"></span></div>
+<div class="code-line line-hl"><span class="code-content"><span class="tk-tag">.demo-list li.done</span> <span class="tk-punc">{</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-prop">color</span><span class="tk-punc">:</span> <span class="tk-var">#98a0b3</span><span class="tk-punc">;</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-prop">text-decoration</span><span class="tk-punc">:</span> <span class="tk-kw">line-through</span><span class="tk-punc">;</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">}</span></span></div>
+</div>
+          </div>
+
+          <div class="code-panel" id="panel-app.js" role="tabpanel">
+            <div class="code"><div class="code-line"><span class="code-content"><span class="tk-kw">const</span> <span class="tk-var">form</span> <span class="tk-op">=</span> <span class="tk-var">document</span><span class="tk-punc">.</span><span class="tk-fn">getElementById</span><span class="tk-punc">(</span><span class="tk-str">'addForm'</span><span class="tk-punc">);</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-kw">const</span> <span class="tk-var">list</span> <span class="tk-op">=</span> <span class="tk-var">document</span><span class="tk-punc">.</span><span class="tk-fn">getElementById</span><span class="tk-punc">(</span><span class="tk-str">'list'</span><span class="tk-punc">);</span></span></div>
+<div class="code-line"><span class="code-content"></span></div>
+<div class="code-line line-hl"><span class="code-content"><span class="tk-var">form</span><span class="tk-punc">.</span><span class="tk-fn">addEventListener</span><span class="tk-punc">(</span><span class="tk-str">'submit'</span><span class="tk-punc">,</span> <span class="tk-punc">(</span><span class="tk-var">e</span><span class="tk-punc">) =&gt; {</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-var">e</span><span class="tk-punc">.</span><span class="tk-fn">preventDefault</span><span class="tk-punc">();</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-fn">addTask</span><span class="tk-punc">(</span><span class="tk-var">input</span><span class="tk-punc">.</span><span class="tk-prop">value</span><span class="tk-punc">.</span><span class="tk-fn">trim</span><span class="tk-punc">());</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">});</span></span></div>
+<div class="code-line"><span class="code-content"></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-kw">function</span> <span class="tk-fn">addTask</span><span class="tk-punc">(</span><span class="tk-var">text</span><span class="tk-punc">) {</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-kw">if</span> <span class="tk-punc">(!</span><span class="tk-var">text</span><span class="tk-punc">)</span> <span class="tk-kw">return</span><span class="tk-punc">;</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-var">list</span><span class="tk-punc">.</span><span class="tk-fn">insertAdjacentHTML</span><span class="tk-punc">(</span><span class="tk-str">'beforeend'</span><span class="tk-punc">, </span><span class="tk-var">row</span><span class="tk-punc">(</span><span class="tk-var">text</span><span class="tk-punc">));</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">}</span></span></div>
+</div>
+          </div>
+
+          <div class="code-panel" id="panel-server.js" role="tabpanel">
+            <div class="code"><div class="code-line"><span class="code-content"><span class="tk-kw">const</span> <span class="tk-var">express</span> <span class="tk-op">=</span> <span class="tk-fn">require</span><span class="tk-punc">(</span><span class="tk-str">'express'</span><span class="tk-punc">);</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-kw">const</span> <span class="tk-var">app</span> <span class="tk-op">=</span> <span class="tk-fn">express</span><span class="tk-punc">();</span></span></div>
+<div class="code-line"><span class="code-content"></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-var">app</span><span class="tk-punc">.</span><span class="tk-fn">use</span><span class="tk-punc">(</span><span class="tk-var">express</span><span class="tk-punc">.</span><span class="tk-fn">static</span><span class="tk-punc">(</span><span class="tk-str">'public'</span><span class="tk-punc">));</span></span></div>
+<div class="code-line"><span class="code-content"></span></div>
+<div class="code-line line-hl"><span class="code-content"><span class="tk-var">app</span><span class="tk-punc">.</span><span class="tk-fn">listen</span><span class="tk-punc">(</span><span class="tk-num">3000</span><span class="tk-punc">, () =&gt; {</span></span></div>
+<div class="code-line"><span class="code-content">  <span class="tk-var">console</span><span class="tk-punc">.</span><span class="tk-fn">log</span><span class="tk-punc">(</span><span class="tk-str">'Server listening on :3000'</span><span class="tk-punc">);</span></span></div>
+<div class="code-line"><span class="code-content"><span class="tk-punc">});</span></span></div>
+</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- terminal / console drawer -->
+      <div class="resize-handle" id="resizeHandle" aria-hidden="true"></div>
+      <div class="termdock" id="termdock">
+        <div class="term-head">
+          <div class="term-tabs" role="tablist" aria-label="Bottom panels">
+            <button class="term-tab is-active" role="tab" aria-selected="true" data-term="terminal">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 17 6-5-6-5"/><path d="M12 19h8"/></svg>
+              Terminal
+            </button>
+            <button class="term-tab" role="tab" aria-selected="false" data-term="console">
+              Console Output
+              <span class="badge" id="consoleBadge">2</span>
+            </button>
+          </div>
+          <div class="term-head-actions">
+            <button class="btn btn-ghost btn-icon tt" data-tt="Clear" aria-label="Clear terminal" id="clearTermBtn">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            </button>
+            <button class="btn btn-ghost btn-icon tt" id="termToggleBtn" data-tt="Minimize panel" aria-label="Minimize terminal" aria-expanded="true">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="term-body">
+          <div class="term-panel is-active scroll" id="term-terminal">
+            <div class="term-line lv-info"><span class="ts">08:41:02</span><span class="prompt">➜</span><span class="msg">npm run dev</span></div>
+            <div class="term-line lv-info"><span class="ts">08:41:03</span><span class="msg">&gt; todo-app-week4@1.0.0 dev</span></div>
+            <div class="term-line lv-info"><span class="ts">08:41:03</span><span class="msg">&gt; node server.js</span></div>
+            <div class="term-line lv-ok"><span class="ts">08:41:03</span><span class="msg"><b>✓ Server listening on http://localhost:3000</b></span></div>
+            <div class="term-line lv-warn"><span class="ts">08:41:04</span><span class="msg">⚠ styles.css has 1 unused selector (.legacy-badge)</span></div>
+            <div class="term-line lv-info" id="termCursorLine"><span class="ts">&nbsp;</span><span class="prompt">➜</span><span class="msg"><span class="term-cursor" aria-hidden="true"></span></span></div>
+          </div>
+          <div class="term-panel scroll" id="term-console">
+            <div class="term-line lv-info"><span class="ts">08:41:03</span><span class="msg">[app.js] initialised, 3 tasks loaded from localStorage</span></div>
+            <div class="term-line lv-error"><span class="ts">08:41:05</span><span class="msg">Uncaught TypeError: <b>list.insertAdjacentHTML</b> is not a function (line 12)</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------- RIGHT PANEL ---------------- -->
+    <aside class="preview pane" id="previewPane" aria-label="Preview and assignment">
+      <div class="preview-head">
+        <div class="seg" role="tablist" aria-label="Right panel view">
+          <button class="is-active" role="tab" aria-selected="true" data-pv="live">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+            Live Preview
+          </button>
+          <button role="tab" aria-selected="false" data-pv="assign">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+            Assignment
+          </button>
+        </div>
+        <button class="btn btn-ghost btn-icon tt" id="closePreviewBtn" data-tt="Hide panel" aria-label="Hide right panel">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="pv-panel is-active" id="pv-live">
+        <div class="fake-browser">
+          <div class="fb-bar">
+            <div class="fb-dots"><span></span><span></span><span></span></div>
+            <div class="fb-url"><svg class="icon icon-sm lock" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>localhost:3000</div>
+          </div>
+          <div class="fb-body scroll">
+            <div class="demo-app">
+              <h1>My tasks</h1>
+              <p class="lede">Week 4 — DOM events &amp; local storage</p>
+              <div class="demo-row"><input type="text" placeholder="Add a task…" readonly><button type="button">Add</button></div>
+              <ul class="demo-list">
+                <li class="done"><span class="demo-check"></span> Wire up the add-task form</li>
+                <li class="done"><span class="demo-check"></span> Render tasks from array</li>
+                <li><span class="demo-check"></span> Persist list to localStorage</li>
+                <li><span class="demo-check"></span> Mark tasks complete on click</li>
+              </ul>
+              <p class="demo-count">2 of 4 complete</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pv-panel" id="pv-assign">
+        <div class="assign scroll">
+          <div class="student-card">
+            <div class="avatar">MC</div>
+            <div>
+              <div class="s-name">Maya Chen</div>
+              <div class="s-sub">Web Dev 101 · Section B</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Week 4 — Todo List App</h3>
+            <div class="due">Due tomorrow, 11:59 PM</div>
+            <ul class="rubric">
+              <li><span class="r-stat pass">✓</span><div><b>Form submission</b>Prevents default, reads input value</div></li>
+              <li><span class="r-stat pass">✓</span><div><b>Renders task list</b>New items appended to the DOM</div></li>
+              <li><span class="r-stat fail">!</span><div><b>Persists to localStorage</b>Not yet implemented — list resets on reload</div></li>
+              <li><span class="r-stat pending">–</span><div><b>Mark complete on click</b>Not started</div></li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-bottom:6px">Instructor note</h3>
+            <p style="margin:0; font-size:11.5px; color:var(--text-mid); line-height:1.6;">Nice work on the render logic — the <code style="font-family:var(--font-code); background:var(--slate-800); padding:1px 5px; border-radius:4px;">insertAdjacentHTML</code> call in app.js is throwing, check the console tab.</p>
+          </div>
+
+          <div class="assign-actions">
+            <button class="btn btn-ghost" style="flex:1;justify-content:center">Request changes</button>
+            <button class="btn btn-primary" style="flex:1;justify-content:center">Mark reviewed</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ================= STATUS BAR ================= -->
+  <footer class="statusbar">
+    <span class="grp live"><span class="pulse" aria-hidden="true"></span> Dev server running</span>
+    <span class="grp"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 8V16M6 8c0 3 3 1 6 1h3.6"/></svg> main</span>
+    <span class="grp">UTF-8</span>
+    <span class="grp">LF</span>
+    <span class="grp right">Ln 10, Col 26</span>
+    <span class="grp">HTML</span>
+    <span class="grp"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> Autosaved 12s ago</span>
+  </footer>
+
+  <!-- ================= MOBILE BOTTOM NAV ================= -->
+  <nav class="mobile-nav mobile-only" style="display:none" aria-label="Panels">
+    <button class="mnav-btn is-active" data-pane="editor">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m10 8-4 4 4 4"/><path d="m14 8 4 4-4 4"/></svg>
+      Editor
+    </button>
+    <button class="mnav-btn" data-pane="files">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+      Files
+    </button>
+    <button class="mnav-btn" data-pane="terminal">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m4 17 6-5-6-5"/><path d="M12 19h8"/></svg>
+      Terminal
+    </button>
+    <button class="mnav-btn" data-pane="preview">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="5" width="18" height="13" rx="2"/></svg>
+      Preview
+    </button>
+  </nav>
+</div>
+
+<script>
+(function(){
+  var mainGrid = document.getElementById('mainGrid');
+  var sidebarPane = document.getElementById('sidebarPane');
+  var previewPane = document.getElementById('previewPane');
+  var scrim = document.getElementById('scrim');
+
+  /* ---------- desktop: collapse sidebar ---------- */
+  var collapseBtn = document.getElementById('collapseBtn');
+  collapseBtn.addEventListener('click', function(){
+    var collapsed = mainGrid.classList.toggle('sidebar-collapsed');
+    collapseBtn.setAttribute('aria-pressed', String(collapsed));
+    collapseBtn.dataset.tt = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+  });
+
+  document.getElementById('closePreviewBtn').addEventListener('click', function(){
+    mainGrid.classList.toggle('preview-collapsed');
+  });
+
+  /* ---------- file tree: expand/collapse folders ---------- */
+  document.querySelectorAll('.tree-row[data-toggle]').forEach(function(row){
+    row.addEventListener('click', function(){
+      var id = row.getAttribute('data-toggle');
+      var group = document.getElementById(id);
+      var open = row.getAttribute('aria-expanded') === 'true';
+      row.setAttribute('aria-expanded', String(!open));
+      if (group) group.hidden = open;
+    });
+  });
+
+  /* ---------- file tree selection <-> tabs ---------- */
+  var fileMeta = {
+    'index.html': {lang:'html'}, 'styles.css': {lang:'css'},
+    'app.js': {lang:'js'}, 'server.js': {lang:'js'}
+  };
+
+  function activateFile(name){
+    if(!fileMeta[name]) return;
+    document.querySelectorAll('.tree-row[data-file]').forEach(function(r){
+      r.classList.toggle('is-active', r.dataset.file === name);
+    });
+    var tab = document.querySelector('.tab[data-tabfile="'+name+'"]');
+    if (tab) activateTab(tab);
+  }
+
+  document.querySelectorAll('.tree-row[data-file]').forEach(function(row){
+    row.addEventListener('click', function(){ activateFile(row.dataset.file); goToPane('editor'); });
+  });
+
+  /* ---------- tabs ---------- */
+  var tabbar = document.getElementById('tabbar');
+  function activateTab(tab){
+    tabbar.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('is-active'); t.setAttribute('aria-selected','false'); });
+    tab.classList.add('is-active'); tab.setAttribute('aria-selected','true');
+    var file = tab.dataset.tabfile;
+    document.querySelectorAll('.code-panel').forEach(function(p){ p.classList.remove('is-active'); });
+    var panel = document.getElementById('panel-'+file);
+    if (panel) panel.classList.add('is-active');
+    document.querySelectorAll('.tree-row[data-file]').forEach(function(r){ r.classList.toggle('is-active', r.dataset.file === file); });
+  }
+  tabbar.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(e){
+      if (e.target.closest('.close')) return;
+      activateTab(tab);
+    });
+  });
+  tabbar.querySelectorAll('.tab .close').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var tab = btn.closest('.tab');
+      var wasActive = tab.classList.contains('is-active');
+      tab.remove();
+      if (wasActive){ var next = tabbar.querySelector('.tab'); if(next) activateTab(next); }
+    });
+  });
+  /* arrow-key navigation between tabs */
+  tabbar.addEventListener('keydown', function(e){
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var tabs = Array.prototype.slice.call(tabbar.querySelectorAll('.tab'));
+    var i = tabs.indexOf(document.activeElement);
+    if (i === -1) return;
+    var next = e.key === 'ArrowRight' ? tabs[i+1] : tabs[i-1];
+    if (next){ next.focus(); activateTab(next); }
+  });
+
+  /* ---------- terminal: tabs, collapse, resize ---------- */
+  var termdock = document.getElementById('termdock');
+  document.querySelectorAll('.term-tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.term-tab').forEach(function(t){ t.classList.remove('is-active'); t.setAttribute('aria-selected','false'); });
+      tab.classList.add('is-active'); tab.setAttribute('aria-selected','true');
+      document.querySelectorAll('.term-panel').forEach(function(p){ p.classList.remove('is-active'); });
+      document.getElementById('term-'+tab.dataset.term).classList.add('is-active');
+      if (tab.dataset.term === 'console') document.getElementById('consoleBadge').style.display = 'none';
+      if (termdock.classList.contains('is-collapsed')) toggleTerm(false);
+    });
+  });
+  var termToggleBtn = document.getElementById('termToggleBtn');
+  function toggleTerm(forceCollapsed){
+    var collapsed = typeof forceCollapsed === 'boolean' ? forceCollapsed : !termdock.classList.contains('is-collapsed');
+    termdock.classList.toggle('is-collapsed', collapsed);
+    termToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+    termToggleBtn.dataset.tt = collapsed ? 'Restore panel' : 'Minimize panel';
+    termToggleBtn.querySelector('svg').style.transform = collapsed ? 'rotate(180deg)' : 'none';
+  }
+  termToggleBtn.addEventListener('click', function(){ toggleTerm(); });
+  document.getElementById('clearTermBtn').addEventListener('click', function(){
+    document.querySelectorAll('.term-panel.is-active .term-line:not(#termCursorLine)').forEach(function(l){ l.remove(); });
+  });
+
+  /* drag-resize terminal (desktop) */
+  var handle = document.getElementById('resizeHandle');
+  var dragging = false;
+  handle.addEventListener('pointerdown', function(e){ dragging = true; handle.classList.add('active'); handle.setPointerCapture(e.pointerId); });
+  handle.addEventListener('pointermove', function(e){
+    if (!dragging) return;
+    var centerRect = document.querySelector('.center').getBoundingClientRect();
+    var h = centerRect.bottom - e.clientY;
+    h = Math.max(38, Math.min(h, centerRect.height - 120));
+    termdock.style.height = h + 'px';
+    termdock.classList.remove('is-collapsed');
+  });
+  ['pointerup','pointercancel'].forEach(function(evt){
+    handle.addEventListener(evt, function(){ dragging = false; handle.classList.remove('active'); });
+  });
+
+  /* ---------- right panel: live preview / assignment ---------- */
+  document.querySelectorAll('.seg [data-pv]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.seg [data-pv]').forEach(function(b){ b.classList.remove('is-active'); b.setAttribute('aria-selected','false'); });
+      btn.classList.add('is-active'); btn.setAttribute('aria-selected','true');
+      document.querySelectorAll('.pv-panel').forEach(function(p){ p.classList.remove('is-active'); });
+      document.getElementById('pv-'+btn.dataset.pv).classList.add('is-active');
+    });
+  });
+
+  /* ---------- Run button: append a fresh terminal run ---------- */
+  var runBtn = document.getElementById('runBtn');
+  runBtn.addEventListener('click', function(){
+    document.querySelectorAll('.term-tab').forEach(function(t){ t.classList.toggle('is-active', t.dataset.term==='terminal'); t.setAttribute('aria-selected', t.dataset.term==='terminal'); });
+    document.querySelectorAll('.term-panel').forEach(function(p){ p.classList.toggle('is-active', p.id==='term-terminal'); });
+    toggleTerm(false);
+    var cursorLine = document.getElementById('termCursorLine');
+    var now = new Date();
+    var ts = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+    var lines = [
+      ['lv-info', ts, '➜', 'npm run dev'],
+      ['lv-ok', ts, '', '<b>✓ Compiled successfully, server restarted on :3000</b>']
+    ];
+    lines.forEach(function(l){
+      var div = document.createElement('div');
+      div.className = 'term-line ' + l[0];
+      div.innerHTML = '<span class="ts">'+l[1]+'</span>'+(l[2] ? '<span class="prompt">'+l[2]+'</span>' : '<span></span>')+'<span class="msg">'+l[3]+'</span>';
+      cursorLine.parentNode.insertBefore(div, cursorLine);
+    });
+    var panel = document.getElementById('term-terminal');
+    panel.scrollTop = panel.scrollHeight;
+  });
+
+  /* ================= MOBILE: single active pane + drawers ================= */
+  var mq = window.matchMedia('(max-width: 767px)');
+  var mobileNav = document.querySelector('.mobile-nav');
+
+  function goToPane(name){
+    if (!mq.matches) return;
+    document.querySelectorAll('.mnav-btn').forEach(function(b){ b.classList.toggle('is-active', b.dataset.pane === name); });
+    document.getElementById('mainGrid').classList.remove('term-focus');
+    if (name === 'terminal'){
+      toggleTerm(false);
+    }
+    document.querySelectorAll('.pane').forEach(function(p){ p.classList.remove('is-current'); });
+    var target = name === 'files' ? sidebarPane : name === 'preview' ? previewPane : document.querySelector('.center');
+    target.classList.add('is-current');
+    closeDrawers();
+  }
+  document.querySelectorAll('.mnav-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){ goToPane(btn.dataset.pane); });
+  });
+
+  function openDrawer(pane){
+    pane.classList.add('open'); scrim.classList.add('show');
+  }
+  function closeDrawers(){
+    sidebarPane.classList.remove('open'); previewPane.classList.remove('open'); scrim.classList.remove('show');
+  }
+  scrim.addEventListener('click', closeDrawers);
+  document.getElementById('mSidebarBtn').addEventListener('click', function(){ openDrawer(sidebarPane); });
+
+  /* reveal mobile-only chrome via JS (kept out of default CSS to avoid FOUC on desktop) */
+  function syncResponsiveChrome(){
+    var isMobile = mq.matches;
+    mobileNav.style.display = isMobile ? 'flex' : 'none';
+    document.getElementById('mSidebarBtn').style.display = isMobile ? 'flex' : 'none';
+    document.querySelectorAll('.mobile-quickkeys').forEach(function(el){ el.style.display = isMobile ? 'flex' : 'none'; });
+    document.querySelector('.divider-v.mobile-only').style.display = isMobile ? 'block' : 'none';
+    document.querySelector('.desktop-word').style.display = isMobile ? 'none' : 'inline';
+    if (!isMobile){ closeDrawers(); document.querySelectorAll('.pane').forEach(function(p){ p.classList.remove('is-current'); }); document.querySelector('.center').classList.add('is-current'); }
+  }
+  mq.addEventListener('change', syncResponsiveChrome);
+  syncResponsiveChrome();
+
+  /* quick-key bar for mobile code editing */
+  var quickBar = document.createElement('div');
+  quickBar.className = 'mobile-quickkeys mobile-only';
+  [['Tab','\\t'], ['{ }','{}'], ['( )','()'], [';',';'], ['←','ARR_L'], ['↑','ARR_U'], ['↓','ARR_D'], ['→','ARR_R']].forEach(function(k){
+    var b = document.createElement('button');
+    b.className = 'qk'; b.type = 'button'; b.textContent = k[0]; b.setAttribute('aria-label','Insert '+k[0]);
+    quickBar.appendChild(b);
+  });
+  document.querySelector('.editor-wrap').appendChild(quickBar);
+  syncResponsiveChrome();
+})();
+</script>

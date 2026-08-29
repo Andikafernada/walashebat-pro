@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Attendance;
 use App\Models\AttendanceSession;
 use App\Models\Classroom;
+use App\Models\OrganizationStructure;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\PoinKerajinan;
@@ -17,10 +18,7 @@ use Tests\TestCase;
  * Poin kerajinan adalah cache, bukan buku besar.
  *
  * students.diligence_points selalu dihitung ULANG dari nol atas seluruh
- * absensi, tidak pernah ditambah sebagai delta. Itulah satu-satunya alasan ia
- * tidak melenceng ketika absensi dikoreksi, dihapus, atau sesinya dibatalkan —
- * dan justru itu yang test ini kunci. Sertifikat "Siswa Terajin" dicetak dari
- * angka ini, jadi selisih satu poin adalah nama anak yang salah di atas kertas.
+ * absensi & struktur organisasi, tidak pernah ditambah sebagai delta.
  */
 class PoinKerajinanTest extends TestCase
 {
@@ -85,22 +83,38 @@ class PoinKerajinanTest extends TestCase
             'Poin harus persis mengikuti tabel PoinKerajinan::NILAI');
     }
 
-    /** Sakit, izin, dan terlambat dicatat tetapi tidak menggeser poin. */
-    public function test_status_tanpa_nilai_tidak_berpoin(): void
+    /** Izin dan sakit memotong 3 poin, terlambat bernilai 0. */
+    public function test_izin_dan_sakit_memotong_poin(): void
     {
-        foreach (['sakit', 'izin', 'terlambat'] as $i => $status) {
-            $this->absen($this->sesi('2026-08-1'.$i), $status);
-        }
+        $this->absen($this->sesi('2026-08-11'), 'izin');
+        $this->assertSame(-3, $this->poin());
 
-        $this->assertSame(0, $this->poin());
+        $this->absen($this->sesi('2026-08-12'), 'sakit');
+        $this->assertSame(-6, $this->poin());
+
+        $this->absen($this->sesi('2026-08-13'), 'terlambat');
+        $this->assertSame(-6, $this->poin());
+    }
+
+    /** Menjadi pengurus kelas menambah 2 poin keaktifan. */
+    public function test_pengurus_kelas_mendapat_bonus_keaktifan(): void
+    {
+        $this->absen($this->sesi('2026-08-14'), 'hadir');
+        $this->assertSame(5, $this->poin());
+
+        OrganizationStructure::create([
+            'user_id' => $this->guru->id,
+            'class_id' => $this->kelas->id,
+            'student_id' => $this->siswa->id,
+            'role' => 'ketua',
+        ]);
+
+        PoinKerajinan::hitungUlang((int) $this->siswa->id);
+        $this->assertSame(7, $this->poin(), 'Pengurus kelas mendapat bonus +2');
     }
 
     /**
      * Koreksi absensi TIDAK boleh menumpuk.
-     *
-     * Kalau poin dihitung sebagai delta, mengubah alfa jadi hadir akan
-     * menambah 5 di atas -10 yang terlanjur tercatat. Hitung ulang dari nol
-     * membuat hasilnya persis seperti kalau sejak awal diketik benar.
      */
     public function test_koreksi_absensi_tidak_menumpuk(): void
     {

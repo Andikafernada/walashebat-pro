@@ -2,57 +2,58 @@
 @section('title', 'Nilai Harian — ' . $classroom->name)
 @section('content')
 
-@include('partials.class-nav')
+@include('partials.class-nav', ['classroom' => $classroom])
 
 <div class="space-y-6 pb-12">
 
-    <div class="flex flex-wrap items-start justify-between gap-3">
+    {{-- HEADER & ACTIONS --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Nilai Harian</h1>
-            <p class="mt-1 text-sm text-slate-500">
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Nilai Harian &amp; Asesmen</h1>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-600 font-medium">
                 {{ $classroom->name }} &middot; {{ $periode['label'] }}
-                @if ($mapelDipilih) &middot; <span class="font-semibold text-indigo-600">{{ $mapelDipilih }}</span> @endif
+                @if ($mapelDipilih) &middot; <span class="font-bold text-emerald-800">{{ $mapelDipilih }}</span> @endif
             </p>
         </div>
-        <div class="flex flex-wrap gap-2">
-            {{-- Leger adalah bentuk yang dipakai saat menyusun rapor; daftar di
-                 bawah ini bentuk untuk mengisi sehari-hari. Keduanya perlu, dan
-                 yang satu tidak menggantikan yang lain. --}}
+        <div class="flex flex-wrap items-center gap-2">
             <a href="{{ route('classes.nilai.rekap', $classroom) }}"
-               class="inline-flex h-9 items-center rounded border border-indigo-200 bg-indigo-50 px-4 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
-                Leger Nilai (PTS/PAS)
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all">
+                <span>📊</span>
+                <span>Leger Nilai (PTS/PAS)</span>
             </a>
             <a href="{{ route('classes.nilai.create', $classroom) }}"
-               class="inline-flex h-9 items-center rounded bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700">
-                + Penilaian Baru
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm shadow-emerald-200 transition-all">
+                <span>+</span>
+                <span>Penilaian Baru</span>
             </a>
         </div>
     </div>
 
     @include('partials.flash')
 
-    <div class="flex flex-wrap gap-2">
+    {{-- FILTER JENIS NILAI --}}
+    <div class="flex flex-wrap items-center gap-2">
         <a href="{{ request()->fullUrlWithQuery(['jenis' => null]) }}"
-           class="rounded border px-3 py-1.5 text-xs font-semibold {{ $jenisDipilih === null ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
-            Semua jenis
+           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {{ $jenisDipilih === null ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white border border-emerald-200 text-slate-700 hover:bg-emerald-50' }}">
+            Semua Jenis
         </a>
         @foreach (\App\Models\Assessment::jenisTersedia() as $nilai => $label)
             <a href="{{ request()->fullUrlWithQuery(['jenis' => $nilai]) }}"
-               class="rounded border px-3 py-1.5 text-xs font-semibold {{ $jenisDipilih === $nilai ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
+               class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {{ $jenisDipilih === $nilai ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white border border-emerald-200 text-slate-700 hover:bg-emerald-50' }}">
                 {{ $label }}
             </a>
         @endforeach
     </div>
 
     @if (count($mapelDiampu) > 1)
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-2">
             <a href="{{ request()->fullUrlWithQuery(['mapel' => null]) }}"
-               class="rounded border px-3 py-1.5 text-xs font-semibold {{ $mapelDipilih === null ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
-                Semua mapel
+               class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {{ $mapelDipilih === null ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white border border-emerald-200 text-slate-700 hover:bg-emerald-50' }}">
+                Semua Mapel
             </a>
             @foreach ($mapelDiampu as $m)
                 <a href="{{ request()->fullUrlWithQuery(['mapel' => $m]) }}"
-                   class="rounded border px-3 py-1.5 text-xs font-semibold {{ $mapelDipilih === $m ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
+                   class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {{ $mapelDipilih === $m ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white border border-emerald-200 text-slate-700 hover:bg-emerald-50' }}">
                     {{ $m }}
                 </a>
             @endforeach
@@ -60,66 +61,67 @@
     @endif
 
     @if ($penilaian->isEmpty())
-        <div class="rounded-lg border border-slate-200 bg-white p-8 text-center">
-            <p class="text-sm font-semibold text-slate-700">Belum ada penilaian</p>
-            <p class="mt-1 text-xs text-slate-500">
-                Satu penilaian mewakili satu Capaian Pembelajaran. Buka sekali, isi nilai sekelas, simpan.
+        <div class="rounded-3xl border border-emerald-200 bg-white p-10 text-center space-y-3 shadow-xs">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-2xl mx-auto border border-emerald-200">📝</div>
+            <p class="text-sm font-bold text-slate-900">Belum Ada Penilaian Tercatat</p>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto font-medium">
+                Satu penilaian mewakili satu Capaian Pembelajaran (CP) atau Ulangan Harian.
             </p>
             <a href="{{ route('classes.nilai.create', $classroom) }}"
-               class="mt-4 inline-flex h-9 items-center rounded bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700">
-                Buat Penilaian Pertama
+               class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all">
+                + Buat Penilaian Pertama
             </a>
         </div>
     @else
-        <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-            <table class="table">
+        {{-- DESKTOP VIEW: TABEL LEBAR --}}
+        <div class="hidden md:block overflow-x-auto rounded-3xl border border-emerald-200 bg-white shadow-xs">
+            <table class="w-full text-left text-xs border-collapse">
                 <thead>
-                    <tr>
-                        <th class="px-3 py-2.5 font-semibold">Tanggal</th>
+                    <tr class="bg-emerald-50/70 border-b border-emerald-100 text-emerald-950 font-bold">
+                        <th class="px-4 py-3 font-extrabold">Tanggal</th>
                         @if (count($mapelDiampu) > 1)
-                            <th class="px-3 py-2.5 font-semibold">Mapel</th>
+                            <th class="px-4 py-3 font-extrabold">Mapel</th>
                         @endif
-                        <th class="px-3 py-2.5 font-semibold">Jenis</th>
-                        <th class="px-3 py-2.5 font-semibold">Capaian Pembelajaran</th>
-                        <th class="px-3 py-2.5 font-semibold text-center">Rata-rata</th>
-                        <th class="px-3 py-2.5 font-semibold text-center">Belum dinilai</th>
-                        <th class="px-3 py-2.5"></th>
+                        <th class="px-4 py-3 font-extrabold">Jenis</th>
+                        <th class="px-4 py-3 font-extrabold">Capaian Pembelajaran (CP)</th>
+                        <th class="px-4 py-3 font-extrabold text-center">Rata-Rata</th>
+                        <th class="px-4 py-3 font-extrabold text-center">Belum Dinilai</th>
+                        <th class="px-4 py-3 text-right font-extrabold">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-emerald-100/60">
                     @foreach ($penilaian as $p)
                         @php $rata = $p->rataRata(); $belum = $p->belumDinilai(); @endphp
-                        <tr>
-                            <td class="px-3 py-2.5 whitespace-nowrap font-semibold text-slate-800">
+                        <tr class="hover:bg-emerald-50/40 transition-colors">
+                            <td class="px-4 py-3.5 whitespace-nowrap font-bold text-slate-900">
                                 {{ $p->assessment_date->translatedFormat('d M Y') }}
                             </td>
                             @if (count($mapelDiampu) > 1)
-                                <td class="px-3 py-2.5 whitespace-nowrap text-slate-600">{{ $p->mapel ?: '—' }}</td>
+                                <td class="px-4 py-3.5 whitespace-nowrap font-medium text-slate-700">{{ $p->mapel ?: '—' }}</td>
                             @endif
-                            <td class="px-3 py-2.5 whitespace-nowrap">
-                                <span class="inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-semibold {{ $p->harian() ? 'bg-slate-100 text-slate-700' : 'bg-indigo-100 text-indigo-800' }}">
+                            <td class="px-4 py-3.5 whitespace-nowrap">
+                                <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[10.5px] font-extrabold {{ $p->harian() ? 'bg-emerald-50 text-emerald-950 border border-emerald-200' : 'bg-emerald-100 text-emerald-950 border border-emerald-300' }}">
                                     {{ $p->harian() ? 'Harian' : strtoupper($p->jenis).' · Sem '.$p->semester }}
                                 </span>
                             </td>
-                            {{-- PTS dan PAS tidak punya Capaian Pembelajaran; kolomnya diisi
-                                 mapel supaya barisnya tetap bisa dikenali sekilas. --}}
-                            <td class="px-3 py-2.5 text-slate-700">
+                            <td class="px-4 py-3.5 text-slate-800 font-medium max-w-xs truncate">
                                 {{ $p->capaian_pembelajaran ?: ($p->mapel ?: '—') }}
                             </td>
-                            <td class="px-3 py-2.5 text-center">
+                            <td class="px-4 py-3.5 text-center">
                                 @if ($rata === null)
-                                    {{-- Rata-rata dari nol isian bukan 0, melainkan tidak ada. --}}
-                                    <span class="text-slate-400">—</span>
+                                    <span class="text-slate-400 font-bold">—</span>
                                 @else
-                                    <span class="font-semibold tabular-nums {{ $rata < 75 ? 'text-rose-700' : 'text-slate-800' }}">{{ $rata }}</span>
+                                    <span class="font-extrabold tabular-nums {{ $rata < 75 ? 'text-slate-900 underline' : 'text-emerald-800' }}">{{ $rata }}</span>
                                 @endif
                             </td>
-                            <td class="px-3 py-2.5 text-center tabular-nums {{ $belum > 0 ? 'font-semibold text-amber-700' : 'text-slate-400' }}">
-                                {{ $belum > 0 ? $belum : '—' }}
+                            <td class="px-4 py-3.5 text-center tabular-nums font-bold text-slate-700">
+                                {{ $belum > 0 ? $belum . ' siswa' : '✓ Lengkap' }}
                             </td>
-                            <td class="px-3 py-2.5 text-right whitespace-nowrap">
+                            <td class="px-4 py-3.5 text-right whitespace-nowrap">
                                 <a href="{{ route('classes.nilai.edit', [$classroom, $p]) }}"
-                                   class="font-semibold text-indigo-600 hover:underline">Isi / Ubah</a>
+                                   class="inline-flex items-center px-3 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold border border-emerald-200 transition-colors">
+                                    Isi / Ubah Nilai →
+                                </a>
                             </td>
                         </tr>
                     @endforeach
@@ -127,9 +129,40 @@
             </table>
         </div>
 
-        <p class="text-[11px] text-slate-500">
-            Rata-rata hanya menghitung siswa yang sudah dinilai. Yang belum diisi tidak dianggap nol —
-            kalau dianggap nol, rata-rata kelas anjlok oleh siswa yang sebenarnya belum diuji.
+        {{-- MOBILE VIEW: DAFTAR KARTU --}}
+        <div class="md:hidden space-y-3">
+            @foreach ($penilaian as $p)
+                @php $rata = $p->rataRata(); $belum = $p->belumDinilai(); @endphp
+                <div class="bg-white rounded-2xl border border-emerald-200 p-4 shadow-xs space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-950 border border-emerald-200">
+                                {{ $p->harian() ? 'Harian' : strtoupper($p->jenis) }}
+                            </span>
+                            <h3 class="text-sm font-bold text-slate-900 mt-1.5">{{ $p->capaian_pembelajaran ?: ($p->mapel ?: 'Penilaian') }}</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ $p->assessment_date->translatedFormat('l, d F Y') }}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="text-[10px] text-slate-500 font-semibold block">Rata-rata:</span>
+                            <span class="text-base font-extrabold text-emerald-800">{{ $rata ?? '—' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-emerald-100 flex items-center justify-between">
+                        <span class="text-xs text-slate-600 font-medium">
+                            {{ $belum > 0 ? $belum . ' siswa belum dinilai' : '✓ Semua dinilai' }}
+                        </span>
+                        <a href="{{ route('classes.nilai.edit', [$classroom, $p]) }}"
+                           class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors">
+                            Isi Nilai →
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <p class="text-[11px] text-slate-500 font-medium">
+            Rata-rata hanya menghitung siswa yang sudah dinilai (tidak mengasumsikan nol untuk yang belum diuji).
         </p>
     @endif
 </div>

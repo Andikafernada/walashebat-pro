@@ -1,136 +1,139 @@
 @extends('layouts.public')
-@section('title', 'Isi Absensi')
-@section('heading', 'Absensi '.$session->classroom->name)
-@section('step', '2')
+
+@section('title', 'Presensi Sesi '.($session->title ?: $session->formattedDate()))
+
 @section('content')
 
 @php
-    // Warna status dipakai di tiga tempat (tombol, ringkasan, halaman selesai),
-    // jadi didefinisikan sekali di sini.
-    /*
-     * Kelas Tailwind DITULIS UTUH, tidak dirangkai dengan str_replace atau
-     * penggabungan string. Pemindai Tailwind membaca berkas ini sebagai teks
-     * biasa: nama kelas yang baru terbentuk saat runtime tidak akan pernah
-     * ikut ter-compile, dan tombolnya tampil tanpa warna sama sekali.
-     */
-    /*
-     * Kode margin H T S I A — huruf yang sama dengan Attendance::KODE, rekap,
-     * dan cetakan. Yang terpilih jadi tinta pekat; sisanya diam.
-     *
-     * Sebelumnya tiap status punya warnanya sendiri (emerald, oranye, kuning,
-     * biru langit, merah). Pada layar ponsel selebar 340px, lima tombol
-     * berwarna dikali 32 baris berarti 160 kotak berwarna dalam satu daftar,
-     * dan yang harus dipindai petugas justru baris yang BELUM ditandai.
-     */
     $gaya = [
-        'hadir' => ['label' => 'Hadir', 'kode' => 'H', 'teks' => 'text-emerald-700'],
-        'terlambat' => ['label' => 'Terlambat', 'kode' => 'T', 'teks' => 'text-slate-700'],
-        'sakit' => ['label' => 'Sakit', 'kode' => 'S', 'teks' => 'text-amber-700'],
-        'izin' => ['label' => 'Izin', 'kode' => 'I', 'teks' => 'text-amber-700'],
-        'alfa' => ['label' => 'Alfa', 'kode' => 'A', 'teks' => 'text-rose-700'],
+        'hadir'     => ['kode' => 'H', 'label' => 'Hadir',     'teks' => 'text-emerald-700'],
+        'terlambat' => ['kode' => 'T', 'label' => 'Terlambat', 'teks' => 'text-amber-700'],
+        'sakit'     => ['kode' => 'S', 'label' => 'Sakit',     'teks' => 'text-sky-700'],
+        'izin'      => ['kode' => 'I', 'label' => 'Izin',      'teks' => 'text-purple-700'],
+        'alfa'      => ['kode' => 'A', 'label' => 'Alfa',      'teks' => 'text-rose-700'],
     ];
 @endphp
 
+{{-- Header Kertas --}}
+<div class="mb-4 rounded-2xl border border-emerald-200 bg-white p-4 shadow-xs">
+    <div class="flex items-start justify-between gap-3">
+        <div>
+            <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">ISIAN REKAP PRESENSI</p>
+            <h1 class="mt-0.5 text-lg font-bold text-slate-900">
+                {{ $session->classroom->name ?? 'Kelas' }}
+            </h1>
+            <p class="mt-0.5 text-xs text-slate-600">
+                {{ $session->formattedDate() }}
+                @if ($session->title) &middot; {{ $session->title }} @endif
+            </p>
+        </div>
+        <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 border border-emerald-200">
+            Aktif
+        </span>
+    </div>
+</div>
+
 @if ($students->isEmpty())
-    <div class="rounded-lg border border-slate-200 bg-white p-6 text-center">
-        <h1 class="text-lg font-semibold tracking-tight text-slate-900">Belum ada data siswa</h1>
-        <p class="mt-2 text-sm leading-relaxed text-slate-600">
-            Daftar siswa kelas {{ $session->classroom->name }} masih kosong, jadi absensi belum bisa diisi.
-            Sampaikan ke wali kelas untuk melengkapi data siswa.
-        </p>
+    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-bold text-amber-900">
+        <p>Belum ada siswa terdaftar di kelas ini.</p>
     </div>
 @else
+
 <form method="POST"
       action="{{ route('magic.submit', $session->token) }}"
-      {{-- @csrf WAJIB. Tanpa ini setiap kiriman ditolak sebagai 419 Page
-           Expired, dan petugas melihat halaman galat tepat setelah selesai
-           menandai seluruh siswa. --}}
       x-data="rosterAbsensi({{ $students->count() }})"
       x-on:change="hitung()"
       x-on:submit="mengirim = true">
     @csrf
 
-    {{-- Papan hitung. Angka inilah yang harus dilaporkan petugas, jadi ia
-         menempel di atas dan ikut berubah setiap kali satu siswa ditandai. --}}
-    <div class="sticky top-0 z-20 -mx-4 mb-3 border-b border-slate-200 bg-slate-50/95 px-4 py-3">
+    <div class="sticky top-0 z-20 -mx-4 mb-3 border-b border-emerald-100 bg-slate-50/95 backdrop-blur-xs px-4 py-3">
         <div class="grid grid-cols-5 gap-1.5 text-center">
             @foreach ($gaya as $key => $g)
-                <div class="rounded border border-slate-200 bg-white py-1.5">
-                    <p class="angka text-lg font-semibold leading-none {{ $g['teks'] }}" x-text="jumlah.{{ $key }}">0</p>
-                    <p class="mt-1 font-mono text-[9px] uppercase tracking-wider text-slate-400">{{ $g['kode'] }}</p>
+                <div class="rounded-xl border border-emerald-100 bg-white py-1.5 shadow-2xs">
+                    <p class="angka text-base font-extrabold leading-none {{ $g['teks'] }}" x-text="jumlah.{{ $key }}">0</p>
+                    <p class="mt-1 font-mono text-[9px] font-bold uppercase tracking-wider text-slate-400">{{ $g['kode'] }}</p>
                 </div>
             @endforeach
         </div>
 
         <p class="mt-2 text-center text-xs" x-cloak>
-            <span x-show="sisa > 0" class="font-medium text-slate-600">
+            <span x-show="sisa > 0" class="font-semibold text-slate-600">
                 <span x-text="sisa"></span> siswa belum ditandai
             </span>
-            <span x-show="sisa === 0" class="font-medium text-emerald-700">
+            <span x-show="sisa === 0" class="font-bold text-emerald-700">
                 Semua {{ $students->count() }} siswa sudah ditandai
             </span>
         </p>
     </div>
 
-    {{-- Jalan cepat: tandai semua hadir, lalu ubah yang tidak masuk saja.
-         Sengaja TIDAK ada nilai bawaan pada tiap baris — daftar yang otomatis
-         terisi "hadir" adalah cara termudah absensi jadi asal-asalan. --}}
-    <div class="mb-3 flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2.5">
+    <div class="mb-3 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-white p-2.5 shadow-xs">
         <button type="button"
                 x-on:click="tandaiSemuaHadir()"
-                class="btn-secondary h-10 flex-1">Tandai semua hadir</button>
+                class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors h-10 flex-1">Tandai Semua Hadir</button>
         <button type="button"
                 x-on:click="kosongkan()"
-                class="btn-ghost h-10">Kosongkan</button>
+                class="inline-flex items-center justify-center rounded-xl border border-transparent px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors h-10">Kosongkan</button>
     </div>
 
     @error('attendance')
-        <p class="alert alert--danger mb-3" role="alert">{{ $message }}</p>
+        <p class="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700 mb-3" role="alert">{{ $message }}</p>
     @enderror
 
-    {{-- Daftar siswa, dibaca seperti buku absensi: nomor, nama, lalu kolom
-         status. Nomor urut dipakai karena petugas memanggil per nomor absen. --}}
-    <ul class="space-y-2">
+    <ul class="space-y-2.5">
         @foreach ($students as $s)
-            @php $terpilih = old('attendance.'.$s->id); @endphp
-            <li class="rounded-lg border border-slate-200 bg-white p-3"
+            @php
+            $terpilih = old('attendance.'.$s->id);
+            $presetExcuse = $excuses->has($s->id) ? $excuses->get($s->id) : null;
+            $dariOrangTua = $presetExcuse ? $presetExcuse->jenis : null;
+            if ($terpilih === null && $dariOrangTua) {
+                $terpilih = $dariOrangTua;
+            }
+        @endphp
+            <li class="rounded-2xl border border-emerald-200 bg-white p-3.5 shadow-xs"
                 x-data="{ status: @js($terpilih) }"
                 x-on:roster-isi.window="status = $event.detail">
 
                 <div class="flex items-start gap-3">
                     <span class="mt-0.5 w-6 shrink-0 text-right font-mono text-xs text-slate-400">{{ $loop->iteration }}</span>
                     <div class="min-w-0 flex-1">
-                        <p class="text-sm font-medium leading-snug text-slate-900">{{ $s->name }}</p>
+                        <p class="text-xs font-bold leading-snug text-slate-900">{{ $s->name }}</p>
                         @if ($s->nis)
                             <p class="mt-0.5 font-mono text-[10px] text-slate-400">NIS {{ $s->nis }}</p>
                         @endif
                     </div>
                 </div>
 
-                {{--
-                    Laporan orang tua ditampilkan sebagai CATATAN, bukan status
-                    yang sudah tercentang. Roster ini sengaja tidak punya nilai
-                    bawaan per baris (lihat komentar di atas soal "tandai semua
-                    hadir") — mencentang otomatis dari laporan yang belum tentu
-                    benar akan melanggar prinsip yang sama, hanya dengan sumber
-                    yang berbeda. Petugas tetap yang menekan tombolnya.
-                --}}
-                @if ($excuses->has($s->id))
-                    @php $lapor = $excuses->get($s->id); @endphp
-                    <p class="mt-2 rounded border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-900">
-                        📩 Orang tua lapor <strong>{{ $lapor->jenis === 'sakit' ? 'sakit' : 'izin' }}</strong>
+                @if ($presetExcuse)
+                    @php $lapor = $presetExcuse; @endphp
+                    <div class="mt-2.5 rounded-xl p-2.5 text-[11px] space-y-1 border"
+                       :class="status === '{{ $dariOrangTua }}' ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-amber-50 border-amber-200 text-amber-950'">
+                        <div class="flex items-center justify-between flex-wrap gap-1">
+                            <div class="flex items-center gap-1 font-bold">
+                                <span>📩</span>
+                                <span>Laporan Ortu: <strong>{{ $lapor->jenis === 'sakit' ? 'Sakit' : 'Izin' }}</strong></span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                @if ($lapor->parent_phone_verified)
+                                    <span class="px-1.5 py-0.5 rounded-md bg-emerald-200 text-emerald-950 font-bold text-[10px] border border-emerald-300">
+                                        🔒 Verif No. HP
+                                    </span>
+                                @endif
+                                @if ($lapor->attachment_path)
+                                    <a href="{{ asset('storage/' . $lapor->attachment_path) }}" target="_blank" class="px-2 py-0.5 rounded-md bg-white border border-emerald-300 text-emerald-800 font-bold text-[10px] hover:bg-emerald-100 transition-colors shadow-2xs">
+                                        📸 lihat Foto Surat
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
                         @if ($lapor->keterangan)
-                            &mdash; {{ $lapor->keterangan }}
+                            <p class="text-slate-600 italic leading-tight">&ldquo;{{ $lapor->keterangan }}&rdquo;</p>
                         @endif
-                    </p>
+                    </div>
                 @endif
 
                 <fieldset class="mt-2.5">
                     <legend class="sr-only">Status kehadiran {{ $s->name }}</legend>
-                    {{-- Lima kolom pada layar ~340px berarti tiap tombol hanya ~62px.
-                 Ukuran teks diturunkan agar "Terlambat" tetap terbaca utuh
-                 tanpa terpotong. --}}
-            <div class="grid grid-cols-5 gap-1">
+                    <div class="grid grid-cols-5 gap-1.5">
                         @foreach ($gaya as $key => $g)
                             <label class="cursor-pointer">
                                 <input type="radio"
@@ -139,18 +142,16 @@
                                        value="{{ $key }}"
                                        required
                                        x-model="status"
-                                       @checked($terpilih === $key)>
-                                <span class="flex flex-col items-center gap-0.5 rounded border border-slate-200 px-0.5 py-1.5 text-center leading-tight text-slate-500 transition-colors peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white">
-                                    <span class="font-mono text-xs font-medium">{{ $g['kode'] }}</span>
-                                    <span class="text-[10px] font-medium">{{ $g['label'] }}</span>
+                                       :checked="status === '{{ $key }}'">
+                                <span class="flex flex-col items-center gap-0.5 rounded-xl border border-slate-200 px-0.5 py-1.5 text-center leading-tight text-slate-500 transition-colors peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white">
+                                    <span class="font-mono text-xs font-bold">{{ $g['kode'] }}</span>
+                                    <span class="text-[10px] font-semibold">{{ $g['label'] }}</span>
                                 </span>
                             </label>
                         @endforeach
                     </div>
                 </fieldset>
 
-                {{-- Catatan hanya muncul untuk siswa yang tidak hadir. Kolom
-                     kosong di 30 baris hanya menambah panjang halaman. --}}
                 <div x-show="status && status !== 'hadir'" x-cloak class="mt-2.5">
                     <label for="note-{{ $s->id }}" class="sr-only">Catatan untuk {{ $s->name }}</label>
                     <input id="note-{{ $s->id }}"
@@ -159,25 +160,23 @@
                            maxlength="200"
                            value="{{ old('notes.'.$s->id) }}"
                            placeholder="Keterangan (opsional) — cth: surat dokter"
-                           class="form-input form-input--sm">
+                           class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                 </div>
             </li>
         @endforeach
     </ul>
 
-    {{-- Tombol kirim menempel di bawah supaya tidak perlu menggulir 30 baris
-         ke bawah setelah selesai menandai. --}}
-    <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-slate-200 bg-slate-50/95 px-4 py-3">
+    <div class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-emerald-100 bg-slate-50/95 backdrop-blur-xs px-4 py-3">
         <button type="submit"
-                class="btn-primary h-11 w-full"
+                class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-xs font-bold text-white hover:bg-emerald-700 transition-colors shadow-xs"
                 x-bind:disabled="mengirim"
                 x-bind:class="mengirim && 'pointer-events-none opacity-60'">
-            <span x-show="!mengirim">Kirim absensi</span>
+            <span x-show="!mengirim">Kirim Absensi</span>
             <span x-show="mengirim" x-cloak class="inline-flex items-center gap-2">
-                <span class="spinner spinner--white"></span> Menyimpan…
+                <span class="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span> Menyimpan…
             </span>
         </button>
-        <p class="mt-2 text-center text-[11px] text-slate-500">
+        <p class="mt-2 text-center text-[11px] text-slate-400 font-medium">
             Sekali terkirim, absensi tidak bisa diubah dari tautan ini.
         </p>
     </div>

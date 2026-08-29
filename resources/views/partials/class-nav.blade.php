@@ -1,35 +1,38 @@
 @php
     $classroom = $classroom ?? $class ?? null;
 
-    $hanyaPerwalian = [
-        'classes.organization.index',
-        'classes.cashbook.index',
-        'classes.seating.index',
-        'classes.reports.full',
-        'classes.violations.index',
-        'classes.schedules.index',
-    ];
-
     $tabs = [
-        ['route' => 'classes.show', 'aktif' => 'classes.show', 'label' => 'Ringkasan'],
-        ['route' => 'classes.students.index', 'aktif' => 'classes.students.*', 'label' => 'Siswa', 'badge' => $classroom->students_count ?? null],
-        ['route' => 'classes.attendance.index', 'aktif' => 'classes.attendance.*', 'label' => 'Absensi'],
-        ['route' => 'classes.schedules.index', 'aktif' => 'classes.schedules.*', 'label' => 'Jadwal'],
-        ['route' => 'classes.organization.index', 'aktif' => 'classes.organization.*', 'label' => 'Struktur'],
-        ['route' => 'classes.violations.index', 'aktif' => 'classes.violations.*', 'label' => 'Pelanggaran'],
-        ['route' => 'classes.kerajinan.index', 'aktif' => 'classes.kerajinan.*', 'label' => 'Kerajinan'],
-        ['route' => 'classes.cashbook.index', 'aktif' => 'classes.cashbook.*', 'label' => 'Buku Kas'],
-        ['route' => 'classes.seating.index', 'aktif' => 'classes.seating.*', 'label' => 'Denah'],
-        ['route' => 'classes.jurnal.index', 'aktif' => 'classes.jurnal.*', 'label' => 'Jurnal'],
-        ['route' => 'classes.nilai.index', 'aktif' => 'classes.nilai.*', 'label' => 'Nilai'],
-        ['route' => 'classes.reports.analisis', 'aktif' => 'classes.reports.analisis', 'label' => 'Analisis'],
-        ['route' => 'classes.reports.full', 'aktif' => 'classes.reports.full', 'label' => 'Laporan'],
+        ['route' => 'classes.show',                    'aktif' => 'classes.show',                    'label' => 'Ringkasan',   'icon' => '📊'],
+        ['route' => 'classes.students.index',          'aktif' => 'classes.students.*',              'label' => 'Siswa',       'icon' => '👥', 'badge' => $classroom->students_count ?? null],
+        ['route' => 'classes.ews.index',               'aktif' => 'classes.ews.*',                   'label' => 'EWS Risiko',  'icon' => '🛡️'],
+        ['route' => 'classes.attendance.index',        'aktif' => 'classes.attendance.*',            'label' => 'Absensi',     'icon' => '📋'],
+        ['route' => 'classes.schedules.index',         'aktif' => 'classes.schedules.*',             'label' => 'Jadwal',      'icon' => '🗓️'],
+        ['route' => 'classes.nilai.index',             'aktif' => 'classes.nilai.*',                 'label' => 'Nilai',       'icon' => '📝'],
+        ['route' => 'classes.jurnal.index',            'aktif' => 'classes.jurnal.*',                'label' => 'Jurnal',      'icon' => '📖'],
+        ['route' => 'classes.character-portfolio.index','aktif' => 'classes.character-portfolio.*',  'label' => 'Karakter P5', 'icon' => '🌱'],
+        ['route' => 'classes.violations.index',        'aktif' => 'classes.violations.*',            'label' => 'Pelanggaran', 'icon' => '⚠️'],
+        ['route' => 'classes.kerajinan.index',         'aktif' => 'classes.kerajinan.*',             'label' => 'Kerajinan',   'icon' => '🎖️'],
+        ['route' => 'classes.cashbook.index',          'aktif' => 'classes.cashbook.*',              'label' => 'Buku Kas',    'icon' => '💰'],
+        ['route' => 'classes.seating.index',           'aktif' => 'classes.seating.*',               'label' => 'Denah',       'icon' => '🪑'],
+        ['route' => 'classes.organization.index',      'aktif' => 'classes.organization.*',          'label' => 'Struktur',    'icon' => '🏛️'],
+        ['route' => 'classes.reports.analisis',        'aktif' => 'classes.reports.analisis',        'label' => 'Analisis',    'icon' => '📈'],
+        ['route' => 'classes.rapor.narasi',          'aktif' => 'classes.rapor.narasi*',          'label' => 'AI Narasi Rapor', 'icon' => '🤖'],
+        ['route' => 'classes.reports.full',            'aktif' => 'classes.reports.full',            'label' => 'Laporan PDF', 'icon' => '📄'],
     ];
 
+    // Modul Guru Mapel: Siswa, Absensi, Nilai, Jurnal Mengajar, Analisis (+ Ringkasan)
     if ($classroom && $classroom->kelasAjar()) {
+        $hanyaMapel = [
+            'classes.show',
+            'classes.students.index',
+            'classes.attendance.index',
+            'classes.nilai.index',
+            'classes.jurnal.index',
+            'classes.reports.analisis',
+        ];
         $tabs = array_values(array_filter(
             $tabs,
-            fn ($t) => ! in_array($t['route'], $hanyaPerwalian, true),
+            fn ($t) => in_array($t['route'], $hanyaMapel, true),
         ));
     }
 @endphp
@@ -37,35 +40,63 @@
 @if ($classroom)
 @php $ajar = $classroom->kelasAjar(); @endphp
 
-<div class="mb-8 rounded-3xl border-3 border-pink-300 dark:border-purple-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl p-3 shadow-2xl space-y-3">
-    {{-- Header Penanda Kelas Extravagant --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-2 border-b-2 border-pink-100 dark:border-slate-800 bg-gradient-to-r from-pink-50 via-purple-50 to-cyan-50 dark:from-slate-800 dark:to-purple-950 rounded-2xl">
-        <div class="flex items-center gap-3">
-            <span class="badge {{ $ajar ? 'badge--emerald' : 'badge--indigo' }} shadow-md">✨ {{ $ajar ? 'Guru Mapel' : 'Wali Kelas Super' }}</span>
-            <span class="text-base font-black text-slate-900 dark:text-white" style="font-family:'Plus Jakarta Sans',sans-serif;">{{ $classroom->name }}</span>
-            <span class="text-xs font-black text-pink-600 dark:text-pink-400">
-                @if ($ajar)
-                    {{ implode(' · ', $classroom->mapelDiampu()) ?: 'mapel belum diisi' }}
-                @else
-                    seluruh administrasi kelas
-                @endif
+{{-- 1. KEPALA INFO KELAS (Clean Soft Bright Green & Black) --}}
+<div class="mb-4 bg-white rounded-2xl border border-emerald-200 p-3 sm:p-4 shadow-xs">
+    <div class="flex flex-wrap items-center justify-between gap-2.5">
+        <div class="flex items-center gap-2.5 min-w-0">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black shrink-0 {{ $ajar ? 'bg-indigo-100 text-indigo-950 border border-indigo-200' : 'bg-emerald-100 text-emerald-950 border border-emerald-200' }}">
+                {{ $ajar ? '📚 Kelas Ajar / Guru Mapel' : '👑 Kelas Perwalian' }}
             </span>
+            <span class="font-black text-slate-950 text-base sm:text-lg truncate">{{ $classroom->name }}</span>
+            <span class="text-xs text-slate-500 font-medium hidden sm:inline">&middot; TA {{ $classroom->academic_year ?? '2026/2027' }}</span>
+        </div>
+        <div class="text-xs text-slate-700 font-semibold">
+            @if ($ajar)
+                Mapel diampu: <span class="font-bold text-emerald-800">{{ implode(', ', $classroom->mapelDiampu()) ?: 'Semua Mapel' }}</span>
+            @else
+                Administrasi Kelas Lengkap
+            @endif
         </div>
     </div>
+</div>
 
-    {{-- Navigasi Tab Rainbow Extravagant --}}
-    <nav class="flex items-center gap-2 overflow-x-auto p-1.5" aria-label="Navigasi kelas">
+{{-- 2. NAVIGASI TAB (DESKTOP) --}}
+<div class="hidden lg:block mb-6 border-b border-emerald-200 bg-white rounded-2xl px-3 shadow-xs">
+    <nav class="flex items-center gap-1 overflow-x-auto py-1" aria-label="Subnavigasi Kelas">
         @foreach ($tabs as $tab)
-            @php $ini = request()->routeIs($tab['aktif']); @endphp
-            <a href="{{ route($tab['route'], [$classroom]) }}"
-               @if($ini) aria-current="page" @endif
-               class="shrink-0 flex items-center gap-2 px-5 py-2.5 text-xs font-black rounded-full transition-all duration-300 {{ $ini ? 'bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 text-white shadow-xl shadow-pink-500/40 scale-110 border-2 border-white/60' : 'text-slate-800 dark:text-slate-200 hover:bg-pink-50 dark:hover:bg-slate-800 hover:text-pink-600 hover:scale-105 border-2 border-transparent' }}">
-                {{ $tab['label'] }}
-                @if (($tab['badge'] ?? 0) > 0)
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black {{ $ini ? 'bg-white/30 text-white shadow-sm' : 'bg-pink-100 text-pink-700' }}">{{ $tab['badge'] }}</span>
+            @php
+                $isAktif = request()->routeIs($tab['aktif']);
+                $url = route($tab['route'], $classroom);
+            @endphp
+            <a href="{{ $url }}"
+               class="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap {{ $isAktif ? 'border-emerald-600 text-emerald-950 bg-emerald-50/70 rounded-t-xl' : 'border-transparent text-slate-700 hover:text-slate-950 hover:bg-slate-50 rounded-xl' }}">
+                <span>{{ $tab['icon'] }}</span>
+                <span>{{ $tab['label'] }}</span>
+                @if (!empty($tab['badge']))
+                    <span class="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-emerald-200 text-emerald-950">{{ $tab['badge'] }}</span>
                 @endif
             </a>
         @endforeach
     </nav>
+</div>
+
+{{-- 3. NAVIGASI PIL (MOBILE / PWA) --}}
+<div class="lg:hidden mb-5 -mx-4 px-4 overflow-x-auto scrollbar-none py-1">
+    <div class="inline-flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-emerald-200 shadow-2xs">
+        @foreach ($tabs as $tab)
+            @php
+                $isAktif = request()->routeIs($tab['aktif']);
+                $url = route($tab['route'], $classroom);
+            @endphp
+            <a href="{{ $url }}"
+               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all {{ $isAktif ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-700 hover:bg-emerald-50' }}">
+                <span>{{ $tab['icon'] }}</span>
+                <span>{{ $tab['label'] }}</span>
+                @if (!empty($tab['badge']))
+                    <span class="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ $isAktif ? 'bg-white text-emerald-900' : 'bg-emerald-100 text-emerald-950' }}">{{ $tab['badge'] }}</span>
+                @endif
+            </a>
+        @endforeach
+    </div>
 </div>
 @endif

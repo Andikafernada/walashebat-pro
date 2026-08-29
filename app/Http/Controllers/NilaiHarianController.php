@@ -350,4 +350,34 @@ class NilaiHarianController extends Controller
 
         return $diminta;
     }
+
+    public function exportTemplate(Classroom $class, Assessment $assessment): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        abort_unless($assessment->class_id === $class->id, 404);
+        $filename = 'Template-Nilai-' . \Illuminate\Support\Str::slug($class->name . '-' . $assessment->title) . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\NilaiTemplateExport($class, $assessment), $filename);
+    }
+
+    public function importExcel(\Illuminate\Http\Request $request, Classroom $class, Assessment $assessment): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless($assessment->class_id === $class->id, 404);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
+        ]);
+
+        $import = new \App\Imports\NilaiImport($class, $assessment);
+        \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+        if (!empty($import->errors)) {
+            return back()->with('warning', sprintf(
+                'Berhasil sinkronisasi %d nilai siswa. Catatan: %s',
+                $import->updatedCount,
+                implode(' ', array_slice($import->errors, 0, 3))
+            ));
+        }
+
+        return back()->with('success', sprintf('Berhasil sinkronisasi %d nilai siswa dari Excel.', $import->updatedCount));
+    }
+
 }

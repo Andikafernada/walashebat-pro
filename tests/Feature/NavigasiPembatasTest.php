@@ -8,36 +8,19 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Susunan navigasi.
- *
- * Dulu sidebar dasbor SaaS: sembilan belas tautan di bawah enam judul kategori,
- * memaksa "satu kelas dengan beberapa bagian" tampil sebagai sembilan belas
- * tujuan sederajat. Sekarang pembatas buku — sampul kelas yang bisa diklik
- * untuk ganti kelas, lalu deret pembatas berisi bagian-bagian kelas itu.
- *
- * Yang dijaga di sini bukan urutan atau labelnya — itu boleh berubah —
- * melainkan hal-hal yang kalau rusak TIDAK menimbulkan galat apa pun, jadi
- * tidak akan ketahuan sampai ada wali kelas yang mengeluh. Karena itu yang
- * diperiksa alamat tujuannya, bukan teks labelnya: label pendek seperti "Poin"
- * bisa muncul kebetulan di isi halaman dan membuat test lulus/gagal palsu.
+ * Susunan navigasi pemisahan Kelas Wali vs Kelas Mapel.
  */
 class NavigasiPembatasTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Pembatas kelas hanya muncul bila ADA kelas yang sedang dibuka:
-     * $kelasAktif dibaca dari variabel yang dikirim view anak, dan /dashboard
-     * tidak mengirimkannya. Karena itu test di bawah membuka halaman kelas,
-     * bukan dashboard — kalau tidak, semuanya lulus tanpa menguji apa pun.
-     */
     private function halamanKelas(string $jenis): array
     {
         $guru = User::factory()->create();
         $kelas = Classroom::factory()->create(['user_id' => $guru->id, 'jenis' => $jenis]);
 
         $html = $this->actingAs($guru)
-            ->get(route('classes.students.index', $kelas))
+            ->get(route('classes.show', $kelas))
             ->assertOk()
             ->getContent();
 
@@ -46,12 +29,6 @@ class NavigasiPembatasTest extends TestCase
 
     public function test_bagian_yang_jarang_dipakai_tetap_ada_di_pembatas(): void
     {
-        /*
-         * Jadwal, denah, dan struktur organisasi diisi sekali per semester lalu
-         * ditinggal — tetapi tetap harus terjangkau. Dulu ketiganya dilipat di
-         * dalam <details>; sekarang duduk di ujung kanan deret pembatas dan
-         * tinggal digeser. Yang tak boleh terjadi: hilang sama sekali.
-         */
         [$html, $kelas] = $this->halamanKelas(Classroom::JENIS_PERWALIAN);
 
         foreach (['schedules', 'seating', 'organization', 'violations'] as $bagian) {
@@ -66,12 +43,12 @@ class NavigasiPembatasTest extends TestCase
     public function test_guru_mapel_tidak_kebagian_bagian_wali_kelas(): void
     {
         /*
-         * Buku kas, laporan administrasi, jadwal, denah, dan buku poin adalah
-         * dokumen wali kelas; pada kelas ajar wali kelasnya orang lain.
+         * Buku kas, laporan administrasi, jadwal, denah, portofolio karakter,
+         * dan buku pelanggaran adalah dokumen wali kelas; pada kelas ajar wali kelasnya orang lain.
          */
         [$html, $kelas] = $this->halamanKelas(Classroom::JENIS_AJAR);
 
-        foreach (['cashbook', 'schedules', 'seating', 'organization', 'violations'] as $bagian) {
+        foreach (['cashbook', 'schedules', 'seating', 'organization', 'violations', 'character-portfolio'] as $bagian) {
             $this->assertStringNotContainsString(
                 route("classes.{$bagian}.index", $kelas),
                 $html,
@@ -84,21 +61,18 @@ class NavigasiPembatasTest extends TestCase
 
     public function test_guru_mapel_tetap_kebagian_bagian_hariannya(): void
     {
-        // Sisi sebaliknya: menyembunyikan kebanyakan sama merusaknya.
+        // 5 Fitur Resmi Kelas Mapel: Siswa, Absensi, Nilai, Jurnal Mengajar, Analisis
         [$html, $kelas] = $this->halamanKelas(Classroom::JENIS_AJAR);
 
+        $this->assertStringContainsString(route('classes.students.index', $kelas), $html);
         $this->assertStringContainsString(route('classes.attendance.index', $kelas), $html);
-        $this->assertStringContainsString(route('classes.character-portfolio.index', $kelas), $html);
+        $this->assertStringContainsString(route('classes.nilai.index', $kelas), $html);
+        $this->assertStringContainsString(route('classes.jurnal.index', $kelas), $html);
+        $this->assertStringContainsString(route('classes.reports.analisis', $kelas), $html);
     }
 
     public function test_halaman_milik_akun_terjangkau_tanpa_memilih_kelas(): void
     {
-        /*
-         * Kalender dulu bersarang di dalam blok kelas aktif, padahal rutenya
-         * global: wali kelas yang belum punya kelas tidak punya jalan ke sana
-         * sama sekali. Kini semuanya hidup di balik avatar — dan yang hidup di
-         * balik menu paling gampang hilang tanpa ada yang sadar.
-         */
         $guru = User::factory()->create();
 
         $html = $this->actingAs($guru)->get(route('dashboard'))->assertOk()->getContent();
@@ -110,11 +84,6 @@ class NavigasiPembatasTest extends TestCase
 
     public function test_operator_tidak_kebagian_chrome_wali_kelas(): void
     {
-        /*
-         * Admin adalah operator SaaS, bukan pemegang kelas: ia tidak punya
-         * kelas, kalender, integrasi WA, atau langganan pribadi. Chrome-nya
-         * sama, isinya saja yang lain.
-         */
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();

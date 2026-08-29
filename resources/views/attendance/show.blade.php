@@ -7,24 +7,19 @@
 
 @php
     $rupaStatus = [
-        'open' => ['Sesi Terbuka', 'kode--hadir'],
-        'submitted' => ['Selesai', 'kode--aksen'],
-        'expired' => ['Kadaluarsa', 'kode--izin'],
-        'cancelled' => ['Dibatalkan', 'kode--alfa'],
+        'open' => ['Sesi Terbuka', 'bg-emerald-50 text-emerald-800 border-emerald-200'],
+        'submitted' => ['Selesai', 'bg-slate-100 text-slate-800 border-slate-200'],
+        'expired' => ['Kadaluarsa', 'bg-amber-50 text-amber-800 border-amber-200'],
+        'cancelled' => ['Dibatalkan', 'bg-rose-50 text-rose-800 border-rose-200'],
     ];
-    [$labelStatus, $gayaStatus] = $rupaStatus[$session->status] ?? [$session->status, ''];
+    [$labelStatus, $gayaStatus] = $rupaStatus[$session->status] ?? [$session->status, 'bg-slate-100 text-slate-800 border-slate-200'];
 
-    /*
-     * Kode margin absensi. Hurufnya persis Attendance::KODE — yang sama dipakai
-     * di rekap, ekspor, dan cetakan, sehingga guru hanya perlu menghafalnya
-     * sekali.
-     */
     $kodeStatus = [
-        'hadir' => ['H', 'kode--hadir'],
-        'terlambat' => ['T', 'kode--telat'],
-        'sakit' => ['S', 'kode--sakit'],
-        'izin' => ['I', 'kode--izin'],
-        'alfa' => ['A', 'kode--alfa'],
+        'hadir' => ['H', 'bg-emerald-100 text-emerald-800 border-emerald-200'],
+        'terlambat' => ['T', 'bg-amber-100 text-amber-800 border-amber-200'],
+        'sakit' => ['S', 'bg-amber-100 text-amber-800 border-amber-200'],
+        'izin' => ['I', 'bg-sky-100 text-sky-800 border-sky-200'],
+        'alfa' => ['A', 'bg-rose-100 text-rose-800 border-rose-200'],
     ];
 
     $sumLower = collect($summary)->keyBy(fn($v, $k) => strtolower($k));
@@ -43,7 +38,7 @@
 
     <div class="page-header">
         <div class="min-w-0">
-            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+            <nav class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5" aria-label="Remah roti">
                 <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
                 <span aria-hidden="true">/</span>
                 <a href="{{ route('classes.attendance.index', $classroom) }}" class="hover:text-slate-600">{{ $classroom->name }}</a>
@@ -51,12 +46,12 @@
                 <span class="text-slate-500">Detail Absensi</span>
             </nav>
             <div class="mt-1 flex flex-wrap items-center gap-2">
-                <h1 class="text-xl font-semibold tracking-tight text-slate-900">
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">
                     {{ $session->title ?: 'Absensi ' . $session->session_date->isoFormat('D MMMM YYYY') }}
                 </h1>
-                <span class="kode {{ $gayaStatus }}">{{ $labelStatus }}</span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $gayaStatus }}">{{ $labelStatus }}</span>
             </div>
-            <p class="mt-1 text-sm text-slate-500">
+            <p class="mt-1 text-xs text-slate-500">
                 {{ $session->session_date->isoFormat('dddd, D MMMM YYYY') }}
                 &middot; sesi #{{ $session->sequence ?? 1 }}
                 &middot; berlaku s/d {{ $session->expires_at ? $session->expires_at->format('H:i') . ' WIB' : '—' }}
@@ -64,59 +59,52 @@
         </div>
 
         <div class="flex shrink-0 flex-wrap items-center gap-2">
-            <a href="{{ route('classes.attendance.edit', [$classroom, $session]) }}" class="btn-secondary btn-secondary--sm">Koreksi Manual</a>
-            <a href="{{ route('classes.exports.attendance.pdf', $classroom) }}" target="_blank" class="btn-secondary btn-secondary--sm">Cetak PDF</a>
+            <a href="{{ route('classes.attendance.edit', [$classroom, $session]) }}" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Koreksi Manual</a>
+            <a href="{{ route('classes.exports.attendance.pdf', $classroom) }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Cetak PDF</a>
         </div>
     </div>
 
     @include('partials.class-nav', ['classroom' => $classroom])
-
     @include('partials.flash')
 
-    {{--
-        Ringkasan sesi.
-
-        Dulu: satu spanduk bergradien setinggi 150px berisi bilah kemajuan
-        bergradien emerald-ke-teal, lalu EMPAT kartu bergradien di bawahnya —
-        satu per status, masing-masing dengan ubin ikon berwarna penuh yang
-        membesar saat disentuh tetikus. Empat kotak yang sama menonjolnya untuk
-        empat angka yang sangat berbeda pentingnya: yang menuntut tindakan hari
-        ini cuma Alfa.
-    --}}
-    <dl class="deret-angka">
-        <div>
-            <dt class="stat-label">Terisi</dt>
-            <dd class="stat-value">{{ $totalTerisi }}<span class="text-base font-normal text-slate-400">/{{ $totalSiswa }}</span></dd>
-            <div class="bar mt-2"><div class="bar__isi" style="width: {{ $persenTerisi }}%"></div></div>
+    <!-- Metrics Cards -->
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Terisi</span>
+            <p class="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">{{ $totalTerisi }}<span class="text-xs font-normal text-slate-400">/{{ $totalSiswa }}</span></p>
+            <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ $persenTerisi }}%"></div>
+            </div>
         </div>
-        <div>
-            <dt class="stat-label">Hadir</dt>
-            <dd class="stat-value text-emerald-700">{{ $cntHadir }}</dd>
-            <p class="stat-sub angka">{{ $totalSiswa > 0 ? round(($cntHadir / $totalSiswa) * 100) : 0 }}% dari total siswa</p>
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
+            <span class="text-xs font-semibold text-emerald-800 uppercase tracking-wider block">Hadir</span>
+            <p class="mt-2 text-2xl font-extrabold tracking-tight text-emerald-700">{{ $cntHadir }}</p>
+            <p class="mt-1 text-[11px] text-emerald-600 font-mono">{{ $totalSiswa > 0 ? round(($cntHadir / $totalSiswa) * 100) : 0 }}% total</p>
         </div>
-        <div>
-            <dt class="stat-label">Sakit / Izin</dt>
-            <dd class="stat-value">{{ $cntSakit }} / {{ $cntIzin }}</dd>
-            <p class="stat-sub">berkabar</p>
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
+            <span class="text-xs font-semibold text-amber-800 uppercase tracking-wider block">Sakit / Izin</span>
+            <p class="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">{{ $cntSakit }} <span class="text-xs font-normal text-slate-400">/</span> {{ $cntIzin }}</p>
+            <p class="mt-1 text-[11px] text-slate-400">berkabar</p>
         </div>
-        <div>
-            <dt class="stat-label">Alfa</dt>
-            <dd class="stat-value {{ $cntAlfa > 0 ? 'text-rose-700' : '' }}">{{ $cntAlfa }}</dd>
-            <p class="stat-sub angka">{{ $totalSiswa > 0 ? round(($cntAlfa / $totalSiswa) * 100) : 0 }}% dari total siswa</p>
+        <div class="bg-white rounded-2xl border border-rose-200 shadow-xs p-4">
+            <span class="text-xs font-semibold text-rose-800 uppercase tracking-wider block">Alfa</span>
+            <p class="mt-2 text-2xl font-extrabold tracking-tight {{ $cntAlfa > 0 ? 'text-rose-700' : 'text-slate-900' }}">{{ $cntAlfa }}</p>
+            <p class="mt-1 text-[11px] text-rose-600 font-mono">{{ $totalSiswa > 0 ? round(($cntAlfa / $totalSiswa) * 100) : 0 }}% total</p>
         </div>
-    </dl>
+    </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3" x-data="{ search: '', filterStatus: 'all' }">
 
-        <section class="blok lg:col-span-2">
-            <div class="blok__kepala">
-                <h2 class="blok__judul">Daftar Kehadiran Siswa</h2>
+        <section class="bg-white rounded-2xl border border-emerald-200 shadow-xs overflow-hidden lg:col-span-2">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-4 pt-4 pb-3 border-b border-emerald-100">
+                <h2 class="text-sm font-extrabold text-slate-900">Daftar Kehadiran Siswa</h2>
 
                 <div class="flex items-center gap-1.5">
                     <label for="cari-siswa" class="sr-only">Cari nama siswa</label>
-                    <input id="cari-siswa" type="search" x-model="search" placeholder="Cari nama atau NIS" class="form-input form-input--sm w-40 sm:w-48">
+                    <input id="cari-siswa" type="search" x-model="search" placeholder="Cari nama atau NIS" 
+                           class="block rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 w-36 sm:w-44">
                     <label for="saring-status" class="sr-only">Saring status</label>
-                    <select id="saring-status" x-model="filterStatus" class="form-select form-input--sm w-28">
+                    <select id="saring-status" x-model="filterStatus" class="block rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 w-24">
                         <option value="all">Semua</option>
                         <option value="hadir">Hadir</option>
                         <option value="terlambat">Terlambat</option>
@@ -129,46 +117,37 @@
 
             @if ($session->attendances->isNotEmpty())
                 <div class="overflow-x-auto">
-                    <table class="table">
+                    <table class="w-full text-left text-xs">
                         <thead>
-                            <tr>
-                                <th scope="col" class="w-10 text-right">No</th>
-                                <th scope="col">Nama Siswa</th>
-                                <th scope="col">NIS</th>
-                                <th scope="col">Keterangan</th>
-                                <th scope="col" class="w-14 text-center">Jam</th>
-                                <th scope="col" class="w-12 text-center">Status</th>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                <th scope="col" class="py-2.5 px-3 w-10 text-right">No</th>
+                                <th scope="col" class="py-2.5 px-3">Nama Siswa</th>
+                                <th scope="col" class="py-2.5 px-3">NIS</th>
+                                <th scope="col" class="py-2.5 px-3">Keterangan</th>
+                                <th scope="col" class="py-2.5 px-3 w-14 text-center">Jam</th>
+                                <th scope="col" class="py-2.5 px-3 w-12 text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-slate-100">
                             @foreach ($session->attendances as $attendance)
                                 @php
                                     $student = $attendance->student;
                                     $statusName = strtolower($attendance->status);
-                                    [$huruf, $gayaKode] = $kodeStatus[$statusName] ?? [Str::upper(Str::substr($statusName, 0, 1)), ''];
+                                    [$huruf, $gayaKode] = $kodeStatus[$statusName] ?? [Str::upper(Str::substr($statusName, 0, 1)), 'bg-slate-100 text-slate-800'];
                                 @endphp
-                                <tr x-show="(search === '' || '{{ strtolower($student->name ?? '') }}'.includes(search.toLowerCase()) || '{{ $student->nis ?? '' }}'.includes(search)) && (filterStatus === 'all' || filterStatus === '{{ $statusName }}')">
-                                    <td class="text-right font-mono text-xs text-slate-400">{{ $loop->iteration }}</td>
-                                    <td>
-                                        {{ $student->name ?? 'Siswa' }}
+                                <tr class="hover:bg-slate-50/50 transition-colors" x-show="(search === '' || '{{ strtolower($student->name ?? '') }}'.includes(search.toLowerCase()) || '{{ $student->nis ?? '' }}'.includes(search)) && (filterStatus === 'all' || filterStatus === '{{ $statusName }}')">
+                                    <td class="py-2.5 px-3 text-right font-mono text-xs text-slate-400">{{ $loop->iteration }}</td>
+                                    <td class="py-2.5 px-3">
+                                        <span class="font-bold text-slate-900">{{ $student->name ?? 'Siswa' }}</span>
                                         @if ($attendance->revisions_count > 0)
-                                            <span class="badge ml-1">Dikoreksi</span>
+                                            <span class="ml-1 inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Dikoreksi</span>
                                         @endif
                                     </td>
-                                    <td class="td--mono">{{ $student->nis ?? '—' }}</td>
-                                    {{--
-                                        `note` (tunggal), bukan `notes`; dan jamnya dari
-                                        `created_at`, bukan `filled_at` yang tidak pernah ada
-                                        di tabel attendances. Eloquent mengembalikan NULL
-                                        diam-diam untuk atribut yang tidak ada, jadi kedua kolom
-                                        ini tidak pernah terisi sekali pun — keterangan yang
-                                        sudah susah payah diketik petugas ("Tidak ada kabar",
-                                        dsb.) tersimpan rapi lalu tak pernah terbaca siapa pun.
-                                    --}}
-                                    <td class="td--secondary max-w-[14rem] truncate" title="{{ $attendance->note }}">{{ $attendance->note ?: '—' }}</td>
-                                    <td class="text-center font-mono text-xs text-slate-400">{{ $attendance->created_at?->format('H:i') ?? '—' }}</td>
-                                    <td class="text-center">
-                                        <span class="kode {{ $gayaKode }}" title="{{ Str::title($statusName) }}">{{ $huruf }}</span>
+                                    <td class="py-2.5 px-3 font-mono text-xs text-slate-500">{{ $student->nis ?? '—' }}</td>
+                                    <td class="py-2.5 px-3 text-xs text-slate-500 max-w-[14rem] truncate" title="{{ $attendance->note }}">{{ $attendance->note ?: '—' }}</td>
+                                    <td class="py-2.5 px-3 text-center font-mono text-xs text-slate-400">{{ $attendance->created_at?->format('H:i') ?? '—' }}</td>
+                                    <td class="py-2.5 px-3 text-center">
+                                        <span class="inline-flex items-center justify-center h-6 w-6 rounded-lg text-xs font-bold border {{ $gayaKode }}" title="{{ Str::title($statusName) }}">{{ $huruf }}</span>
                                     </td>
                                 </tr>
                             @endforeach
@@ -177,48 +156,47 @@
                 </div>
             @else
                 <div class="p-6 text-center">
-                    <p class="text-sm font-medium text-slate-900">Belum ada data kehadiran terisi</p>
-                    <p class="mt-1 text-sm text-slate-500">Siswa atau Seksi Absensi belum mengisi kehadiran lewat Magic Link.</p>
+                    <p class="text-sm font-semibold text-slate-900">Belum ada data kehadiran terisi</p>
+                    <p class="mt-1 text-xs text-slate-500">Siswa atau Seksi Absensi belum mengisi kehadiran lewat Magic Link.</p>
                 </div>
             @endif
         </section>
 
-        <section class="blok">
-            <div class="blok__kepala">
-                <h2 class="blok__judul">Akses Absensi Siswa</h2>
-                <span class="eyebrow">Magic link</span>
+        <!-- Access / Magic link side card -->
+        <section class="bg-white rounded-2xl border border-emerald-200 shadow-xs overflow-hidden">
+            <div class="flex items-center justify-between px-4 pt-4 pb-3 border-b border-emerald-100">
+                <h2 class="text-sm font-extrabold text-slate-900">Akses Absensi Siswa</h2>
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Magic link</span>
             </div>
 
-            <div class="blok__isi space-y-4">
+            <div class="p-4 space-y-4">
                 @if (!empty($pin))
-                    {{-- PIN dicetak sebesar mungkin dan hanya ini yang boleh besar
-                         di kolom ini: ia dibacakan keras-keras di depan kelas. --}}
-                    <div class="rounded border border-slate-300 bg-slate-50 p-3 text-center">
-                        <p class="eyebrow">PIN harian siswa</p>
-                        <p class="mt-1.5 select-all font-mono text-3xl font-medium tracking-[0.2em] text-slate-900">{{ $pin }}</p>
+                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-3.5 text-center">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">PIN harian siswa</p>
+                        <p class="mt-1.5 select-all font-mono text-3xl font-extrabold tracking-[0.2em] text-slate-900">{{ $pin }}</p>
                         <p class="mt-1.5 text-xs text-slate-500">Bacakan atau bagikan PIN 6 digit ini kepada Seksi Absensi.</p>
                         @if (!empty($waTarget))
-                            <p class="mt-1.5 text-xs text-slate-500">Tujuan WA: <span class="font-medium text-slate-700">{{ $waTarget }}</span></p>
+                            <p class="mt-1.5 text-xs text-slate-500">Tujuan WA: <span class="font-bold text-slate-700">{{ $waTarget }}</span></p>
                         @endif
                     </div>
                 @else
-                    <div class="rounded border border-slate-200 bg-slate-50 p-3 text-center">
-                        <p class="text-xs font-medium text-slate-700">PIN harian sudah terbit</p>
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-center">
+                        <p class="text-xs font-bold text-slate-700">PIN harian sudah terbit</p>
                         <p class="mt-1 text-xs text-slate-500">PIN sudah dikirim lewat WhatsApp. Kirim ulang bila memerlukan PIN baru.</p>
                     </div>
                 @endif
 
-                <div class="flex flex-col items-center rounded border border-slate-200 bg-white p-3" x-data="qrRenderer()">
+                <div class="flex flex-col items-center rounded-2xl border border-slate-200 bg-white p-3" x-data="qrRenderer()">
                     <canvas id="attendance-qr-canvas" width="120" height="120"></canvas>
                     <p class="mt-2 text-xs text-slate-500">Pindai QR ini di depan kelas</p>
                 </div>
 
-                <div class="form-group" x-data="{ copied: false }">
-                    <span class="eyebrow">Tautan magic link</span>
+                <div x-data="{ copied: false }">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">Tautan magic link</span>
                     <div class="flex items-center gap-1.5">
                         <label for="magic-link" class="sr-only">Tautan magic link</label>
-                        <input id="magic-link" type="text" readonly value="{{ $session->magicLink() }}" class="form-input form-input--sm truncate font-mono">
-                        <button type="button" class="btn-secondary btn-secondary--sm shrink-0"
+                        <input id="magic-link" type="text" readonly value="{{ $session->magicLink() }}" class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-mono truncate text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        <button type="button" class="shrink-0 inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                                 @click="navigator.clipboard.writeText('{{ $session->magicLink() }}'); copied=true; setTimeout(()=>copied=false, 2500)">
                             <span x-text="copied ? 'Tersalin' : 'Salin'">Salin</span>
                         </button>
@@ -226,32 +204,26 @@
                 </div>
 
                 @if ($session->delivery_status === 'failed')
-                    <div class="alert alert--danger">
+                    <div class="rounded-2xl border border-rose-200 bg-rose-50 p-3 flex gap-2">
                         <div>
-                            <p class="alert__title">Pengiriman WA gagal</p>
-                            <p class="alert__body mt-0.5">{{ $session->delivery_error }}</p>
+                            <p class="text-xs font-bold text-slate-900">Pengiriman WA gagal</p>
+                            <p class="text-xs text-slate-600 mt-0.5">{{ $session->delivery_error }}</p>
                         </div>
                     </div>
                 @elseif ($session->delivery_status === 'pending')
-                    <div class="alert alert--warning sm:items-center">
-                        <p class="alert__body">Menunggu antrean pengiriman WA…</p>
+                    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-3 flex gap-2 sm:items-center">
+                        <p class="text-xs text-slate-600">Menunggu antrean pengiriman WA…</p>
                     </div>
                 @elseif ($session->delivery_status === 'sent')
-                    <div class="alert alert--success sm:items-center">
-                        <p class="alert__body">Terkirim via WA {{ $session->delivered_at ? $session->delivered_at->format('H:i') : '' }}</p>
+                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 flex gap-2 sm:items-center">
+                        <p class="text-xs text-slate-600">Terkirim via WA {{ $session->delivered_at ? $session->delivered_at->format('H:i') : '' }}</p>
                     </div>
-                {{--
-                    Dibedakan tegas dari 'failed'. Pesan yang tidak dikirim
-                    karena masa otomasi habis bukan kerusakan, dan menuliskan
-                    "gagal" akan mengirim wali kelas mengejar masalah teknis
-                    yang tidak ada — lalu menghubungi dukungan.
-                --}}
                 @elseif ($session->delivery_status === 'skipped')
-                    <div class="alert alert--warning">
+                    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-3 flex gap-2">
                         <div>
-                            <p class="alert__title">Tidak dikirim ke WhatsApp</p>
-                            <p class="alert__body mt-0.5">{{ $session->delivery_error }}</p>
-                            <a href="{{ route('subscription.index') }}" class="alert__body mt-1.5 inline-block font-semibold underline underline-offset-2">Perpanjang langganan</a>
+                            <p class="text-xs font-bold text-slate-900">Tidak dikirim ke WhatsApp</p>
+                            <p class="text-xs text-slate-600 mt-0.5">{{ $session->delivery_error }}</p>
+                            <a href="{{ route('subscription.index') }}" class="text-xs font-semibold text-emerald-700 underline underline-offset-2 mt-1.5 inline-block">Perpanjang langganan</a>
                         </div>
                     </div>
                 @endif
@@ -260,7 +232,7 @@
                     @if ($session->isOpen() && $session->delivery_status !== 'sent')
                         <form method="POST" action="{{ route('classes.attendance.resend', [$classroom, $session]) }}">
                             @csrf
-                            <button type="submit" class="btn-secondary w-full">Kirim Ulang WA (PIN Baru)</button>
+                            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Kirim Ulang WA (PIN Baru)</button>
                         </form>
                     @endif
 
@@ -268,7 +240,7 @@
                         <form method="POST" action="{{ route('classes.attendance.cancel', [$classroom, $session]) }}"
                               onsubmit="return confirm('Batalkan sesi absensi ini? Seluruh rekap akan mengabaikannya.')">
                             @csrf @method('PATCH')
-                            <button type="submit" class="btn-danger-ghost w-full">Batalkan Sesi Absensi</button>
+                            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-white px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors">Batalkan Sesi Absensi</button>
                         </form>
                     @endif
                 </div>
@@ -297,7 +269,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, qrSize, qrSize);
-                    // Tinta, bukan hitam pekat: sewarna dengan teks halaman.
                     ctx.fillStyle = '#1a1712';
 
                     for (let row = 0; row < qr.getModuleCount(); row++) {

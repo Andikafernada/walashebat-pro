@@ -72,3 +72,13 @@ Schedule::command('walikelas:matikan-otomasi-kedaluwarsa')
 Schedule::command('walikelas:kirim-pengingat-spp')
     ->dailyAt('07:00')
     ->withoutOverlapping(10);
+
+/*
+ * Backup database otomatis terkompresi harian.
+ *
+ * Jam 02:00 tengah malam saat lalu lintas sekolah sepi.
+ * Dilengkapi retensi pembersihan otomatis berkas lama.
+ */
+Schedule::command('backup:database-daily')
+    ->dailyAt('02:00')
+    ->withoutOverlapping(30);

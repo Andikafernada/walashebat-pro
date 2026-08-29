@@ -1,15 +1,12 @@
 @extends('layouts.guest')
 @section('title', 'Atur Ulang Kata Sandi')
+@section('page-title', 'Buat kata sandi baru')
+@section('page-subtitle', 'Cek WhatsApp Anda untuk kode OTP, lalu masukkan kata sandi baru')
+
 @section('content')
-
-    <h2 class="mb-1 text-xl font-semibold text-slate-900">Buat kata sandi baru</h2>
-    <p class="mb-8 text-sm text-slate-500">
-        Cek WhatsApp Anda untuk kode OTP, lalu masukkan kata sandi baru.
-    </p>
-
     <form method="POST"
           action="{{ route('password.update') }}"
-          class="space-y-5"
+          class="space-y-4"
           x-data="{ loading: false }"
           @submit="loading = true">
 
@@ -28,11 +25,11 @@
                 autocomplete="one-time-code"
                 required
                 maxlength="6"
-                placeholder="cth: 123456"
-                class="form-input text-center text-2xl font-semibold tracking-[0.5em]"
-                style="letter-spacing: 0.5em;"
+                placeholder="123456"
+                class="form-input text-center text-xl font-bold tracking-[0.3em]"
+                style="letter-spacing: 0.3em;"
             >
-            <p class="form-hint mt-1.5">Kode 6 digit dari pesan WhatsApp yang dikirim ke nomor Anda.</p>
+            <p class="form-hint">Kode 6 digit dari pesan WhatsApp yang dikirim ke nomor Anda</p>
             @error('otp')
                 <p class="form-error" role="alert">{{ $message }}</p>
             @enderror
@@ -71,20 +68,20 @@
         </div>
 
         <button type="submit"
-                class="btn-primary w-full justify-center py-3.5"
+                class="btn-primary"
                 :disabled="loading"
                 :class="loading ? 'opacity-70 cursor-not-allowed' : ''">
             <span x-show="!loading">Simpan kata sandi baru</span>
             <span x-show="loading" x-cloak class="inline-flex items-center gap-2">
-                <span class="spinner spinner--white"></span>
+                <span class="spinner"></span>
                 Menyimpan...
             </span>
         </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-slate-500">
+    <p class="mt-6 text-center text-xs sm:text-sm text-slate-600">
         Tidak menerima kode?
-        <a href="{{ route('password.request') }}" class="font-semibold text-indigo-600 hover:underline">
+        <a href="{{ route('password.request') }}" class="font-bold text-emerald-800 hover:underline">
             Kirim ulang
         </a>
     </p>

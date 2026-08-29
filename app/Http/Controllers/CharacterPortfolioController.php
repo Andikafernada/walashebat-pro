@@ -71,20 +71,28 @@ class CharacterPortfolioController extends Controller
             ->groupBy('character_dimension_id')
             ->pluck('jumlah', 'character_dimension_id');
 
+        /*
+         * SATU query, BUKAN 3×N queries (N = jumlah dimensi).
+         *
+         * Sebelumnya ada perulangan di atas yang masing-masing menjalankan
+         * 3 query per dimensi — pada kelas dengan 18 dimensi itu 54 query
+         * tambahan, setiap kali halaman portofolio dibuka. Cukup satu query
+         * agregat yang mengelompokkan menurut dimensi sekaligus menghitung
+         * positif/negatif, lalu distribusikan hasilnya ke struktur yang sama.
+         */
+        $recordsByDimension = CharacterRecord::where('class_id', $class->id)
+            ->selectRaw('character_dimension_id, type, COUNT(*) as jumlah')
+            ->groupBy('character_dimension_id', 'type')
+            ->get()
+            ->groupBy('character_dimension_id');
+
         $dimensionStats = [];
         foreach ($dimensions as $dimension) {
+            $baris = $recordsByDimension->get($dimension->id);
             $dimensionStats[$dimension->id] = [
-                'total_records' => CharacterRecord::where('class_id', $class->id)
-                    ->where('character_dimension_id', $dimension->id)
-                    ->count(),
-                'positive' => CharacterRecord::where('class_id', $class->id)
-                    ->where('character_dimension_id', $dimension->id)
-                    ->where('type', 'positive')
-                    ->count(),
-                'negative' => CharacterRecord::where('class_id', $class->id)
-                    ->where('character_dimension_id', $dimension->id)
-                    ->where('type', 'negative')
-                    ->count(),
+                'total_records' => (int) ($baris?->sum('jumlah') ?? 0),
+                'positive' => (int) ($baris?->firstWhere('type', 'positive')?->jumlah ?? 0),
+                'negative' => (int) ($baris?->firstWhere('type', 'negative')?->jumlah ?? 0),
                 'refleksi' => (int) ($refleksiPerDimensi[$dimension->id] ?? 0),
             ];
         }
@@ -128,19 +136,26 @@ class CharacterPortfolioController extends Controller
         $startDate = $semester['start'];
         $endDate = $semester['end'];
 
+        /*
+         * SATU query, BUKAN 2×N queries.
+         *
+         * Setiap dimensi menjalankan 2 query (sum + count) per dimensi, dan
+         * hasilnya digabung di PHP. Sekali query GROUP BY membereskan
+         * keduanya sekaligus dengan satu perjalanan ke basis data.
+         */
+        $semesterRecords = CharacterRecord::where('student_id', $student->id)
+            ->whereBetween('record_date', [$startDate, $endDate])
+            ->selectRaw('character_dimension_id, SUM(score) as total_score, COUNT(*) as total_count')
+            ->groupBy('character_dimension_id')
+            ->get()
+            ->keyBy('character_dimension_id');
+
         $dimensionScores = [];
         foreach ($dimensions as $dimension) {
-            $score = CharacterRecord::where('student_id', $student->id)
-                ->where('character_dimension_id', $dimension->id)
-                ->whereBetween('record_date', [$startDate, $endDate])
-                ->sum('score');
-
+            $baris = $semesterRecords->get($dimension->id);
             $dimensionScores[$dimension->id] = [
-                'score' => $score,
-                'records_count' => CharacterRecord::where('student_id', $student->id)
-                    ->where('character_dimension_id', $dimension->id)
-                    ->whereBetween('record_date', [$startDate, $endDate])
-                    ->count(),
+                'score' => (int) ($baris->total_score ?? 0),
+                'records_count' => (int) ($baris->total_count ?? 0),
             ];
         }
 
@@ -346,13 +361,17 @@ class CharacterPortfolioController extends Controller
         $startDate = $semester['start'];
         $endDate = $semester['end'];
 
+        // SATU query untuk semua dimensi, bukan 2 per dimensi.
+        $semesterRecords = CharacterRecord::where('student_id', $student->id)
+            ->whereBetween('record_date', [$startDate, $endDate])
+            ->selectRaw('character_dimension_id, SUM(score) as total_score, COUNT(*) as total_count')
+            ->groupBy('character_dimension_id')
+            ->get()
+            ->keyBy('character_dimension_id');
+
         $summary = [];
         foreach ($dimensions as $dimension) {
-            $score = CharacterRecord::where('student_id', $student->id)
-                ->where('character_dimension_id', $dimension->id)
-                ->whereBetween('record_date', [$startDate, $endDate])
-                ->sum('score');
-
+            $baris = $semesterRecords->get($dimension->id);
             $summary[] = [
                 'dimension' => [
                     'id' => $dimension->id,
@@ -361,11 +380,8 @@ class CharacterPortfolioController extends Controller
                     'color' => $dimension->color,
                     'icon' => $dimension->icon,
                 ],
-                'score' => $score,
-                'record_count' => CharacterRecord::where('student_id', $student->id)
-                    ->where('character_dimension_id', $dimension->id)
-                    ->whereBetween('record_date', [$startDate, $endDate])
-                    ->count(),
+                'score' => (int) ($baris->total_score ?? 0),
+                'record_count' => (int) ($baris->total_count ?? 0),
             ];
         }
 

@@ -5,19 +5,19 @@
 @section('content')
 <div class="space-y-6 pb-12">
     <!-- Header Bar -->
-    <div class="page-header">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
-                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
-                <span aria-hidden="true">/</span>
-                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-slate-600">{{ $classroom->name }}</a>
-                <span aria-hidden="true">/</span>
-                <span class="text-slate-500">Jadwal Pelajaran</span>
+                <a href="{{ route('classes.index') }}" class="hover:text-emerald-800 transition-colors font-medium">Kelas</a>
+                <span aria-hidden="true" class="text-slate-400">/</span>
+                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-emerald-800 transition-colors font-medium">{{ $classroom->name }}</a>
+                <span aria-hidden="true" class="text-slate-400">/</span>
+                <span class="text-slate-500 font-bold">Jadwal Pelajaran</span>
             </nav>
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
+            <h1 class="mt-1 text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
                 Jadwal Pelajaran Kelas {{ $classroom->name }}
             </h1>
-            <p class="mt-1 text-sm text-slate-500">Kelola susunan mata pelajaran harian, waktu jam pelajaran, dan nama guru pengampu.</p>
+            <p class="mt-1 text-xs sm:text-sm text-slate-600">Kelola susunan mata pelajaran harian, waktu jam pelajaran, dan nama guru pengampu.</p>
         </div>
     </div>
 
@@ -33,42 +33,42 @@
         <!-- LEFT COLUMN: Schedules List by Day (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
             @foreach (\App\Models\Schedule::DAYS as $num => $day)
-                <div class="card space-y-3">
+                <div class="bg-white rounded-2xl border border-emerald-200 p-4 sm:p-5 shadow-xs space-y-3">
 
-                    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-                        <div class="flex items-center gap-2">
-                            <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-xs font-semibold text-indigo-700">
+                    <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="flex h-7 w-7 items-center justify-center rounded-xl bg-emerald-100 text-xs font-extrabold text-emerald-950 border border-emerald-200">
                                 {{ $loop->iteration }}
                             </div>
-                            <h3 class="font-semibold text-sm text-slate-900">{{ $day }}</h3>
+                            <h3 class="font-extrabold text-sm text-slate-900">{{ $day }}</h3>
                         </div>
                         @if(!empty($schedules[$num]))
-                            <span class="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 border border-indigo-200">
-                                {{ count($schedules[$num]) }} Mata Pelajaran
+                            <span class="rounded-lg bg-emerald-100/70 px-2.5 py-1 text-xs font-extrabold text-emerald-950 border border-emerald-200">
+                                {{ count($schedules[$num]) }} Mapel
                             </span>
                         @else
-                            <span class="text-xs text-slate-400">Tidak Ada Jadwal</span>
+                            <span class="text-xs font-semibold text-slate-400">Tidak Ada Jadwal</span>
                         @endif
                     </div>
 
                     @if(!empty($schedules[$num]))
-                        <div class="divide-y divide-slate-200">
+                        <div class="divide-y divide-emerald-50">
                             @foreach ($schedules[$num] as $s)
-                                <div class="flex items-center justify-between gap-4 py-2.5 hover:bg-slate-50 px-2 rounded transition-colors">
-                                    <div class="flex items-center gap-3">
-                                        <span class="rounded-md bg-slate-100 px-2 py-1 text-xs font-mono font-semibold text-slate-700 shrink-0">
+                                <div class="flex items-center justify-between gap-4 py-2.5 hover:bg-[#f0fdf4]/50 px-2 rounded-xl transition-colors">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-mono font-bold text-emerald-950 shrink-0">
                                             {{ substr($s->start_time, 0, 5) }} - {{ substr($s->end_time, 0, 5) }}
                                         </span>
-                                        <div>
-                                            <h4 class="font-semibold text-sm text-slate-900">{{ $s->subject }}</h4>
-                                            <p class="text-xs text-slate-500">Guru: {{ $s->teacher_name ?: '—' }}</p>
+                                        <div class="min-w-0">
+                                            <h4 class="font-bold text-sm text-slate-900 truncate">{{ $s->subject }}</h4>
+                                            <p class="text-xs text-slate-500 font-medium truncate">Guru: {{ $s->teacher_name ?: '—' }}</p>
                                         </div>
                                     </div>
 
                                     <form method="POST" action="{{ route('classes.schedules.destroy', [$classroom, $s]) }}"
                                           onsubmit="return confirm('Hapus {{ $s->subject }} hari {{ $day }}?')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="h-8 w-8 rounded-lg border border-slate-200 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center text-slate-400 transition-colors">
+                                        <button type="submit" class="h-8 w-8 rounded-xl border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 flex items-center justify-center text-slate-400 transition-colors shadow-2xs" title="Hapus Mapel">
                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                         </button>
                                     </form>
@@ -76,7 +76,7 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-xs text-slate-400 italic text-center py-2">Belum ada mata pelajaran diisi untuk hari {{ $day }}.</p>
+                        <p class="text-xs text-slate-400 italic text-center py-3">Belum ada mata pelajaran diisi untuk hari {{ $day }}.</p>
                     @endif
 
                 </div>
@@ -85,15 +85,15 @@
 
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4">
-            <div class="card space-y-4">
+            <div class="bg-white rounded-2xl border border-emerald-200 p-5 shadow-xs space-y-4">
 
-                <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
-                    <div class="stat-icon">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <div class="flex items-center gap-3 border-b border-emerald-100 pb-3">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-950 flex items-center justify-center text-sm font-bold border border-emerald-200">
+                        ➕
                     </div>
                     <div>
-                        <h3 class="text-sm font-semibold text-slate-900">Tambah Jam Pelajaran</h3>
-                        <p class="text-xs text-slate-500">Input Mata Pelajaran &amp; Guru</p>
+                        <h3 class="text-sm font-extrabold text-slate-900">Tambah Jam Pelajaran</h3>
+                        <p class="text-xs text-slate-500 font-medium">Input Mapel &amp; Guru Pengampu</p>
                     </div>
                 </div>
 
@@ -101,8 +101,8 @@
                     @csrf
 
                     <div>
-                        <label for="day_of_week" class="form-label">Hari</label>
-                        <select id="day_of_week" name="day_of_week" required class="form-input form-input--sm">
+                        <label for="day_of_week" class="block text-xs font-bold text-slate-800 mb-1">Hari <span class="text-rose-500">*</span></label>
+                        <select id="day_of_week" name="day_of_week" required class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                             @foreach (\App\Models\Schedule::DAYS as $num => $day)
                                 <option value="{{ $num }}">{{ $day }}</option>
                             @endforeach
@@ -111,37 +111,37 @@
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label for="start_time" class="form-label">Jam Mulai</label>
-                            <input type="time" id="start_time" name="start_time" required class="form-input form-input--sm">
+                            <label for="start_time" class="block text-xs font-bold text-slate-800 mb-1">Jam Mulai <span class="text-rose-500">*</span></label>
+                            <input type="time" id="start_time" name="start_time" required class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
                         <div>
-                            <label for="end_time" class="form-label">Jam Selesai</label>
-                            <input type="time" id="end_time" name="end_time" required class="form-input form-input--sm">
+                            <label for="end_time" class="block text-xs font-bold text-slate-800 mb-1">Jam Selesai <span class="text-rose-500">*</span></label>
+                            <input type="time" id="end_time" name="end_time" required class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
                     </div>
 
                     <div>
-                        <label for="subject" class="form-label">Mata Pelajaran</label>
-                        <input type="text" id="subject" name="subject" value="{{ old('subject') }}" placeholder="cth: Matematika, Bahasa Indonesia..." required class="form-input form-input--sm">
+                        <label for="subject" class="block text-xs font-bold text-slate-800 mb-1">Mata Pelajaran <span class="text-rose-500">*</span></label>
+                        <input type="text" id="subject" name="subject" value="{{ old('subject') }}" placeholder="cth: Matematika, Pemrograman Web..." required class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
 
                     <div>
-                        <label for="teacher_name" class="form-label">Nama Guru Pengampu <span class="text-slate-400 font-normal lowercase">(opsional)</span></label>
-                        <input type="text" id="teacher_name" name="teacher_name" value="{{ old('teacher_name') }}" placeholder="cth: Drs. Supriadi, M.Pd" class="form-input form-input--sm">
+                        <label for="teacher_name" class="block text-xs font-bold text-slate-800 mb-1">Nama Guru Pengampu <span class="text-slate-400 font-normal lowercase">(opsional)</span></label>
+                        <input type="text" id="teacher_name" name="teacher_name" value="{{ old('teacher_name') }}" placeholder="cth: Drs. Supriadi, M.Pd" class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
 
                     <button type="submit" :disabled="loading"
-                            class="btn-primary w-full">
+                            class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-sm shadow-emerald-200 transition-all flex items-center justify-center gap-1.5">
                         <template x-if="!loading">
                             <span class="flex items-center gap-1.5">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                Simpan Jadwal
+                                <span>💾</span>
+                                <span>Simpan Jadwal</span>
                             </span>
                         </template>
                         <template x-if="loading">
                             <span class="flex items-center gap-1.5">
                                 <span class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                Menyimpan...
+                                <span>Menyimpan...</span>
                             </span>
                         </template>
                     </button>

@@ -151,21 +151,27 @@ class WhatsAppSessionController extends Controller
      */
     private function variasiDariTeks(?string $teks): array
     {
-        $baris = preg_split('/\r\n|\r|\n/', (string) $teks) ?: [];
+        $teks = trim((string) $teks);
 
-        $variasi = [];
-
-        foreach ($baris as $satu) {
-            $bersih = trim($satu);
-
-            if ($bersih === '') {
-                continue;
-            }
-
-            $variasi[] = str_replace('{nama}', '{anak}', $bersih);
+        if ($teks === '') {
+            return [];
         }
 
-        return $variasi;
+        // Jika guru memisahkan beberapa opsi alternatif dengan '---' atau '==='
+        if (str_contains($teks, '---') || str_contains($teks, '===')) {
+            $blok = preg_split('/\r\n---\r\n|\n---\n|\r\n===\r\n|\n===\n/', $teks) ?: [];
+            $variasi = [];
+            foreach ($blok as $b) {
+                $b = trim($b);
+                if ($b !== '') {
+                    $variasi[] = str_replace('{nama}', '{anak}', $b);
+                }
+            }
+            return $variasi;
+        }
+
+        // Pertahankan seluruh teks (termasuk enter/paragrafnya) sebagai 1 pesan utuh
+        return [str_replace('{nama}', '{anak}', $teks)];
     }
 
     public function show(WhatsAppSessionManager $manager, NotificationChannel $channel): View
@@ -345,7 +351,7 @@ class WhatsAppSessionController extends Controller
         return $pertama;
     }
 
-    /** Mulai penautan; menampilkan QR dari gateway. */
+    /** Mulai penautan; menampilkan QR atau pairing code dari gateway. */
     public function pair(Request $request, WhatsAppSessionManager $manager): RedirectResponse
     {
         $user = $request->user() ?? Auth::user();
@@ -369,12 +375,7 @@ class WhatsAppSessionController extends Controller
                 .'Mohon tunggu '.ceil($circuitStatus['time_until_retry'] / 60).' menit, lalu coba lagi.');
         }
 
-        /*
-         * Guru yang mendaftar dari ponsel tidak bisa memindai layar ponselnya
-         * sendiri. Baginya satu-satunya jalan adalah kode pairing, jadi
-         * pilihannya datang dari formulir — bukan ditebak dari user agent,
-         * yang salah tebak justru mengunci guru di jalan buntu.
-         */
+        // Pilih metode: QR (default) atau KODE (8 digit untuk HP yang sama)
         $metode = $request->input('metode') === WhatsAppSessionManager::METODE_KODE
             ? WhatsAppSessionManager::METODE_KODE
             : WhatsAppSessionManager::METODE_QR;
@@ -390,25 +391,21 @@ class WhatsAppSessionController extends Controller
             }
 
             if ($metode === WhatsAppSessionManager::METODE_KODE) {
-                if (blank($result['pairing_code'])) {
+                // Pairing code untuk HP yang sama
+                if (blank($result['pairing_code'] ?? null)) {
                     return back()->with('warning',
-                        'Gateway belum bisa menerbitkan kode penautan. Biasanya karena WhatsApp '
-                        .'sedang menolak koneksi setelah terlalu sering menyambung ulang. '
-                        .'Tunggu beberapa menit, lalu coba lagi.');
+                        'Kode penautan belum terbit. Tunggu sebentar lalu coba lagi, '
+                        .'atau gunakan metode QR.');
                 }
 
                 return back()->with('wa_pairing_code', $result['pairing_code'])
-                    ->with('success', 'Masukkan kode berikut di WhatsApp ponsel Anda.');
+                    ->with('success', 'Kode penautan berhasil dibuat.');
             }
 
-            // QR bisa TIDAK terbit meski gateway menjawab - mis. saat WhatsApp
-            // menolak koneksi (405). Menyuruh pindai QR yang tidak ada adalah
-            // cara tercepat membuat guru mengira aplikasinya rusak.
-            if (blank($result['qr'])) {
+            // QR bisa TIDAK terbit
+            if (blank($result['qr'] ?? null)) {
                 return back()->with('warning',
-                    'Gateway belum bisa menerbitkan QR. Biasanya karena WhatsApp sedang '
-                    .'menolak koneksi setelah terlalu sering menyambung ulang. '
-                    .'Tunggu beberapa menit, lalu coba lagi.');
+                    'QR code belum terbit. Tunggu sebentar lalu coba lagi.');
             }
 
             return back()->with('wa_qr', $result['qr'])
@@ -428,11 +425,9 @@ class WhatsAppSessionController extends Controller
 
         return response()->json([
             'status' => $result['status'],
-            'qr' => $result['qr'],
-            // Kode bisa terbit sesaat SETELAH /pair menjawab; tanpa ikut di
-            // sini, guru yang menunggu tidak pernah melihatnya muncul.
+            'qr' => $result['qr'] ?? null,
             'pairing_code' => $result['pairing_code'] ?? null,
-            'error' => $result['error'],
+            'error' => $result['error'] ?? null,
             'gateway_healthy' => $manager->isHealthy(),
             'gateway_circuit' => method_exists($manager, 'getCircuitStatus')
                 ? $manager->getCircuitStatus()

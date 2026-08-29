@@ -8,14 +8,14 @@
 
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Analisis Kehadiran</h1>
-            <p class="mt-1 text-sm text-slate-500">
+            <h1 class="text-xl font-bold tracking-tight text-slate-900">Analisis Kehadiran</h1>
+            <p class="mt-1 text-xs text-slate-500">
                 {{ $classroom->name }} &middot; {{ $periode['label'] }} &middot; {{ $jumlahPertemuan }} pertemuan
-                @if ($mapelDipilih) &middot; <span class="font-semibold text-indigo-600">{{ $mapelDipilih }}</span> @endif
+                @if ($mapelDipilih) &middot; <span class="font-bold text-emerald-700">{{ $mapelDipilih }}</span> @endif
             </p>
         </div>
         <button type="button" onclick="window.print()"
-                class="h-9 rounded border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 print:hidden">
+                class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 print:hidden transition-colors">
                 Cetak
         </button>
     </div>
@@ -23,12 +23,12 @@
     @if (count($mapelDiampu) > 1)
         <div class="flex flex-wrap gap-2 print:hidden">
             <a href="{{ request()->fullUrlWithQuery(['mapel' => null]) }}"
-               class="rounded border px-3 py-1.5 text-xs font-semibold {{ $mapelDipilih === null ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
-                Semua mapel
+               class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-colors {{ $mapelDipilih === null ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
+                Semua Mapel
             </a>
             @foreach ($mapelDiampu as $m)
                 <a href="{{ request()->fullUrlWithQuery(['mapel' => $m]) }}"
-                   class="rounded border px-3 py-1.5 text-xs font-semibold {{ $mapelDipilih === $m ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
+                   class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-colors {{ $mapelDipilih === $m ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
                     {{ $m }}
                 </a>
             @endforeach
@@ -36,62 +36,59 @@
     @endif
 
     @if ($jumlahPertemuan === 0)
-        <div class="rounded-lg border border-slate-200 bg-white p-8 text-center">
-            <p class="text-sm font-semibold text-slate-700">Belum ada pertemuan pada periode ini</p>
+        <div class="rounded-2xl border border-emerald-200 bg-white p-8 text-center shadow-xs">
+            <p class="text-sm font-bold text-slate-700">Belum Ada Pertemuan Pada Periode Ini</p>
             <p class="mt-1 text-xs text-slate-500">Analisis muncul setelah ada presensi yang terisi.</p>
         </div>
     @else
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div class="card">
-                <p class="eyebrow">Kehadiran kelas</p>
-                <p class="mt-1 text-2xl font-semibold text-slate-900">{{ $persenKelas }}%</p>
+            <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Kehadiran Kelas</p>
+                <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ $persenKelas }}%</p>
             </div>
-            <div class="card">
-                <p class="eyebrow">Di bawah {{ $ambangPerhatian }}%</p>
-                <p class="mt-1 text-2xl font-semibold text-rose-700">
+            <div class="bg-white rounded-2xl border border-rose-200 shadow-xs p-4">
+                <p class="text-xs font-semibold uppercase tracking-wider text-rose-500">Di bawah {{ $ambangPerhatian }}%</p>
+                <p class="mt-1 text-2xl font-extrabold text-rose-700">
                     {{ $rekap->filter(fn ($r) => $r['total'] > 0 && $r['persen'] < $ambangPerhatian)->count() }}
                 </p>
             </div>
-            <div class="card">
-                <p class="eyebrow">Pertemuan</p>
-                <p class="mt-1 text-2xl font-semibold text-slate-900">{{ $jumlahPertemuan }}</p>
+            <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Pertemuan</p>
+                <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ $jumlahPertemuan }}</p>
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-            <table class="table">
+        <div class="overflow-x-auto rounded-2xl border border-emerald-200 bg-white shadow-xs">
+            <table class="w-full text-left text-xs">
                 <thead>
-                    <tr>
-                        <th class="px-3 py-2.5 font-semibold">Siswa</th>
-                        <th class="px-3 py-2.5 font-semibold text-center">Hadir</th>
-                        <th class="px-3 py-2.5 font-semibold text-center">Terlambat</th>
-                        <th class="px-3 py-2.5 font-semibold text-center">Sakit</th>
-                        <th class="px-3 py-2.5 font-semibold text-center">Izin</th>
-                        <th class="px-3 py-2.5 font-semibold text-center">Alfa</th>
-                        <th class="px-3 py-2.5 font-semibold text-right">Kehadiran</th>
+                    <tr class="bg-slate-50/50 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <th class="py-2.5 px-3 font-bold">Siswa</th>
+                        <th class="py-2.5 px-3 font-bold text-center">Hadir</th>
+                        <th class="py-2.5 px-3 font-bold text-center">Terlambat</th>
+                        <th class="py-2.5 px-3 font-bold text-center">Sakit</th>
+                        <th class="py-2.5 px-3 font-bold text-center">Izin</th>
+                        <th class="py-2.5 px-3 font-bold text-center">Alfa</th>
+                        <th class="py-2.5 px-3 font-bold text-right">Kehadiran</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-100">
                     @foreach ($rekap as $r)
                         @php
                             $belumAda = $r['total'] === 0;
                             $rendah = ! $belumAda && $r['persen'] < $ambangPerhatian;
                         @endphp
-                        <tr class="{{ $rendah ? 'bg-rose-50/50' : '' }} hover:bg-slate-50">
-                            <td class="px-3 py-2 font-semibold text-slate-800">{{ $r['siswa']->name }}</td>
-                            <td class="px-3 py-2 text-center tabular-nums">{{ $r['jumlah']['hadir'] }}</td>
-                            <td class="px-3 py-2 text-center tabular-nums text-amber-700">{{ $r['jumlah']['terlambat'] }}</td>
-                            <td class="px-3 py-2 text-center tabular-nums text-blue-700">{{ $r['jumlah']['sakit'] }}</td>
-                            <td class="px-3 py-2 text-center tabular-nums text-purple-700">{{ $r['jumlah']['izin'] }}</td>
-                            <td class="px-3 py-2 text-center tabular-nums font-semibold {{ $r['jumlah']['alfa'] > 0 ? 'text-rose-700' : 'text-slate-400' }}">{{ $r['jumlah']['alfa'] }}</td>
-                            <td class="px-3 py-2 text-right">
+                        <tr class="{{ $rendah ? 'bg-rose-50/50' : '' }} hover:bg-slate-50/50 transition-colors">
+                            <td class="py-2.5 px-3 font-bold text-slate-900">{{ $r['siswa']->name }}</td>
+                            <td class="py-2.5 px-3 text-center tabular-nums font-semibold">{{ $r['jumlah']['hadir'] }}</td>
+                            <td class="py-2.5 px-3 text-center tabular-nums font-semibold text-amber-700">{{ $r['jumlah']['terlambat'] }}</td>
+                            <td class="py-2.5 px-3 text-center tabular-nums font-semibold text-blue-700">{{ $r['jumlah']['sakit'] }}</td>
+                            <td class="py-2.5 px-3 text-center tabular-nums font-semibold text-purple-700">{{ $r['jumlah']['izin'] }}</td>
+                            <td class="py-2.5 px-3 text-center tabular-nums font-bold {{ $r['jumlah']['alfa'] > 0 ? 'text-rose-700' : 'text-slate-400' }}">{{ $r['jumlah']['alfa'] }}</td>
+                            <td class="py-2.5 px-3 text-right">
                                 @if ($belumAda)
-                                    {{-- 0% di sini berarti "belum pernah tercatat", bukan
-                                         "tidak pernah hadir". Menyebutnya rendah adalah
-                                         tuduhan yang keliru. --}}
-                                    <span class="text-slate-400">belum ada data</span>
+                                    <span class="text-slate-400 text-[11px]">belum ada data</span>
                                 @else
-                                    <span class="font-semibold tabular-nums {{ $rendah ? 'text-rose-700' : 'text-slate-800' }}">{{ $r['persen'] }}%</span>
+                                    <span class="font-bold tabular-nums {{ $rendah ? 'text-rose-700' : 'text-slate-800' }}">{{ $r['persen'] }}%</span>
                                     <span class="block text-[10px] text-slate-400">{{ $r['total'] }} isian</span>
                                 @endif
                             </td>

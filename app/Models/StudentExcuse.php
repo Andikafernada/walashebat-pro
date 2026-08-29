@@ -11,19 +11,15 @@ class StudentExcuse extends Model
 {
     use BelongsToTenant;
 
-    /*
-     * user_id SENGAJA tidak masuk sini, sama seperti CharacterReflection:
-     * kepemilikan tidak boleh bisa dititipkan lewat request dari formulir
-     * publik. Diisi lewat forceFill() di controller.
-     */
     protected $fillable = [
-        'class_id', 'student_id', 'tanggal', 'jenis', 'keterangan',
+        'user_id', 'class_id', 'student_id', 'tanggal', 'jenis', 'keterangan', 'attachment_path', 'parent_phone_verified',
     ];
 
     protected function casts(): array
     {
         return [
             'tanggal' => 'date',
+            'parent_phone_verified' => 'boolean',
         ];
     }
 
@@ -35,5 +31,11 @@ class StudentExcuse extends Model
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class, 'class_id');
+    }
+
+    /** URL foto bukti / surat izin jika ada */
+    public function attachmentUrl(): ?string
+    {
+        return $this->attachment_path ? asset('storage/' . $this->attachment_path) : null;
     }
 }

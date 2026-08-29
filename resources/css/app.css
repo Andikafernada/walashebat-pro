@@ -3,32 +3,9 @@
 @tailwind utilities;
 
 /* ============================================================================
-   RUPA HURUF — dilayani sendiri, bukan dari Google Fonts.
-
-   Sebelumnya keempat layout (dan halaman depan, dan tiga halaman masuk siswa)
-   memuat <link> ke fonts.googleapis.com. Itu stylesheet PEMBLOKIR: sebelum
-   satu huruf pun tergambar, peramban harus DNS + TLS + HTTP ke dua host asing
-   (googleapis lalu gstatic, berurutan — yang kedua baru diketahui setelah CSS
-   yang pertama terbaca). Di jaringan seluler Indonesia itu rutin 1–3 detik
-   dengan layar kosong, dan tak satu pun bisa diperbaiki dari sisi server kita.
-
-   Kini berkasnya ada di public/fonts/ dan ikut aturan cache aset yang sama
-   (30 hari, immutable). Nama berkas menyebut subsetnya: hanya "latin" yang
-   diunduh — bahasa Indonesia tidak memakai satu pun aksara di luar itu, dan
-   latin-ext/cyrillic/vietnamese hanya menggandakan berkas tanpa ada yang
-   membacanya.
-
-   Tiga di antaranya berkas VARIABEL: satu berkas melayani seluruh rentang
-   bobot, jadi 400/500/600 tidak berarti tiga unduhan. Karena itu rentangnya
-   ditulis sebagai "400 600", bukan satu angka — tanpa itu peramban hanya
-   memakai satu bobot dan menebalkan sisanya secara sintetis (hasilnya kotor).
-
-   font-display: swap dipertahankan seperti aslinya: teks langsung tergambar
-   dengan huruf sistem, lalu bertukar begitu berkasnya tiba. Halaman tidak
-   pernah kosong menunggu huruf.
+   RUPA HURUF — Instrument Sans & IBM Plex Mono
    ============================================================================ */
 
-/* Antarmuka aplikasi. Variabel, 400–600. */
 @font-face {
     font-family: 'Instrument Sans';
     font-style: normal;
@@ -39,8 +16,6 @@
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Yang berkolom: kode absensi, kepala tabel, nomor urut. Statis, per bobot.
-   Bobot 600 hanya dipakai halaman depan (.label-formulir, .data). */
 @font-face {
     font-family: 'IBM Plex Mono';
     font-style: normal;
@@ -66,49 +41,8 @@
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Dua berikutnya HANYA dipakai halaman depan (landing.blade.php). Keduanya
-   tetap dideklarasikan di sini, bukan di <style> halaman itu, supaya seluruh
-   @font-face aplikasi ada di satu tempat — dan @font-face yang tidak terpakai
-   tidak mengunduh apa pun: peramban baru mengambil berkasnya bila ada elemen
-   yang benar-benar memakainya. Halaman selain landing tidak membayar apa pun. */
-@font-face {
-    font-family: 'Archivo';
-    font-style: normal;
-    font-weight: 600 800;
-    font-stretch: 100%;
-    font-display: swap;
-    src: url('/fonts/archivo-latin.woff2') format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-    font-family: 'Newsreader';
-    font-style: normal;
-    font-weight: 400 500;
-    font-display: swap;
-    src: url('/fonts/newsreader-latin.woff2') format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
 /* ============================================================================
-   TERANG MODERN — lapisan komponen
-
-   Aturannya tiga, dan seluruh berkas ini tunduk padanya:
-
-   1. Lembar putih MENGAMBANG di atas dasar abu terang: sudut membulat, garis
-      tipis, bayangan lembut. Bayangannya dua lapis dan bernada biru-gelap —
-      lihat boxShadow di tailwind.config.js. Halaman punya kedalaman, tetapi
-      tidak satu pun elemen yang berat.
-   2. Aksen (lembayung/indigo) hanya untuk yang bisa diklik atau yang sedang
-      aktif. Keadaan memakai warna semantik sendiri — hijau, kuning, merah.
-      Kalau aksen ikut menandai keadaan, tidak ada lagi yang membedakan "bisa
-      diklik" dari "perlu diperhatikan".
-   3. Angka rata kolom. Setiap tabel dan setiap statistik memakai tabular-nums;
-      tanpa itu deret angka bergoyang dan mata kehilangan kolomnya.
-
-   Sebelumnya berkas ini 1.410 baris berisi 250 kelas, 162 di antaranya tidak
-   dipakai satu view pun — tiga generasi sistem yang saling menimpa
-   (modern-sidebar dari sidebar yang sudah dibuang, bento-*, dan *-stunning).
-   Yang tinggal di sini hanya yang benar-benar dirender.
+   3-COLOR SYSTEM: HIJAU SOFT, PUTIH, TEKS HITAM
    ============================================================================ */
 
 @layer base {
@@ -117,12 +51,12 @@
     }
 
     body {
-        @apply bg-slate-50 text-slate-700;
+        @apply bg-[#f0fdf4] text-slate-900;
         font-feature-settings: 'cv05' 1, 'ss01' 1;
     }
 
     h1, h2, h3, h4 {
-        @apply font-display font-semibold tracking-tight text-slate-900;
+        @apply font-display font-bold tracking-tight text-slate-900;
         text-wrap: balance;
     }
     h1 { @apply text-xl sm:text-2xl; }
@@ -130,208 +64,130 @@
     h3 { @apply text-sm sm:text-base; }
     h4 { @apply text-sm; }
 
-    /* Angka SELALU rata kolom. Ini data administrasi, bukan artikel. */
     table, .angka, input[type="number"], time {
         font-variant-numeric: tabular-nums;
         font-feature-settings: 'tnum' 1;
     }
 
-    /*
-     * Fokus keyboard yang benar-benar terlihat, di seluruh aplikasi sekaligus.
-     * Sebelumnya bergantung pada ring bawaan @tailwindcss/forms yang hanya
-     * mengenai input — tombol, tautan, dan tab tidak punya penanda sama sekali.
-     */
     :focus-visible {
-        @apply outline-none ring-2 ring-indigo-500 ring-offset-1 ring-offset-slate-50;
+        @apply outline-none ring-2 ring-emerald-500 ring-offset-1 ring-offset-[#f0fdf4];
     }
 
     [x-cloak] { display: none !important; }
     a, button, [role="button"] { touch-action: manipulation; }
 
-    /* Target sentuh di ponsel. Guru mengisi absensi sambil berdiri. */
     input[type="checkbox"], input[type="radio"] {
-        @apply h-[18px] w-[18px] border-slate-300 text-indigo-600;
+        @apply h-[18px] w-[18px] border-emerald-300 text-emerald-600 focus:ring-emerald-500;
     }
 
-    ::selection { @apply bg-indigo-600 text-white; }
+    ::selection { @apply bg-emerald-600 text-white; }
 }
 
 @layer components {
 
-    /* ------------------------------------------------------------------ */
-    /* KODE — penanda margin                                              */
-    /*                                                                    */
-    /* Tanda tangan visual aplikasi ini. Di buku absensi, tiap baris       */
-    /* diawali kode satu huruf di margin kiri: H T S I A. Bentuk itu       */
-    /* dipakai ulang untuk semua yang berkode — status, poin, nomor urut — */
-    /* selebar tetap supaya kolomnya lurus ke bawah dan bisa dipindai      */
-    /* tanpa membaca.                                                     */
-    /* ------------------------------------------------------------------ */
-    /*
-     * Bingkainya kini cincin di dalam, bukan garis di luar: pada sudut
-     * membulat 6px, border 1px menghasilkan tepi bergerigi di layar kerapatan
-     * rendah, sementara ring-inset tetap mulus. Lebar tetapnya dipertahankan —
-     * itulah yang membuat kolomnya lurus ke bawah.
-     */
+    /* KODE */
     .kode {
         @apply inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center;
-        @apply rounded-md bg-slate-100 px-1.5 ring-1 ring-inset ring-slate-900/5;
-        @apply font-mono text-[11px] font-medium leading-none text-slate-500;
+        @apply rounded-md bg-emerald-50 px-1.5 ring-1 ring-inset ring-emerald-600/20;
+        @apply font-mono text-[11px] font-bold leading-none text-slate-900;
     }
-    .kode--hadir   { @apply bg-emerald-50 text-emerald-700 ring-emerald-600/15; }
-    .kode--alfa    { @apply bg-rose-50 text-rose-700 ring-rose-600/15; }
-    .kode--izin    { @apply bg-amber-50 text-amber-700 ring-amber-600/20; }
-    .kode--sakit   { @apply bg-amber-50 text-amber-700 ring-amber-600/20; }
-    .kode--telat   { @apply bg-slate-100 text-slate-600 ring-slate-900/10; }
-    .kode--aksen   { @apply bg-indigo-50 text-indigo-700 ring-indigo-600/15; }
-    /* Kosong dipertegas garis putus-putus, dan itu tidak bisa dikerjakan ring
-       (Tailwind tidak punya ring-dashed) — jadi khusus yang ini kembali ke
-       border, dengan ring dimatikan supaya keduanya tidak bertumpuk. */
-    .kode--kosong  { @apply border border-dashed border-slate-300 bg-transparent text-slate-300 ring-0; }
+    .kode--hadir   { @apply bg-emerald-100 text-emerald-950 ring-emerald-600/25; }
+    .kode--alfa    { @apply bg-white text-slate-900 ring-slate-400 font-extrabold; }
+    .kode--izin    { @apply bg-emerald-50 text-slate-900 ring-emerald-300; }
+    .kode--sakit   { @apply bg-emerald-50 text-slate-900 ring-emerald-300; }
+    .kode--telat   { @apply bg-white text-slate-800 ring-slate-300; }
+    .kode--aksen   { @apply bg-emerald-100 text-emerald-950 ring-emerald-600/25; }
+    .kode--kosong  { @apply border border-dashed border-emerald-300 bg-transparent text-slate-400 ring-0; }
+    .kode--urut    { @apply border-transparent bg-transparent px-0 text-slate-500 font-bold; }
 
-    /* Nomor urut di margin: tanpa kotak, hanya angka abu rata kanan. */
-    .kode--urut {
-        @apply border-transparent bg-transparent px-0 text-slate-400;
-    }
-
-    /* ------------------------------------------------------------------ */
-    /* EYEBROW & RULE — struktur halaman                                  */
-    /* ------------------------------------------------------------------ */
-
-    /* Label bagian: mono, huruf besar, direnggangkan. Sekaligus penanda   */
-    /* bahwa yang di bawahnya satu kesatuan.                              */
+    /* EYEBROW & RULE */
     .eyebrow {
-        @apply font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-slate-600;
+        @apply font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-slate-600;
     }
-
-    /* Garis rambut yang memenuhi sisa baris setelah judul. */
     .rule {
         @apply flex items-center gap-3;
     }
     .rule::after {
         content: '';
-        @apply h-px flex-1 bg-slate-200;
+        @apply h-px flex-1 bg-emerald-200;
     }
 
-    /* ------------------------------------------------------------------ */
-    /* BLOK — kotak berisi satu urusan                                    */
-    /*                                                                    */
-    /* Pengganti "card". Namanya tetap .card karena 23 view memakainya.    */
-    /* ------------------------------------------------------------------ */
+    /* CARD / BLOK */
     .card {
-        @apply rounded-2xl border border-sky-200 bg-white; box-shadow: 0 1px 4px rgba(14,165,233,.08);
-        @apply p-4 sm:p-5;
+        @apply rounded-2xl border border-emerald-200/80 bg-white p-4 sm:p-5;
+        box-shadow: 0 1px 4px rgba(16, 185, 129, 0.06);
     }
-
-    /* Yang perlu terbaca selapis lebih tinggi: bayangannya yang naik, bukan
-       garisnya yang menebal. */
     .card-elevated {
-        @apply rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-lg;
+        @apply rounded-2xl border border-emerald-200 bg-white p-4 sm:p-5 shadow-lg shadow-emerald-950/5;
     }
 
-    /* Kepala blok: judul + garis, menempel ke tepi atas blok. */
     .blok {
-        @apply overflow-hidden rounded-2xl border border-sky-200 bg-white; box-shadow: 0 1px 4px rgba(14,165,233,.08);
+        @apply overflow-hidden rounded-2xl border border-emerald-200/80 bg-white;
+        box-shadow: 0 1px 4px rgba(16, 185, 129, 0.06);
     }
     .blok__kepala {
         @apply flex flex-wrap items-center justify-between gap-3;
-        @apply border-b border-sky-100 bg-sky-50/50 px-5 py-3.5;
+        @apply border-b border-emerald-100 bg-emerald-50/50 px-5 py-3.5;
     }
     .blok__judul {
-        @apply font-display text-base font-semibold tracking-tight text-slate-900;
+        @apply font-bold text-base text-slate-900;
     }
     .blok__isi {
         @apply p-4 sm:p-5;
     }
-    /* Isi berupa daftar bergaris: tiap anak dipisah garis rambut, tanpa
-       jarak — supaya rapat dan terbaca sebagai satu daftar. */
     .blok__daftar > * + * {
-        @apply border-t border-sky-100;
+        @apply border-t border-emerald-100;
     }
 
-    /* ------------------------------------------------------------------ */
-    /* KEPALA HALAMAN                                                     */
-    /* ------------------------------------------------------------------ */
-    /* Judul di kiri, tombol halaman di kanan, dipisah garis dari isinya.
-       Di layar sempit keduanya menumpuk. Jaraknya ke bawah diserahkan pada
-       induk (umumnya space-y-6) supaya tidak dobel. */
+    /* PAGE HEADER */
     .page-header {
-        @apply flex flex-col gap-3 border-b border-slate-200 pb-4;
+        @apply flex flex-col gap-3 border-b border-emerald-200 pb-4;
         @apply sm:flex-row sm:items-end sm:justify-between;
     }
     .page-header__title {
-        @apply text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl;
+        @apply text-xl font-bold tracking-tight text-slate-900 sm:text-2xl;
     }
     .page-header__description {
-        @apply mt-1 max-w-2xl text-sm text-slate-500;
+        @apply mt-1 max-w-2xl text-xs sm:text-sm text-slate-500 font-medium;
     }
 
-    /* ------------------------------------------------------------------ */
-    /* STATISTIK                                                          */
-    /*                                                                    */
-    /* Tanpa kotak sendiri-sendiri: sederet angka yang dipisah garis       */
-    /* tegak. Empat kotak berbayang untuk empat angka adalah cara paling   */
-    /* boros menyampaikan empat angka.                                    */
-    /* ------------------------------------------------------------------ */
+    /* STATISTIK */
     .stat-card {
-        @apply rounded-lg border border-slate-200 bg-white p-4;
+        @apply rounded-2xl border border-emerald-200/80 bg-white p-4;
     }
-    /* Bentuknya sama persis dengan label bagian; jangan disalin dua kali. */
     .stat-label { @apply eyebrow; }
     .stat-value {
-        @apply mt-1.5 text-2xl font-semibold tracking-tight text-slate-900;
+        @apply mt-1.5 text-2xl font-extrabold tracking-tight text-slate-900;
         font-variant-numeric: tabular-nums;
     }
     .stat-sub {
-        @apply mt-0.5 text-xs text-slate-500;
+        @apply mt-0.5 text-xs text-slate-500 font-semibold;
     }
 
-    /* Deret statistik: satu blok, dipisah garis, bukan empat kartu. */
-    /*
-     * Di ponsel DUA kolom, bukan satu.
-     *
-     * Satu kolom membuat lima angka jadi lima layar penuh yang harus digulir,
-     * dan angka yang tidak bisa dibandingkan tanpa menggulir berhenti menjadi
-     * ringkasan. Dua kolom memuat semuanya sekaligus dalam satu pandangan.
-     * Terlihat pada render 430px halaman sungguhan, bukan pada tiruan.
-     */
     .deret-angka {
-        @apply grid grid-cols-2 divide-x divide-y divide-slate-200 overflow-hidden;
-        @apply rounded-2xl border border-sky-200 bg-white; box-shadow: 0 1px 4px rgba(14,165,233,.08);
+        @apply grid grid-cols-2 divide-x divide-y divide-emerald-100 overflow-hidden;
+        @apply rounded-2xl border border-emerald-200/80 bg-white;
         @apply sm:grid-flow-col sm:auto-cols-fr sm:grid-cols-none sm:divide-y-0;
+        box-shadow: 0 1px 4px rgba(16, 185, 129, 0.06);
     }
     .deret-angka > * {
         @apply px-4 py-3;
     }
 
-    /*
-     * Ubin ikon: sudut membulat, isian lembut, tanpa garis luar.
-     *
-     * Dipakai 15 halaman yang belum tersisir satu per satu — menyetelnya di
-     * sini membenahi kelimabelasnya sekaligus, dan itu jauh lebih sulit
-     * terlewat daripada menyunting satu per satu.
-     */
     .stat-icon {
-        @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500;
+        @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-950 border border-emerald-200 font-bold;
     }
     .stat-icon--primary,
     .stat-icon--indigo,
-    .stat-icon--sky   { @apply bg-indigo-50 text-indigo-600; }
-    .stat-icon--emerald { @apply bg-emerald-50 text-emerald-600; }
+    .stat-icon--sky,
+    .stat-icon--emerald,
     .stat-icon--amber,
-    .stat-icon--orange { @apply bg-amber-50 text-amber-600; }
+    .stat-icon--orange,
     .stat-icon--rose,
-    .stat-icon--red   { @apply bg-rose-50 text-rose-600; }
-    .stat-icon--slate { @apply bg-slate-100 text-slate-500; }
+    .stat-icon--red,
+    .stat-icon--slate { @apply bg-emerald-100 text-emerald-950 border border-emerald-200 font-bold; }
 
-    /* ------------------------------------------------------------------ */
-    /* TOMBOL                                                             */
-    /*                                                                    */
-    /* Satu tinggi, satu radius membulat, garis 1px. Yang membedakan       */
-    /* tingkatannya isian — dan yang berisi penuh mendapat bayangan tipis  */
-    /* seukuran warnanya sendiri, supaya terbaca sebagai benda yang bisa   */
-    /* ditekan, bukan tempelan warna.                                     */
-    /* ------------------------------------------------------------------ */
+    /* TOMBOL (PWA Mobile Ergonomics) */
     .btn-primary,
     .btn-secondary,
     .btn-ghost,
@@ -339,37 +195,29 @@
     .btn-danger-ghost,
     .btn-success {
         @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap;
-        @apply h-9 rounded-lg border px-3.5 text-sm font-medium;
+        @apply h-11 sm:h-10 rounded-xl border px-4 sm:px-3.5 text-xs sm:text-sm font-bold;
         @apply disabled:pointer-events-none disabled:opacity-40;
-
-        /*
-         * Warna DAN bentuk ikut beralih, supaya jari yang menekan mendapat
-         * jawaban meski warnanya nyaris tak berubah di layar ponsel yang
-         * silau. 0,6% terlalu kecil untuk menggeser apa pun di sekitarnya,
-         * cukup besar untuk terasa. Satu tempat ini melayani seluruh tombol
-         * di 90 halaman.
-         */
-        @apply transition-[color,background-color,border-color,transform] duration-100;
+        @apply transition-all duration-100;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
     }
 
-    /* Ditulis sebagai daftar pemilih, bukan sarang `&:active`: proyek ini
-       tidak memasang tailwindcss/nesting, dan sarang CSS asli baru ada di
-       Chrome 112+ — WebView di ponsel guru belum tentu setua itu. */
     .btn-primary:active,
     .btn-secondary:active,
     .btn-ghost:active,
     .btn-danger:active,
     .btn-danger-ghost:active,
     .btn-success:active {
-        transform: scale(0.994);
+        transform: scale(0.96);
     }
 
-    .btn-primary   { @apply border-indigo-600 bg-indigo-600 text-white shadow-sm hover:border-indigo-700 hover:bg-indigo-700; }
-    .btn-secondary { @apply border-slate-200 bg-white text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-50; }
-    .btn-ghost     { @apply border-transparent bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900; }
-    .btn-danger    { @apply border-rose-600 bg-rose-600 text-white shadow-sm hover:border-rose-700 hover:bg-rose-700; }
-    .btn-danger-ghost { @apply border-transparent bg-transparent text-rose-600 hover:bg-rose-50; }
-    .btn-success   { @apply border-emerald-600 bg-emerald-600 text-white shadow-sm hover:border-emerald-700 hover:bg-emerald-700; }
+    .btn-primary   { @apply border-emerald-600 bg-emerald-600 text-white shadow-sm shadow-emerald-200 hover:border-emerald-700 hover:bg-emerald-700; }
+    .btn-secondary { @apply border-emerald-200 bg-white text-slate-900 shadow-xs hover:border-emerald-300 hover:bg-emerald-50; }
+    .btn-ghost     { @apply border-transparent bg-transparent text-slate-800 hover:bg-emerald-100/70 hover:text-slate-900; }
+    .btn-danger    { @apply border-slate-900 bg-slate-900 text-white shadow-sm hover:bg-black; }
+    .btn-danger-ghost { @apply border-transparent bg-transparent text-slate-900 hover:bg-emerald-50 font-bold; }
+    .btn-success   { @apply border-emerald-600 bg-emerald-600 text-white shadow-sm shadow-emerald-200 hover:border-emerald-700 hover:bg-emerald-700; }
 
     .btn-primary--sm,
     .btn-secondary--sm,
@@ -377,260 +225,70 @@
     .btn-danger--sm,
     .btn-danger-ghost--sm,
     .btn-success--sm {
-        @apply h-8 px-2.5 text-xs;
+        @apply h-8 px-3 text-xs rounded-lg;
     }
 
-    /* Tombol ikon persegi. */
     .btn-icon {
-        @apply inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-xs;
-        @apply transition-colors duration-100 hover:border-slate-300 hover:text-slate-900;
+        @apply inline-flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-200 bg-white text-slate-800 shadow-xs;
+        @apply transition-colors duration-100 hover:border-emerald-300 hover:bg-emerald-50 hover:text-slate-950;
     }
 
-    /* ------------------------------------------------------------------ */
-    /* BADGE — penanda di dalam tabel dan daftar                          */
-    /*                                                                    */
-    /* Pil isian lembut dengan cincin di dalam. Bukan huruf besar mono     */
-    /* lagi: HURUF BESAR pada label dua-tiga kata memaksa mata mengeja,    */
-    /* dan penanda yang harus dieja berhenti menjadi penanda.              */
-    /*                                                                    */
-    /* Bedakan dari .lencana — yang itu menyatakan keadaan seluruh         */
-    /* halaman dan mendarat dengan gerak; yang ini duduk diam di dalam     */
-    /* baris data.                                                        */
-    /* ------------------------------------------------------------------ */
+    /* BADGE */
     .badge {
-        @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5;
-        @apply text-[11px] font-medium;
-        @apply bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-900/5;
+        @apply inline-flex items-center gap-1 rounded-lg px-2 py-0.5;
+        @apply text-[11px] font-bold;
+        @apply bg-emerald-100 text-emerald-950 ring-1 ring-inset ring-emerald-600/20;
     }
-    .badge--emerald { @apply bg-emerald-50 text-emerald-700 ring-emerald-600/15; }
-    .badge--rose    { @apply bg-rose-50 text-rose-700 ring-rose-600/15; }
-    .badge--amber   { @apply bg-amber-50 text-amber-700 ring-amber-600/20; }
+    .badge--emerald,
+    .badge--rose,
+    .badge--amber,
     .badge--indigo,
-    .badge--sky     { @apply bg-indigo-50 text-indigo-700 ring-indigo-600/15; }
-    .badge--slate   { @apply bg-slate-100 text-slate-600 ring-slate-900/5; }
+    .badge--sky,
+    .badge--slate { @apply bg-emerald-100 text-emerald-950 ring-1 ring-inset ring-emerald-600/20; }
 
-    .status-dot { @apply inline-block h-1.5 w-1.5 rounded-full bg-slate-400; }
-    .status-dot--emerald { @apply bg-emerald-600; }
-    .status-dot--rose    { @apply bg-rose-600; }
-    .status-dot--amber   { @apply bg-amber-600; }
-    .status-dot--slate   { @apply bg-slate-400; }
+    .status-dot { @apply inline-block h-1.5 w-1.5 rounded-full bg-emerald-600; }
+    .status-dot--emerald,
+    .status-dot--rose,
+    .status-dot--amber,
+    .status-dot--slate { @apply bg-emerald-600; }
 
-    /* ------------------------------------------------------------------ */
-    /* PEMBERITAHUAN                                                      */
-    /*                                                                    */
-    /* Ditandai batang tebal di tepi kiri, bukan bidang berwarna penuh —   */
-    /* peringatan tidak perlu mewarnai seperempat layar untuk terbaca.     */
-    /* ------------------------------------------------------------------ */
+    /* ALERT */
     .alert {
-        @apply flex flex-col gap-3 rounded border border-l-[3px] p-3.5 sm:flex-row sm:items-start;
+        @apply flex flex-col gap-3 rounded-2xl border border-l-4 p-4 sm:flex-row sm:items-start bg-white shadow-xs;
     }
-    .alert__title { @apply text-sm font-semibold; }
-    .alert__body  { @apply text-sm; }
+    .alert__title { @apply text-sm font-bold text-slate-900; }
+    .alert__body  { @apply text-xs sm:text-sm text-slate-800 font-medium; }
 
-    .alert--warning { @apply border-amber-200 border-l-amber-600 bg-amber-50;
-        .alert__title { @apply text-amber-900; } .alert__body { @apply text-amber-800; } .alert__icon { @apply text-amber-600; } }
-    .alert--danger  { @apply border-rose-200 border-l-rose-600 bg-rose-50;
-        .alert__title { @apply text-rose-900; } .alert__body { @apply text-rose-800; } .alert__icon { @apply text-rose-600; } }
-    .alert--success { @apply border-emerald-200 border-l-emerald-600 bg-emerald-50;
-        .alert__title { @apply text-emerald-900; } .alert__body { @apply text-emerald-800; } .alert__icon { @apply text-emerald-600; } }
-    .alert--info    { @apply border-indigo-200 border-l-indigo-600 bg-indigo-50;
-        .alert__title { @apply text-indigo-900; } .alert__body { @apply text-indigo-800; } .alert__icon { @apply text-indigo-600; } }
+    .alert--warning,
+    .alert--danger,
+    .alert--success,
+    .alert--info {
+        @apply border-emerald-200 border-l-emerald-600 bg-[#f0fdf4];
+        .alert__title { @apply text-slate-900; }
+        .alert__body { @apply text-slate-800; }
+        .alert__icon { @apply text-emerald-600; }
+    }
 
-    /* ------------------------------------------------------------------ */
-    /* FORMULIR                                                           */
-    /* ------------------------------------------------------------------ */
+    /* FORMULIR */
     .form-group { @apply space-y-1.5; }
-
     .form-label {
-        @apply block text-xs font-medium text-slate-700;
+        @apply block text-xs sm:text-sm font-bold text-slate-900;
     }
     .form-label--required::after {
         content: '*';
-        @apply ml-0.5 text-rose-600;
-    }
-    .form-hint  { @apply text-xs text-slate-500; }
-    .form-error { @apply text-xs font-medium text-rose-600; }
-
-    .form-input,
-    .form-select,
-    .form-textarea {
-        @apply block w-full rounded border-slate-300 bg-white text-sm text-slate-900;
-        @apply placeholder:text-slate-400;
-        @apply focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600;
-    }
-    .form-input,
-    .form-select { @apply h-9 py-0; }
-    .form-textarea { @apply py-2; }
-    .form-input--sm { @apply h-8 text-xs; }
-    .form-input--error { @apply border-rose-400 focus:border-rose-600 focus:ring-rose-600; }
-
-    .form-checkbox {
-        @apply rounded-sm border-slate-300 text-indigo-600 focus:ring-indigo-600;
+        @apply ml-0.5 text-emerald-700 font-bold;
     }
 
-    /* ------------------------------------------------------------------ */
-    /* TABEL — permukaan utama aplikasi ini                               */
-    /*                                                                    */
-    /* Rapat (baris 36px), bergaris rambut, kepala kolom mono huruf besar. */
-    /* Kolom pertama menyandang kode margin, jadi ia tidak diberi padding  */
-    /* kiri penuh.                                                        */
-    /* ------------------------------------------------------------------ */
-    .table-wrapper {
-        @apply overflow-x-auto rounded-lg border border-slate-200 bg-white;
-    }
-
-    .table {
-        @apply w-full border-collapse text-left text-sm;
-    }
-
-    .table thead th {
-        @apply whitespace-nowrap border-b border-slate-200 bg-slate-50 px-3 py-2;
-        @apply font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500;
-    }
-
-    .table tbody tr {
-        @apply border-b border-slate-100 transition-colors duration-75 last:border-0;
-    }
-    .table tbody tr:hover {
-        @apply bg-indigo-50/40;
-    }
-
-    .table tbody td {
-        @apply px-3 py-2 align-middle text-slate-700;
-    }
-
-    /* Kolom nama/identitas: yang dicari mata lebih dulu. */
-    .table tbody td:first-child {
-        @apply font-medium text-slate-900;
-    }
-
-    .td--mono      { @apply font-mono text-xs text-slate-600; }
-    .td--secondary { @apply text-slate-500; }
-    .td--success   { @apply font-medium text-emerald-700; }
-    .td--danger    { @apply font-medium text-rose-700; }
-    .td--warning   { @apply font-medium text-amber-700; }
-    .td--muted     { @apply text-slate-400; }
-
-    .row--attention { @apply bg-rose-50/60; }
-    .row--success   { @apply bg-emerald-50/60; }
-
-    /* ------------------------------------------------------------------ */
-    /* AVATAR — inisial di kotak, bukan foto bulat berwarna               */
-    /* ------------------------------------------------------------------ */
-    .avatar {
-        @apply flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden;
-        @apply rounded border border-slate-200 bg-slate-100;
-    }
-    .avatar--sm { @apply h-6 w-6; }
-    .avatar-initials {
-        @apply font-mono text-[11px] font-medium uppercase text-slate-500;
-    }
-
-    .avatar-hero {
-        @apply relative flex h-14 w-14 items-center justify-center overflow-hidden rounded border border-slate-200 bg-slate-100;
-    }
-    .avatar-hero-img { @apply h-full w-full object-cover; }
-    .avatar-hero-initials {
-        @apply flex h-full w-full items-center justify-center font-mono text-lg font-medium uppercase text-slate-500;
-    }
-    /*
-     * Jenis kelamin dulu ditandai biru/merah muda. Diganti garis tepi kiri
-     * yang tebal: penandanya tetap ada dan justru lebih terbaca di daftar
-     * padat, tanpa mewarnai anak berdasarkan jenis kelaminnya.
-     */
-    .avatar-hero--male     { @apply border-l-[3px] border-l-slate-400; }
-    .avatar-hero--female   { @apply border-l-[3px] border-l-slate-300; }
-    .avatar-hero--inactive { @apply opacity-50; }
-
-    /* ------------------------------------------------------------------ */
-    /* KEADAAN KOSONG — undangan bertindak, bukan wajah sedih             */
-    /* ------------------------------------------------------------------ */
-    .empty-state {
-        @apply flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-6 py-12 text-center;
-    }
-    .empty-state--compact { @apply px-4 py-8; }
-    .empty-state__icon {
-        @apply mb-3 flex h-9 w-9 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-400;
-    }
-    .empty-state__icon svg { @apply h-4 w-4; }
-    .empty-state__title { @apply text-sm font-semibold text-slate-900; }
-    .empty-state__description { @apply mt-1 max-w-sm text-sm text-slate-500; }
-    .empty-state__action { @apply mt-4; }
-
-    /* ------------------------------------------------------------------ */
-    /* PROSES BERJALAN                                                    */
-    /* ------------------------------------------------------------------ */
-    .spinner {
-        @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600;
-    }
-    .spinner--white { @apply border-white/30 border-t-white; }
-
-    /* Bilah kemajuan: setipis mungkin, tanpa sudut bulat penuh. */
-    .bar {
-        @apply h-1 w-full overflow-hidden rounded-sm bg-slate-100;
-    }
-    .bar__isi { @apply h-full bg-indigo-600; }
-    .bar__isi--emerald { @apply bg-emerald-600; }
-    .bar__isi--amber   { @apply bg-amber-600; }
-    .bar__isi--rose    { @apply bg-rose-600; }
-
-    /* ------------------------------------------------------------------ */
-    /* LAPISAN HIDUP                                                      */
-    /*                                                                    */
-    /* Empat hal, tidak lebih. Semuanya hanya menyentuh transform dan      */
-    /* opacity — digambar GPU tanpa menghitung ulang tata letak, jadi      */
-    /* ponsel kelas menengah yang dipakai guru tidak membayar apa pun.     */
-    /* Seluruhnya mati sendiri lewat prefers-reduced-motion di kaki        */
-    /* berkas ini.                                                        */
-    /* ------------------------------------------------------------------ */
-
-    /*
-     * Daftar yang muncul baris demi baris.
-     *
-     * Selisihnya 45ms dan berhenti bertingkat di baris kedelapan: lewat dari
-     * itu guru sudah menunggu, bukan menikmati. Di daftar 34 siswa, menunggu
-     * giliran ke-34 berarti setengah detik menatap layar kosong.
-     */
-    .hidup > * { @apply animate-naik; }
-    .hidup > *:nth-child(1) { animation-delay: 0ms; }
-    .hidup > *:nth-child(2) { animation-delay: 45ms; }
-    .hidup > *:nth-child(3) { animation-delay: 90ms; }
-    .hidup > *:nth-child(4) { animation-delay: 135ms; }
-    .hidup > *:nth-child(5) { animation-delay: 180ms; }
-    .hidup > *:nth-child(6) { animation-delay: 225ms; }
-    .hidup > *:nth-child(7) { animation-delay: 270ms; }
-    .hidup > *:nth-child(n+8) { animation-delay: 315ms; }
-
-    /*
-     * LENCANA KEADAAN — pil yang menyatakan keadaan hari ini.
-     *
-     * Menggantikan stempel karet miring dari arah desain sebelumnya. Warnanya
-     * semantik, bukan aksen: hijau untuk yang beres, merah untuk yang menuntut
-     * tindakan. Aksen lembayung sengaja TIDAK dipakai di sini — kalau warna
-     * aksen ikut menandai keadaan, tidak ada lagi yang membedakan "bisa
-     * diklik" dari "perlu diperhatikan".
-     */
     .lencana {
         @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1;
-        @apply text-xs font-medium;
-        @apply bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/15;
-        @apply animate-pop;
+        @apply text-xs font-bold;
+        @apply bg-emerald-100 text-emerald-950 ring-1 ring-inset ring-emerald-600/20;
     }
-    .lencana__titik { @apply h-1.5 w-1.5 rounded-full bg-current; }
-
+    .lencana__titik { @apply h-1.5 w-1.5 rounded-full bg-emerald-600; }
     .lencana--perlu {
-        @apply bg-rose-50 text-rose-700 ring-rose-600/15;
+        @apply bg-white text-slate-900 ring-slate-400;
     }
-    .lencana--perlu .lencana__titik { @apply animate-denyut; }
 
-    a.lencana { @apply transition-colors duration-100; }
-    a.lencana:hover { @apply bg-emerald-100; }
-    a.lencana.lencana--perlu:hover { @apply bg-rose-100; }
-
-    /*
-     * TULIS — garis bawah yang ditarik dari kiri saat disentuh, bukan menyala
-     * seketika. Gerak yang punya arah terbaca sebagai jawaban, bukan kedipan.
-     */
     .tulis {
         @apply relative no-underline;
     }
@@ -647,21 +305,74 @@
 }
 
 /* ============================================================================
-   CETAK
-
-   Halaman rapor, daftar hadir, dan berita acara dicetak sungguhan lalu
-   ditandatangani. Yang tampil di kertas harus tinta hitam di atas putih.
+   BOTTOM NAVIGATION BAR PWA (3 Colors: Soft Green #f0fdf4, White, Black)
    ============================================================================ */
+
+.bottom-nav-pwa,
+.bottom-nav-walas {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    background: rgba(240, 253, 244, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1.5px solid #a7f3d0;
+    box-shadow: 0 -4px 20px rgba(16, 185, 129, 0.08);
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+}
+
+.bottom-nav-item,
+.bottom-nav-item-pwa {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 2px 8px;
+    text-decoration: none;
+    color: #334155;
+    transition: all 0.15s ease;
+    position: relative;
+    min-height: 52px;
+}
+
+.bottom-nav-item--active,
+.bottom-nav-item-pwa--active {
+    color: #064e3b;
+    background: #d1fae5;
+    border-radius: 12px;
+    font-weight: 800;
+}
+
+.bottom-nav-icon,
+.bottom-nav-icon-pwa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+}
+
+.bottom-nav-label,
+.bottom-nav-label-pwa {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+/* CETAK */
 @media print {
     .no-print { display: none !important; }
-
     body { background: #fff; color: #000; }
-
     .card, .card-elevated, .blok, .table-wrapper {
         border-color: #000 !important;
         padding: 0;
     }
-
     .table { font-size: 10pt; }
     .table thead th {
         background: #fff !important;
@@ -669,10 +380,6 @@
         border-bottom: 1px solid #000 !important;
     }
     .table tbody tr { border-bottom: 1px solid #999 !important; }
-
-    .row--attention, .row--success { background: #fff !important; }
-
-    /* Tabel tidak boleh terpotong di tengah baris. */
     tr, td, th { page-break-inside: avoid; }
     thead { display: table-header-group; }
 }

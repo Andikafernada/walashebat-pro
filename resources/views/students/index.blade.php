@@ -4,129 +4,176 @@
 
 @section('content')
 @php
-    /*
-     * Kelas ajar hanya menyimpan NIS dan nama.
-     *
-     * Guru mapel tidak berhak atas biodata, nomor HP orang tua, maupun jenis
-     * kelamin siswa di kelas yang wali kelasnya orang lain. Menampilkan kolom
-     * itu bukan sekadar ramai — kolom yang terlihat mengundang untuk diisi,
-     * lalu lahir salinan kedua biodata yang menyimpang dari milik wali kelas
-     * aslinya, dan tidak ada yang tahu mana yang benar.
-     */
     $ajar = $classroom->kelasAjar();
 @endphp
 
-<div class="space-y-5 pb-12" x-data="{ showShareModal: false }">
+<div class="space-y-6 pb-12" x-data="{ showShareModal: false }">
 
-    <div class="page-header">
+    {{-- ══════════ 1. HEADER & ACTION BUTTONS ══════════ --}}
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="min-w-0">
             <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
-                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600 transition-colors">Kelas</a>
                 <span aria-hidden="true">/</span>
-                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-slate-600">{{ $classroom->name }}</a>
+                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-slate-600 transition-colors">{{ $classroom->name }}</a>
                 <span aria-hidden="true">/</span>
-                <span class="text-slate-500">Daftar Siswa</span>
+                <span class="text-slate-500 font-medium">Daftar Siswa</span>
             </nav>
-            <h1 class="mt-1 text-xl font-semibold tracking-tight text-slate-900">Daftar Siswa Kelas {{ $classroom->name }}</h1>
-            <p class="mt-1 text-sm text-slate-500">
+            <h1 class="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                Daftar Siswa Kelas {{ $classroom->name }}
+            </h1>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">
                 @if ($ajar)
-                    Kelas yang Anda ajar sebagai guru mapel — datanya cukup <strong class="font-medium text-slate-700">NIS dan nama</strong>.
+                    Kelas yang Anda ajar sebagai guru mapel — <span class="font-bold text-slate-900">NIS &amp; Nama Siswa</span>.
                 @else
-                    Kelola data biodata siswa, poin kedisiplinan, dan nomor HP orang tua.
+                    Kelola biodata lengkap, nomor kontak orang tua, dan kartu QR siswa.
                 @endif
             </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('classes.students.qr-cards', $classroom) }}" class="btn-secondary btn-secondary--sm">Cetak Kartu QR</a>
+        {{-- Action Buttons --}}
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <a href="{{ route('classes.students.qr-cards', $classroom) }}"
+               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all hover:scale-105">
+                <span>🔖</span>
+                <span>Kartu QR</span>
+            </a>
 
-            {{-- Form biodata mandiri mengumpulkan alamat, HP ortu, dan data keluarga —
-                 seluruhnya di luar hak guru mapel, dan grup orang tuanya pun milik
-                 wali kelas lain. Salah kirim tautan ini tidak memunculkan galat apa
-                 pun, jadi penjagaannya harus ada di sini. --}}
             @if (! $ajar)
-                <button type="button" @click="showShareModal = true" class="btn-secondary btn-secondary--sm">Bagikan Form Mandiri Siswa</button>
+                <button type="button" @click="showShareModal = true"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-100 border border-emerald-200 hover:bg-emerald-200 text-emerald-950 text-xs font-bold shadow-xs transition-all hover:scale-105">
+                    <span>🔗</span>
+                    <span>Bagikan Form Mandiri</span>
+                </button>
             @endif
 
-            {{--
-                `students.import.form` (GET), BUKAN `students.import` (POST).
-                Tombol ini dulu menunjuk rute POST lewat <a href>, sehingga
-                menekannya menghasilkan 405 Method Not Allowed — halaman impor
-                yang sudah jadi tidak pernah bisa dibuka dari antarmuka.
-            --}}
             @if(Route::has('classes.students.import.form'))
-                <a href="{{ route('classes.students.import.form', $classroom) }}" class="btn-secondary btn-secondary--sm">Impor Excel</a>
+                <a href="{{ route('classes.students.import.form', $classroom) }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all hover:scale-105">
+                    <span>📥</span>
+                    <span>Impor Excel</span>
+                </a>
             @endif
 
-            <a href="{{ route('classes.students.create', $classroom) }}" class="btn-primary btn-primary--sm">Tambah Siswa</a>
+            <a href="{{ route('classes.students.create', $classroom) }}"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm shadow-emerald-200 transition-all hover:scale-105">
+                <span>+</span>
+                <span>Tambah Siswa</span>
+            </a>
         </div>
     </div>
 
+    {{-- NAVIGASI KELAS --}}
     @include('partials.class-nav', ['classroom' => $classroom])
 
     @include('partials.flash')
 
-    <section class="blok">
-        <div class="blok__kepala">
-            <h2 class="blok__judul">{{ $students->total() }} siswa</h2>
+    {{-- ══════════ 2. CONTAINER DAFTAR SISWA ══════════ --}}
+    <section class="bg-white rounded-3xl border border-emerald-200/80 shadow-xs overflow-hidden">
 
-            <form method="GET" action="{{ route('classes.students.index', $classroom) }}" class="flex items-center gap-1.5">
-                <label for="cari" class="sr-only">Cari nama siswa atau NIS</label>
-                <input id="cari" type="search" name="cari" value="{{ $cari ?? '' }}" placeholder="Cari nama atau NIS"
-                       class="form-input form-input--sm w-44 sm:w-56">
-                <button type="submit" class="btn-secondary btn-secondary--sm">Cari</button>
+        {{-- Top Bar: Total count & Search Input --}}
+        <div class="p-4 sm:px-6 sm:py-4 border-b border-emerald-100 bg-emerald-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+                <span class="text-lg">👥</span>
+                <h2 class="text-sm font-bold text-slate-900">{{ $students->total() }} Siswa Terdaftar</h2>
+            </div>
+
+            <form method="GET" action="{{ route('classes.students.index', $classroom) }}" class="flex items-center gap-2">
+                <div class="relative flex-1 sm:w-64">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs">🔍</span>
+                    <input id="cari" type="search" name="cari" value="{{ $cari ?? '' }}"
+                           placeholder="Cari nama atau NIS..."
+                           class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                </div>
+                <button type="submit" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition-colors">
+                    Cari
+                </button>
                 @if($cari)
-                    <a href="{{ route('classes.students.index', $classroom) }}" class="btn-ghost btn-ghost--sm">Reset</a>
+                    <a href="{{ route('classes.students.index', $classroom) }}" class="px-2.5 py-1.5 text-xs text-slate-500 hover:text-slate-800 font-semibold">
+                        Reset
+                    </a>
                 @endif
             </form>
         </div>
 
         @if ($students->isNotEmpty())
-            <div class="overflow-x-auto">
-                <table class="table">
+            {{-- A. TAMPILAN DESKTOP (Tabel Modern) --}}
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr>
-                            <th scope="col" class="w-10 text-right">No</th>
-                            <th scope="col">Nama Siswa</th>
-                            <th scope="col">{{ $ajar ? 'NIS' : 'NIS / NISN' }}</th>
+                        <tr class="border-b border-emerald-100 bg-emerald-50/60 text-[11px] font-bold uppercase tracking-wider text-emerald-950">
+                            <th scope="col" class="py-3 px-4 text-center w-12">No</th>
+                            <th scope="col" class="py-3 px-4">Nama Siswa</th>
+                            <th scope="col" class="py-3 px-4">{{ $ajar ? 'NIS' : 'NIS / NISN' }}</th>
                             @unless ($ajar)
-                                <th scope="col" class="w-12">L/P</th>
-                                <th scope="col">HP Orang Tua</th>
+                                <th scope="col" class="py-3 px-4 text-center w-16">Gender</th>
+                                <th scope="col" class="py-3 px-4">Kontak Orang Tua</th>
                             @endunless
-                            <th scope="col" class="text-right">Aksi</th>
+                            <th scope="col" class="py-3 px-4 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-emerald-100 text-sm">
                         @foreach ($students as $index => $s)
-                            <tr>
-                                {{-- Nomor urut di margin: angka abu rata kanan, tanpa
-                                     kotak. Ia penunjuk baris, bukan data. --}}
-                                <td class="text-right font-mono text-xs text-slate-400">{{ $students->firstItem() + $index }}</td>
-                                <td>
-                                    <a href="{{ route('classes.students.show', [$classroom, $s]) }}" class="hover:text-indigo-700 hover:underline">
-                                        {{ $s->name }}
-                                    </a>
+                            <tr class="hover:bg-emerald-50/40 transition-colors group">
+                                <td class="py-3.5 px-4 text-center font-mono text-xs text-slate-400 font-semibold">
+                                    {{ $students->firstItem() + $index }}
                                 </td>
-                                <td class="td--mono">
+                                <td class="py-3.5 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center shrink-0 bg-emerald-100 text-emerald-950 border border-emerald-200 shadow-2xs">
+                                            {{ Str::upper(Str::substr($s->name, 0, 1)) }}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <a href="{{ route('classes.students.show', [$classroom, $s]) }}"
+                                               class="font-bold text-slate-900 hover:text-emerald-700 transition-colors truncate block">
+                                                {{ $s->name }}
+                                            </a>
+                                            @if(!$s->is_active)
+                                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-600">Nonaktif</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-4 font-mono text-xs text-slate-700 font-medium">
                                     @if ($ajar)
                                         {{ $s->nis ?: '—' }}
                                     @else
-                                        {{ $s->nis ?: '—' }} / {{ $s->nisn ?: '—' }}
+                                        <span>{{ $s->nis ?: '—' }}</span>
+                                        @if($s->nisn)
+                                            <span class="text-slate-400 font-normal"> / {{ $s->nisn }}</span>
+                                        @endif
                                     @endif
                                 </td>
                                 @unless ($ajar)
-                                    {{-- L/P sebagai kode satu huruf, bukan lencana
-                                         biru/merah muda. Kepala kolomnya sudah
-                                         menerangkan artinya, dan warna berdasarkan
-                                         jenis kelamin tidak menambah satu pun
-                                         informasi yang tidak sudah tertulis. --}}
-                                    <td><span class="kode" title="{{ $s->gender === 'L' ? 'Laki-laki' : 'Perempuan' }}">{{ $s->gender ?: '—' }}</span></td>
-                                    <td class="td--mono">{{ $s->parent_phone ?: '—' }}</td>
+                                    <td class="py-3.5 px-4 text-center">
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-950 border border-emerald-200"
+                                              title="{{ $s->gender === 'L' ? 'Laki-laki' : ($s->gender === 'P' ? 'Perempuan' : 'Belum diisi') }}">
+                                            {{ $s->gender ?: '—' }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-xs">
+                                        @if($s->parent_phone)
+                                            <a href="https://wa.me/{{ preg_replace('/\D/', '', $s->parent_phone) }}"
+                                               target="_blank" rel="noopener"
+                                               class="inline-flex items-center gap-1.5 font-mono text-slate-800 hover:text-emerald-700 font-semibold transition-colors">
+                                                <span class="text-emerald-600 font-bold">💬</span>
+                                                <span>{{ $s->parent_phone }}</span>
+                                            </a>
+                                        @else
+                                            <span class="text-slate-400 font-mono">—</span>
+                                        @endif
+                                    </td>
                                 @endunless
-                                <td class="text-right">
+                                <td class="py-3.5 px-4 text-right">
                                     <div class="flex items-center justify-end gap-1.5">
-                                        <a href="{{ route('classes.students.show', [$classroom, $s]) }}" class="btn-secondary btn-secondary--sm">Detail</a>
-                                        <a href="{{ route('classes.students.edit', [$classroom, $s]) }}" class="btn-ghost btn-ghost--sm">Edit</a>
+                                        <a href="{{ route('classes.students.show', [$classroom, $s]) }}"
+                                           class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-200 text-xs font-bold transition-colors">
+                                            Detail
+                                        </a>
+                                        <a href="{{ route('classes.students.edit', [$classroom, $s]) }}"
+                                           class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-xs font-semibold transition-colors">
+                                            Edit
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -135,114 +182,176 @@
                 </table>
             </div>
 
+            {{-- B. TAMPILAN MOBILE (Card List Adaptif) --}}
+            <div class="md:hidden divide-y divide-emerald-100">
+                @foreach ($students as $index => $s)
+                    <div class="p-4 hover:bg-emerald-50/30 transition-colors flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <div class="w-10 h-10 rounded-2xl font-bold text-sm flex items-center justify-center shrink-0 bg-emerald-100 text-emerald-950 border border-emerald-200 shadow-2xs">
+                                {{ Str::upper(Str::substr($s->name, 0, 1)) }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <a href="{{ route('classes.students.show', [$classroom, $s]) }}"
+                                   class="font-bold text-sm text-slate-900 truncate block hover:text-emerald-700">
+                                    {{ $s->name }}
+                                </a>
+                                <div class="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
+                                    <span class="font-mono">{{ $s->nis ?: 'No NIS' }}</span>
+                                    @if($s->gender)
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-950 border border-emerald-200">
+                                            {{ $s->gender }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            @if($s->parent_phone)
+                                <a href="https://wa.me/{{ preg_replace('/\D/', '', $s->parent_phone) }}" target="_blank" rel="noopener"
+                                   class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center justify-center text-sm font-bold border border-emerald-200 transition-colors"
+                                   title="Chat WhatsApp Orang Tua">
+                                    💬
+                                </a>
+                            @endif
+                            <a href="{{ route('classes.students.show', [$classroom, $s]) }}"
+                               class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 text-xs font-bold border border-emerald-200 transition-colors">
+                                Detail &rarr;
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- Pagination --}}
             @if ($students->hasPages())
-                <div class="flex items-center justify-between gap-3 border-t border-slate-200 px-4 py-2.5 text-xs text-slate-500">
-                    <span class="angka">Menampilkan {{ $students->firstItem() }}–{{ $students->lastItem() }} dari {{ $students->total() }} siswa</span>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-emerald-100 px-5 py-3.5 text-xs text-slate-500 bg-emerald-50/50">
+                    <span class="font-medium text-slate-700">Menampilkan {{ $students->firstItem() }}–{{ $students->lastItem() }} dari {{ $students->total() }} siswa</span>
                     <div>{{ $students->links() }}</div>
                 </div>
             @endif
         @else
-            <div class="p-6 text-center">
-                <p class="text-sm font-medium text-slate-900">Tidak ada siswa ditemukan</p>
-                <p class="mt-1 text-sm text-slate-500">
-                    @if ($ajar)
-                        Tambahkan siswa baru, atau impor dari Excel — cukup kolom NIS dan Nama.
-                    @else
-                        Tambahkan siswa baru atau bagikan tautan form mandiri.
-                    @endif
-                </p>
+            <div class="p-12 text-center space-y-3">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-3xl mx-auto shadow-xs border border-emerald-200">👥</div>
+                <div class="space-y-1 max-w-sm mx-auto">
+                    <p class="text-sm font-bold text-slate-900">Belum Ada Siswa Ditemukan</p>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        @if ($ajar)
+                            Tambahkan siswa baru atau impor dari Excel (cukup kolom NIS dan Nama).
+                        @else
+                            Tambahkan siswa baru secara manual atau bagikan tautan form mandiri kepada orang tua.
+                        @endif
+                    </p>
+                </div>
+                <a href="{{ route('classes.students.create', $classroom) }}"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-200 transition-all">
+                    + Tambah Siswa Pertama
+                </a>
             </div>
         @endif
     </section>
 
-    {{--
-        Mengosongkan kelas.
-
-        Tersedia di kedua jenis kelas: guru mapel pun mengimpor daftar siswanya
-        sendiri, dan salah berkas sama mungkinnya terjadi di sana.
-
-        Dipisah ke bloknya sendiri di paling bawah, jauh dari tombol Impor dan
-        Ekspor. Tombol yang menghapus puluhan baris tidak boleh bertetangga
-        dengan tombol yang dipakai sehari-hari.
-    --}}
+    {{-- ══════════ 3. DANGER ZONE ══════════ --}}
     @if ($totalKelas > 0)
-        <section class="rounded-lg border border-rose-200 bg-white"
+        <section class="rounded-3xl border border-emerald-200 bg-white overflow-hidden shadow-xs"
                  x-data="{ buka: {{ $errors->has('nama_kelas') ? 'true' : 'false' }}, ketikan: '' }">
-            <div class="flex flex-col gap-3 border-b border-rose-200 bg-rose-50 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50/60 px-5 py-3.5">
                 <div>
-                    <h2 class="text-sm font-semibold tracking-tight text-rose-900">Kosongkan Kelas</h2>
-                    <p class="mt-0.5 text-xs text-rose-800">
-                        Memindahkan seluruh {{ $totalKelas }} siswa di kelas ini ke Arsip. Riwayat absensi,
-                        nilai, dan pelanggarannya tetap tersimpan, dan daftarnya masih bisa dipulihkan.
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900">⚠️ Area Khusus: Kosongkan Kelas</h2>
+                    <p class="mt-0.5 text-xs text-slate-600">
+                        Memindahkan seluruh {{ $totalKelas }} siswa ke Arsip. Riwayat absensi dan nilai tetap tersimpan.
                     </p>
                 </div>
-                <button type="button" x-show="!buka" @click="buka = true" class="btn-danger btn-danger--sm shrink-0">Kosongkan Kelas…</button>
+                <button type="button" x-show="!buka" @click="buka = true"
+                        class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors shrink-0 self-start sm:self-auto border border-slate-200">
+                    Kosongkan Kelas…
+                </button>
             </div>
 
-            <div x-show="buka" x-cloak class="p-4">
+            <div x-show="buka" x-cloak class="p-5">
                 <form method="POST" action="{{ route('classes.students.destroy-all', $classroom) }}" class="space-y-3">
                     @csrf
                     @method('DELETE')
 
-                    <label for="nama_kelas" class="form-label">
-                        Ketik <span class="font-mono font-medium text-slate-900">{{ $classroom->name }}</span> untuk mengonfirmasi:
+                    <label for="nama_kelas" class="block text-xs font-bold text-slate-900">
+                        Ketik <span class="font-mono font-bold text-slate-900 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">{{ $classroom->name }}</span> untuk mengonfirmasi:
                     </label>
 
-                    <div class="flex flex-col gap-2 sm:flex-row">
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <input id="nama_kelas" name="nama_kelas" type="text" x-model="ketikan" autocomplete="off"
                                placeholder="{{ $classroom->name }}"
-                               class="form-input sm:max-w-xs {{ $errors->has('nama_kelas') ? 'form-input--error' : '' }}">
+                               class="px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 sm:max-w-xs {{ $errors->has('nama_kelas') ? 'border-slate-800 ring-1 ring-slate-800' : '' }}">
 
-                        {{-- Tombolnya dimatikan sampai ketikannya cocok, tetapi kecocokan
-                             itu diperiksa ULANG di server: atribut disabled hanya menahan
-                             salah tekan, bukan permintaan yang dikirim langsung. --}}
                         <button type="submit"
                                 :disabled="ketikan.trim().replace(/\s+/g, ' ').toLowerCase() !== @js(\Illuminate\Support\Str::lower(\Illuminate\Support\Str::squish($classroom->name)))"
-                                class="btn-danger shrink-0">
+                                class="px-4 py-2 rounded-xl bg-slate-900 disabled:bg-slate-200 disabled:text-slate-400 hover:bg-black text-white text-xs font-bold transition-colors shrink-0">
                             Pindahkan {{ $totalKelas }} Siswa ke Arsip
                         </button>
 
-                        <button type="button" @click="buka = false; ketikan = ''" class="btn-secondary shrink-0">Batal</button>
+                        <button type="button" @click="buka = false; ketikan = ''"
+                                class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors shrink-0">
+                            Batal
+                        </button>
                     </div>
 
                     @error('nama_kelas')
-                        <p class="form-error">{{ $message }}</p>
+                        <p class="text-xs text-slate-900 font-bold">{{ $message }}</p>
                     @enderror
 
-                    <p class="text-xs text-slate-500">
-                        Setelah dikosongkan, impor ulang dengan NIS yang sama tetap bisa dilakukan.
-                        Untuk memulihkan, buka <a href="{{ route('classes.students.trashed', $classroom) }}" class="font-medium text-indigo-700 underline">Arsip Siswa</a>.
+                    <p class="text-[11px] text-slate-400">
+                        Setelah dikosongkan, data dapat dipulihkan kapan saja melalui <a href="{{ route('classes.students.trashed', $classroom) }}" class="font-bold text-emerald-700 underline">Arsip Siswa</a>.
                     </p>
                 </form>
             </div>
         </section>
     @endif
 
-    {{-- Tidak dirender untuk kelas ajar: tanpa tombol pemanggilnya, modal ini
-         hanya jadi markup mati yang tetap memuat tautan biodata publik kelas
-         orang lain di halaman yang justru tidak mengurus biodata. --}}
+    {{-- ══════════ 4. MODAL BAGIKAN FORM MANDIRI ══════════ --}}
     @unless ($ajar)
-    <div x-show="showShareModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-        <div class="w-full max-w-md rounded-lg border border-slate-300 bg-white shadow-xl" @click.away="showShareModal = false">
-            <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
-                <h2 class="text-sm font-semibold tracking-tight text-slate-900">Bagikan Form Mandiri Biodata Siswa</h2>
-                <button type="button" @click="showShareModal = false" class="btn-icon" aria-label="Tutup">&times;</button>
+    <div x-show="showShareModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        {{-- Backdrop --}}
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showShareModal = false"></div>
+
+        {{-- Dialog --}}
+        <div class="relative w-full max-w-md rounded-3xl border border-emerald-200 bg-[#f0fdf4] p-6 shadow-2xl space-y-4 animate-naik">
+            <div class="flex items-center justify-between border-b border-emerald-200 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📋</span>
+                    <h2 class="text-sm font-bold text-slate-900">Form Mandiri Biodata Siswa</h2>
+                </div>
+                <button type="button" @click="showShareModal = false" class="w-8 h-8 rounded-full bg-emerald-100 hover:bg-emerald-200 flex items-center justify-center text-emerald-950 font-bold">
+                    ✕
+                </button>
             </div>
 
-            <div class="space-y-3 p-4">
-                <p class="text-sm text-slate-600">
-                    Kirimkan tautan ini ke grup WhatsApp siswa atau orang tua agar mereka dapat mengisi NIS, alamat, HP ortu, dan biodata dari HP masing-masing.
+            <div class="space-y-3.5">
+                <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                    Bagikan tautan ini ke grup WhatsApp kelas atau orang tua siswa. Siswa/wali murid dapat mengisi NISN, NIK, alamat lengkap, dan nomor kontak langsung dari HP masing-masing.
                 </p>
 
-                <input type="text" readonly value="{{ route('public.biodata.show', $classroom->tokenPublik()) }}"
-                       class="form-input select-all font-mono text-xs">
+                <div class="p-3 bg-white rounded-2xl border border-emerald-200 space-y-2">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">Tautan Form Publik:</label>
+                    <input type="text" readonly value="{{ route('public.biodata.show', $classroom->tokenPublik()) }}"
+                           class="w-full bg-emerald-50/50 px-3 py-2 text-xs font-mono rounded-xl border border-emerald-200 select-all focus:outline-none font-bold text-emerald-950">
+                </div>
 
-                <button type="button"
-                        onclick="navigator.clipboard.writeText('{{ route('public.biodata.show', $classroom->tokenPublik()) }}'); alert('Tautan disalin.');"
-                        class="btn-primary w-full">Salin tautan</button>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button type="button"
+                            onclick="navigator.clipboard.writeText('{{ route('public.biodata.show', $classroom->tokenPublik()) }}'); window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Tautan berhasil disalin!', type: 'success' } }));"
+                            class="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-200 text-slate-800 text-xs font-bold transition-all">
+                        📋 Salin Tautan
+                    </button>
+                    <a href="https://wa.me/?text={{ urlencode('Bapak/Ibu wali siswa kelas ' . $classroom->name . ', mohon melengkapi biodata ananda melalui formulir mandiri berikut: ' . route('public.biodata.show', $classroom->tokenPublik())) }}"
+                       target="_blank" rel="noopener"
+                       class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold text-center transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-200">
+                        <span>💬</span>
+                        <span>Kirim ke WA</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     @endunless
+
 </div>
 @endsection

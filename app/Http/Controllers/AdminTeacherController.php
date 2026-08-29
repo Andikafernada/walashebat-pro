@@ -241,6 +241,44 @@ class AdminTeacherController extends Controller
         return redirect()->route('admin.teachers.index');
     }
 
+    /**
+     * Hapus akun guru secara permanen beserta seluruh datanya.
+     *
+     * Cascades: classrooms (soft delete), students, attendances, violations,
+     * cashbooks, character records, notifications, dan sessão WA.
+     * Wizard akun yang login sendiri tidak bisa menghapus dirinya sendiri.
+     */
+    public function destroy(\App\Models\User $guru): \Illuminate\Http\RedirectResponse
+    {
+        if ($guru->id === auth()->id()) {
+            return redirect()->back()
+                ->with('error', 'Anda tidak bisa menghapus akun Anda sendiri.');
+        }
+
+        if ($guru->role !== \App\Models\User::ROLE_TEACHER) {
+            return redirect()->back()
+                ->with('error', 'Hanya akun guru yang bisa dihapus dari sini.');
+        }
+
+        $nama = $guru->name;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($guru) {
+            // Hapus sesi WA dari gateway dulu agar tidak orphan
+            try {
+                $manager = app(\App\Support\Contracts\WhatsAppSessionManager::class);
+                $manager->disconnect($guru);
+            } catch (\Throwable) {
+                // Gateway offline bukan penghalang penghapusan
+            }
+
+            $guru->delete(); // soft delete
+            $guru->forceDelete(); // hapus permanen
+        });
+
+        return redirect()->route('admin.teachers.index')
+            ->with('success', "Akun {$nama} beserta seluruh datanya telah dihapus permanen.");
+    }
+
     private function daftar(string $cari, ?string $segmen): LengthAwarePaginator
     {
         return User::query()

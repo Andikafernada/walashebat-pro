@@ -108,12 +108,26 @@ class StudentController extends Controller
         abort_if($student->class_id !== $class->id, 404);
 
         $periode = PeriodeLaporan::resolve($request);
+        $semuaSiswa = $class->students()->orderBy('name')->pluck('id')->all();
+        $currentIndex = array_search($student->id, $semuaSiswa);
+        $prevStudentId = ($currentIndex !== false && $currentIndex > 0) ? $semuaSiswa[$currentIndex - 1] : null;
+        $nextStudentId = ($currentIndex !== false && $currentIndex < count($semuaSiswa) - 1) ? $semuaSiswa[$currentIndex + 1] : null;
+
+        $prevStudent = $prevStudentId ? $class->students()->find($prevStudentId) : null;
+        $nextStudent = $nextStudentId ? $class->students()->find($nextStudentId) : null;
+        $posisiNomor = $currentIndex !== false ? $currentIndex + 1 : 1;
+        $totalSiswaKelas = count($semuaSiswa);
+
         $profil = app(StudentProfileBuilder::class)
             ->build($student, $periode['awal'], $periode['akhir'], $periode['semester']);
 
         return view('students.show', $profil + [
             'classroom' => $class,
             'periode' => $periode,
+            'prevStudent' => $prevStudent,
+            'nextStudent' => $nextStudent,
+            'posisiNomor' => $posisiNomor,
+            'totalSiswaKelas' => $totalSiswaKelas,
         ]);
     }
 

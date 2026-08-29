@@ -5,27 +5,31 @@
 @section('content')
 <div class="space-y-6 pb-12">
     <!-- Header Bar -->
-    <div class="page-header">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
-                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
-                <span aria-hidden="true">/</span>
-                <a href="{{ route('classes.show', $class) }}" class="hover:text-slate-600">{{ $class->name }}</a>
-                <span aria-hidden="true">/</span>
-                <span class="text-slate-500">Catatan Pelanggaran</span>
+                <a href="{{ route('classes.index') }}" class="hover:text-emerald-800 transition-colors font-medium">Kelas</a>
+                <span aria-hidden="true" class="text-slate-400">/</span>
+                <a href="{{ route('classes.show', $class) }}" class="hover:text-emerald-800 transition-colors font-medium">{{ $class->name }}</a>
+                <span aria-hidden="true" class="text-slate-400">/</span>
+                <span class="text-slate-500 font-bold">Catatan Pelanggaran</span>
             </nav>
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
+            <h1 class="mt-1 text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
                 Catatan Pelanggaran Siswa {{ $class->name }}
             </h1>
-            <p class="mt-1 text-sm text-slate-500">Pencatatan pelanggaran kedisiplinan siswa dan pemantauan akumulasi poin bobot.</p>
+            <p class="mt-1 text-xs sm:text-sm text-slate-600">Pencatatan pelanggaran kedisiplinan siswa dan pemantauan akumulasi poin bobot.</p>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
             <a href="{{ route('classes.exports.violations.excel', $class) }}"
-               class="btn-secondary btn-secondary--sm">Excel
+               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all hover:scale-105">
+                <span>📊</span>
+                <span>Excel</span>
             </a>
             <a href="{{ route('classes.exports.violations.pdf', $class) }}" target="_blank"
-               class="btn-secondary btn-secondary--sm">Cetak PDF
+               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all hover:scale-105">
+                <span>📄</span>
+                <span>Cetak PDF</span>
             </a>
         </div>
     </div>
@@ -41,30 +45,27 @@
 
         <!-- LEFT COLUMN: Violations List (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
-            <div class="card space-y-4">
+            <div class="bg-white rounded-2xl border border-emerald-200 p-5 shadow-xs space-y-4">
 
-                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-                    <div>
-                        <h3 class="text-base font-semibold text-slate-900">Riwayat Catatan Pelanggaran</h3>
-                        <p class="text-xs text-slate-500">Catatan insiden dan akumulasi poin siswa</p>
-                    </div>
-                    <span class="text-xs font-semibold text-slate-400">{{ $violations->total() }} Catatan</span>
+                <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
+                    <h3 class="font-extrabold text-sm text-slate-900">Riwayat Pelanggaran Siswa</h3>
+                    <span class="rounded-lg bg-emerald-100 px-2.5 py-1 text-xs font-extrabold text-emerald-950 border border-emerald-200">
+                        {{ $violations->total() }} Catatan
+                    </span>
                 </div>
 
-                @if ($violations->isNotEmpty())
-                    <div class="divide-y divide-slate-200">
+                @if ($violations->count() > 0)
+                    <div class="divide-y divide-emerald-50">
                         @foreach ($violations as $v)
-                            <div class="flex items-center justify-between gap-4 py-3 hover:bg-slate-50 px-2 rounded transition-colors">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-rose-100 text-rose-800 font-semibold text-xs border border-rose-200">
-                                        {{-- Tanda ikut nilainya: pelanggaran mengurangi poin, penghargaan menambah.
-                                             Awalan "+" yang dipaku membuat pengurangan tampil sebagai penambahan. --}}
+                            <div class="flex items-center justify-between gap-4 py-3 hover:bg-[#f0fdf4]/50 px-2 rounded-xl transition-colors">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-700 font-extrabold text-xs shrink-0 border border-rose-200 shadow-2xs">
                                         {{ $v->points > 0 ? '+' : '' }}{{ $v->points }}
                                     </div>
-                                    <div>
-                                        <h4 class="font-semibold text-sm text-slate-900">{{ $v->student->name ?? 'Siswa' }}</h4>
-                                        <p class="mt-1 text-sm text-slate-500">
-                                            {{ $v->type->name ?? $v->note ?: 'Pelanggaran' }} &middot; <span class="font-mono text-slate-400">{{ $v->occurred_on->format('d/m/Y') }}</span>
+                                    <div class="min-w-0">
+                                        <h4 class="font-extrabold text-sm text-slate-900 truncate">{{ $v->student->name ?? 'Siswa' }}</h4>
+                                        <p class="mt-0.5 text-xs text-slate-600 font-medium truncate">
+                                            {{ $v->type->name ?? $v->note ?: 'Pelanggaran' }} &middot; <span class="font-mono text-slate-500 font-bold">{{ $v->occurred_on->format('d/m/Y') }}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -72,7 +73,7 @@
                                 <form method="POST" action="{{ route('classes.violations.destroy', [$class, $v]) }}"
                                       onsubmit="return confirm('Hapus catatan pelanggaran ini?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="h-8 w-8 rounded-lg border border-slate-200 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center text-slate-400 transition-colors">
+                                    <button type="submit" class="h-8 w-8 rounded-xl border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 flex items-center justify-center text-slate-400 transition-colors shadow-2xs" title="Hapus Catatan">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
@@ -81,18 +82,18 @@
                     </div>
 
                     @if ($violations->hasPages())
-                        <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+                        <div class="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-xs text-slate-500">
                             <span>Menampilkan {{ $violations->firstItem() }}–{{ $violations->lastItem() }} dari {{ $violations->total() }} catatan</span>
                             <div>{{ $violations->links() }}</div>
                         </div>
                     @endif
                 @else
                     <div class="my-10 text-center">
-                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-emerald-50 text-emerald-500 mb-3">
-                            <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-950 font-bold text-2xl mb-3 border border-emerald-200">
+                            🛡️
                         </div>
-                        <p class="text-sm font-semibold text-slate-800">Belum Ada Pelanggaran Catatan</p>
-                        <p class="mt-1 text-xs text-slate-500">Seluruh siswa di kelas ini memiliki catatan kedisiplinan yang bersih.</p>
+                        <p class="text-sm font-extrabold text-slate-900">Belum Ada Catatan Pelanggaran</p>
+                        <p class="mt-1 text-xs text-slate-500 font-medium">Seluruh siswa di kelas ini memiliki catatan kedisiplinan yang bersih.</p>
                     </div>
                 @endif
 
@@ -101,15 +102,15 @@
 
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4">
-            <div class="card space-y-4">
+            <div class="bg-white rounded-2xl border border-emerald-200 p-5 shadow-xs space-y-4">
 
-                <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
-                    <div class="stat-icon">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <div class="flex items-center gap-3 border-b border-emerald-100 pb-3">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-950 flex items-center justify-center text-sm font-bold border border-emerald-200">
+                        ⚠️
                     </div>
                     <div>
-                        <h3 class="text-sm font-semibold text-slate-900">Catat Pelanggaran</h3>
-                        <p class="text-xs text-slate-500">Pilih Siswa &amp; Jenis Pelanggaran</p>
+                        <h3 class="text-sm font-extrabold text-slate-900">Catat Pelanggaran</h3>
+                        <p class="text-xs text-slate-500 font-medium">Pilih Siswa &amp; Jenis Pelanggaran</p>
                     </div>
                 </div>
 
@@ -117,13 +118,8 @@
                     @csrf
 
                     <div>
-                        <label for="student_id" class="form-label">Siswa</label>
-                        <select id="student_id" name="student_id" required class="form-input form-input--sm">
-                            {{-- Tanpa pilihan kosong, peramban menyorot siswa pertama
-                                 pada daftar dan `required` jadi tidak berarti: wali
-                                 kelas yang terlewat mengisi kolom ini mencatatkan
-                                 pelanggaran — berikut poinnya — atas nama siswa yang
-                                 tidak melakukan apa-apa. --}}
+                        <label for="student_id" class="block text-xs font-bold text-slate-800 mb-1">Siswa <span class="text-rose-500">*</span></label>
+                        <select id="student_id" name="student_id" required class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                             <option value="">-- Pilih Siswa --</option>
                             @foreach ($students as $st)
                                 <option value="{{ $st->id }}" @selected(old('student_id') == $st->id)>{{ $st->name }} (NIS: {{ $st->nis ?: '-' }})</option>
@@ -132,8 +128,8 @@
                     </div>
 
                     <div>
-                        <label for="violation_type_id" class="form-label">Jenis Pelanggaran</label>
-                        <select id="violation_type_id" name="violation_type_id" class="form-input form-input--sm"
+                        <label for="violation_type_id" class="block text-xs font-bold text-slate-800 mb-1">Jenis Pelanggaran</label>
+                        <select id="violation_type_id" name="violation_type_id" class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                 onchange="document.getElementById('blok-poin-custom').classList.toggle('hidden', this.value !== '')">
                             <option value="">— Pelanggaran Lainnya / Custom —</option>
                             @foreach ($types as $vt)
@@ -142,37 +138,35 @@
                         </select>
                     </div>
 
-                    {{-- Hanya untuk "Pelanggaran Lainnya". Bila jenis pelanggaran dipilih,
-                         poin diambil dari jenis itu di server, jadi input ini disembunyikan. --}}
                     <div id="blok-poin-custom">
-                        <label for="points" class="form-label">Poin</label>
+                        <label for="points" class="block text-xs font-bold text-slate-800 mb-1">Poin</label>
                         <input type="number" id="points" name="points" value="{{ old('points') }}" step="1" min="-100" max="100" placeholder="cth: -5 untuk mengurangi poin"
-                               class="form-input form-input--sm">
+                               class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <p class="mt-1 text-[10px] text-slate-500">Isi negatif untuk mengurangi poin kedisiplinan, mis. <span class="font-semibold">-5</span>.</p>
                     </div>
 
                     <div>
-                        <label for="occurred_on" class="form-label">Tanggal Kejadian</label>
-                        <input type="date" id="occurred_on" name="occurred_on" value="{{ date('Y-m-d') }}" required class="form-input form-input--sm">
+                        <label for="occurred_on" class="block text-xs font-bold text-slate-800 mb-1">Tanggal Kejadian <span class="text-rose-500">*</span></label>
+                        <input type="date" id="occurred_on" name="occurred_on" value="{{ date('Y-m-d') }}" required class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
 
                     <div>
-                        <label for="note" class="form-label">Catatan Tambahan <span class="text-slate-400 font-normal lowercase">(opsional)</span></label>
-                        <textarea id="note" name="note" rows="2" placeholder="Tuliskan keterangan detail kejadian..." class="form-input form-input--sm"></textarea>
+                        <label for="note" class="block text-xs font-bold text-slate-800 mb-1">Catatan Tambahan <span class="text-slate-400 font-normal lowercase">(opsional)</span></label>
+                        <textarea id="note" name="note" rows="2" placeholder="Tuliskan keterangan detail kejadian..." class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
                     </div>
 
                     <button type="submit" :disabled="loading"
-                            class="btn-primary w-full">
+                            class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-sm shadow-emerald-200 transition-all flex items-center justify-center gap-1.5">
                         <template x-if="!loading">
                             <span class="flex items-center gap-1.5">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                Simpan Pelanggaran
+                                <span>💾</span>
+                                <span>Simpan Pelanggaran</span>
                             </span>
                         </template>
                         <template x-if="loading">
                             <span class="flex items-center gap-1.5">
                                 <span class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                Menyimpan...
+                                <span>Menyimpan...</span>
                             </span>
                         </template>
                     </button>

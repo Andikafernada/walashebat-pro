@@ -11,7 +11,7 @@
       "id": "webhook-trigger",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [250, 300],
       "webhookId": "walikelas-session-manager"
     },
@@ -41,14 +41,14 @@
       "id": "validate-secret",
       "name": "Validate Secret",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [500, 300]
     },
     {
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": true,
+            "caseSensitive": false,
             "leftValue": "",
             "typeValidation": "strict"
           },
@@ -70,38 +70,77 @@
       "id": "switch-action",
       "name": "Switch Action",
       "type": "n8n-nodes-base.switch",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [750, 300]
     },
     {
       "parameters": {
-        "functionCode": "// PAIR ACTION\n// Generate QR code for WhatsApp pairing\n\nconst sessionId = $input.first().json.body.session_id;\nconst msisdn = $input.first().json.body.msisdn;\n\n// Generate a unique pairing ID\nconst pairingId = 'pair-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);\n\n// For Baileys-based gateway, you would typically:\n// 1. Create a new session in the WhatsApp library\n// 2. Generate QR code from the session\n// 3. Store session mapping\n\n// This example uses a mock response - replace with actual WhatsApp library integration\nreturn {\n  json: {\n    status: 'pairing',\n    session_id: sessionId,\n    qr: 'WALIKELAS:' + pairingId + ':' + msisdn,\n    error: null,\n    // Store in database/session store (example key)\n    store_key: 'wa_session:' + sessionId\n  }\n};"
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "method-filter",
+              "leftValue": "={{ $json.body.metode }}",
+              "rightValue": "kode",
+              "operator": {
+                "type": "equals",
+                "operation": "equals"
+              }
+            }
+          ],
+          "options": {}
+        },
+        "options": {}
       },
-      "id": "pair-action",
-      "name": "Pair Action",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [1000, 100]
+      "id": "switch-method",
+      "name": "Switch Method",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [1000, 150]
     },
     {
       "parameters": {
-        "functionCode": "// STATUS ACTION\n// Check WhatsApp session status\n\nconst sessionId = $input.first().json.body.session_id;\nconst msisdn = $input.first().json.body.msisdn;\n\n// In production, check actual WhatsApp library session state:\n// - Is the session still connected?\n// - Is the device linked?\n// - Last activity timestamp\n\n// Mock response - replace with actual status check\n// Example: Check if session exists in Redis/database\nconst isConnected = true; // Replace with actual check\n\nreturn {\n  json: {\n    status: isConnected ? 'connected' : 'disconnected',\n    session_id: sessionId,\n    qr: null,\n    error: isConnected ? null : 'Sesi tidak ditemukan atau sudah terputus'\n  }\n};"
+        "jsCode": "// PAIR ACTION - QR Code Method\n// Generate QR code for WhatsApp pairing\n\nconst sessionId = $('Webhook').first().json.body.session_id;\nconst msisdn = $('Webhook').first().json.body.msisdn;\n\n// Path untuk menyimpan auth state\nconst authDir = '/data/wa-sessions/' + sessionId;\n\n// Buat ID unik untuk session\nconst pairingId = 'wk-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);\n\nreturn {\n  json: {\n    status: 'pairing',\n    session_id: sessionId,\n    qr: 'WALIKELAS:QR:' + pairingId + ':' + msisdn,\n    error: null,\n    auth_dir: authDir\n  }\n};"
+      },
+      "id": "pair-qr-action",
+      "name": "Pair QR Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 50]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PAIR ACTION - Pairing Code Method (8 digit)\n// Generate 8 digit code for linking with phone number\n\nconst sessionId = $('Webhook').first().json.body.session_id;\nlet msisdn = $('Webhook').first().json.body.msisdn || '';\n\n// Normalisasi nomor: hapus semua karakter non-angka\nmsisdn = msisdn.replace(/\\D/g, '');\n\n// Validasi format Indonesia (62xx atau 08xx)\nconst validFormat = /^(62|08)\\d{8,11}$/.test(msisdn);\nif (!validFormat) {\n  return {\n    json: {\n      status: 'error',\n      session_id: sessionId,\n      pairing_code: null,\n      error: 'Format nomor salah. Gunakan format: 6281234567890 (tanpa + atau spasi)'\n    }\n  };\n}\n\n// Generate pairing code placeholder (8 karakter alphanumeric)\n// NOTE: Ini placeholder - implementasi nyata butuh Baileys\nconst chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';\nlet code = '';\nfor (let i = 0; i < 8; i++) {\n  code += chars.charAt(Math.floor(Math.random() * chars.length));\n}\n\n// Format: XXXX-XXXX untuk readability\nconst formattedCode = code.slice(0, 4) + '-' + code.slice(4);\n\nreturn {\n  json: {\n    status: 'pairing',\n    session_id: sessionId,\n    pairing_code: formattedCode,\n    msisdn_normalized: msisdn,\n    error: null,\n    expires_in: 60 // detik\n  }\n};"
+      },
+      "id": "pair-kode-action",
+      "name": "Pair Kode Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 250]
+    },
+    {
+      "parameters": {
+        "jsCode": "// STATUS ACTION\n// Check WhatsApp session status\n\nconst sessionId = $('Webhook').first().json.body.session_id;\n\n// Cek apakah session ada di storage\n// NOTE: Implementasi nyata butuh cek auth state Baileys\nconst sessionExists = false; // Ganti dengan cek sebenarnya\n\nif (sessionExists) {\n  return {\n    json: {\n      status: 'connected',\n      session_id: sessionId,\n      qr: null,\n      error: null\n    }\n  };\n} else {\n  return {\n    json: {\n      status: 'disconnected',\n      session_id: sessionId,\n      qr: null,\n      error: null\n    }\n  };\n}"
       },
       "id": "status-action",
       "name": "Status Action",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [1000, 300]
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 400]
     },
     {
       "parameters": {
-        "functionCode": "// DISCONNECT ACTION\n// Terminate WhatsApp session\n\nconst sessionId = $input.first().json.body.session_id;\nconst msisdn = $input.first().json.body.msisdn;\n\n// In production:\n// 1. Find session by session_id\n// 2. Logout/disconnect from WhatsApp\n// 3. Clean up stored credentials\n// 4. Return success\n\nreturn {\n  json: {\n    ok: true,\n    session_id: sessionId,\n    disconnected_at: new Date().toISOString()\n  }\n};"
+        "jsCode": "// DISCONNECT ACTION\n// Terminate WhatsApp session\n\nconst sessionId = $('Webhook').first().json.body.session_id;\n\n// Hapus auth state\n// NOTE: Implementasi nyata butuh hapus folder auth Baileys\n\nreturn {\n  json: {\n    ok: true,\n    session_id: sessionId,\n    disconnected_at: new Date().toISOString()\n  }\n};"
       },
       "id": "disconnect-action",
       "name": "Disconnect Action",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [1000, 500]
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 600]
     },
     {
       "parameters": {
@@ -112,7 +151,7 @@
       "name": "Respond Pair",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1250, 100]
+      "position": [1500, 150]
     },
     {
       "parameters": {
@@ -123,7 +162,7 @@
       "name": "Respond Status",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1250, 300]
+      "position": [1500, 400]
     },
     {
       "parameters": {
@@ -134,7 +173,7 @@
       "name": "Respond Disconnect",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1250, 500]
+      "position": [1500, 600]
     },
     {
       "parameters": {
@@ -149,6 +188,20 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [750, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "ok": false,
+          "error": "Format nomor salah. Gunakan format: 6281234567890 (tanpa + atau spasi)"
+        }
+      },
+      "id": "respond-invalid-number",
+      "name": "Respond Invalid Number",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1500, 300]
     }
   ],
   "connections": {
@@ -185,7 +238,7 @@
       "main": [
         [
           {
-            "node": "Pair Action",
+            "node": "Switch Method",
             "type": "main",
             "index": 0
           }
@@ -208,7 +261,36 @@
         ]
       ]
     },
-    "Pair Action": {
+    "Switch Method": {
+      "main": [
+        [
+          {
+            "node": "Pair Kode Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pair QR Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pair QR Action": {
+      "main": [
+        [
+          {
+            "node": "Respond Pair",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pair Kode Action": {
       "main": [
         [
           {
@@ -254,6 +336,9 @@
   "tags": [
     {
       "name": "WaliKelas Pro"
+    },
+    {
+      "name": "WhatsApp"
     }
   ]
 }

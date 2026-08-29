@@ -2,113 +2,133 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AttendanceSession;
 use App\Models\Classroom;
-use App\Support\PeriodeLaporan;
+use App\Models\TeachingJournal;
+use App\Services\OpenCodeJurnalGeneratorService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
-/**
- * Jurnal mengajar guru mapel.
- *
- * Dokumen administratif yang wajib diisi guru mapel di sekolah: tanggal,
- * kelas, mata pelajaran, materi yang diajarkan, dan jumlah siswa hadir/absen.
- *
- * TIDAK punya tabel sendiri, dan itu disengaja. Seluruh isinya sudah terekam
- * saat guru mengisi presensi — tanggal, mapel, materi, dan status tiap siswa.
- * Menyimpannya ulang di tempat kedua hanya melahirkan dua sumber kebenaran
- * yang bisa berbeda tanpa ada yang menyadarinya; yang dilakukan di sini
- * hanyalah menyusun ulang data yang sama menjadi bentuk jurnal.
- *
- * Satu-satunya yang bisa disunting dari sini adalah MATERI: guru kerap mengisi
- * presensi dengan cepat di kelas lalu melengkapi materinya setelah jam
- * mengajar selesai.
- */
 class JurnalMengajarController extends Controller
 {
-    public function index(Request $request, Classroom $class): View
+    public function __construct(
+        private readonly OpenCodeJurnalGeneratorService $aiGenerator
+    ) {}
+
+    /**
+     * Daftar seluruh jurnal mengajar kelas ini.
+     */
+    public function index(Classroom $class): View
     {
-        $periode = PeriodeLaporan::resolve($request);
-
-        $mapelDiampu = $class->mapelDiampu();
-        $mapelDipilih = $this->mapelDipilih($request, $mapelDiampu);
-
-        $sesi = $class->attendanceSessions()
-            ->whereBetween('session_date', [
-                $periode['awal']->copy()->startOfDay(),
-                $periode['akhir']->copy()->endOfDay(),
-            ])
-            ->where('status', '!=', 'cancelled')
-            ->when(filled($mapelDipilih), fn ($q) => $q->where('mapel', $mapelDipilih))
-            ->withCount([
-                'attendances as jumlah_hadir' => fn ($q) => $q->where('status', 'hadir'),
-                'attendances as jumlah_terlambat' => fn ($q) => $q->where('status', 'terlambat'),
-                'attendances as jumlah_sakit' => fn ($q) => $q->where('status', 'sakit'),
-                'attendances as jumlah_izin' => fn ($q) => $q->where('status', 'izin'),
-                'attendances as jumlah_alfa' => fn ($q) => $q->where('status', 'alfa'),
-            ])
-            /*
-             * Nama siswa yang TIDAK hadir ikut dimuat. Jurnal yang hanya
-             * menyebut angka "3 tidak hadir" tidak berguna saat guru ditanya
-             * siapa saja — dan mencarinya ulang di menu absensi per tanggal
-             * adalah pekerjaan yang justru ingin dihindari jurnal ini.
-             */
-            ->with(['attendances' => fn ($q) => $q->where('status', '!=', 'hadir')
-                ->with('student:id,name')])
+        $journals = TeachingJournal::where('class_id', $class->id)
             ->orderByDesc('session_date')
-            ->orderByDesc('sequence')
-            ->get();
+            ->orderByDesc('meeting_number')
+            ->paginate(15);
 
         return view('jurnal.index', [
             'classroom' => $class,
-            'periode' => $periode,
-            'sesi' => $sesi,
-            'mapelDiampu' => $mapelDiampu,
-            'mapelDipilih' => $mapelDipilih,
+            'journals' => $journals,
         ]);
     }
 
     /**
-     * Lengkapi materi setelah jam mengajar selesai.
-     *
-     * Sengaja hanya materi. Tanggal, mapel, dan kehadiran adalah catatan
-     * kejadian — mengubahnya dari halaman jurnal akan mengubah data presensi
-     * tanpa jejak, sementara koreksi absensi sudah punya jalurnya sendiri yang
-     * mencatat revisi.
+     * Formulir pembuatan jurnal mengajar baru.
      */
-    public function updateMateri(Request $request, Classroom $class, AttendanceSession $attendanceSession): RedirectResponse
+    public function create(Classroom $class): View
     {
-        abort_unless($attendanceSession->class_id === $class->id, 404);
+        $mapelList = $class->mapelDiampu();
+        $nextMeeting = (int) TeachingJournal::where('class_id', $class->id)->max('meeting_number') + 1;
 
+        return view('jurnal.create', [
+            'classroom' => $class,
+            'mapelList' => $mapelList,
+            'nextMeeting' => $nextMeeting,
+        ]);
+    }
+
+    /**
+     * Endpoint AI Generator OpenCode: Generate Jurnal secara instan (JSON).
+     */
+    public function generateAi(Request $request, Classroom $class): JsonResponse
+    {
+        $request->validate([
+            'subject' => ['required', 'string', 'max:100'],
+            'topic' => ['required', 'string', 'max:200'],
+            'meeting_number' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $meeting = (int) ($request->meeting_number ?: 1);
+        $result = $this->aiGenerator->generate(
+            subject: $request->subject,
+            topic: $request->topic,
+            meeting: $meeting,
+            className: $class->name
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => $result,
+        ]);
+    }
+
+    /**
+     * Simpan jurnal mengajar ke database.
+     */
+    public function store(Request $request, Classroom $class): RedirectResponse
+    {
         $data = $request->validate([
-            'materi' => ['nullable', 'string', 'max:500'],
+            'session_date' => ['required', 'date'],
+            'meeting_number' => ['required', 'integer', 'min:1'],
+            'subject' => ['required', 'string', 'max:191'],
+            'topic' => ['required', 'string', 'max:191'],
+            'learning_objective' => ['nullable', 'string'],
+            'activity' => ['nullable', 'string'],
+            'reflection' => ['nullable', 'string'],
+            'p5_dimension' => ['nullable', 'string', 'max:191'],
+            'attendance_summary' => ['nullable', 'string', 'max:191'],
         ]);
 
-        $attendanceSession->update(['materi' => $data['materi'] ?? null]);
+        $data['user_id'] = auth()->id();
+        $data['class_id'] = $class->id;
 
-        return back()->with('success', 'Materi jurnal berhasil disimpan.');
+        TeachingJournal::create($data);
+
+        return redirect()->route('classes.jurnal.index', $class)
+            ->with('success', 'Jurnal mengajar pertemuan ke-' . $data['meeting_number'] . ' berhasil disimpan.');
     }
 
     /**
-     * Mapel yang sedang ditampilkan.
-     *
-     * Hanya menerima mapel yang benar-benar diampu di kelas ini; nilai lain
-     * diabaikan dan jatuh ke "semua". Tanpa penjagaan ini, parameter URL
-     * sembarangan menghasilkan jurnal kosong yang terlihat seperti guru belum
-     * pernah mengajar.
-     *
-     * @param  array<int, string>  $mapelDiampu
+     * Hapus jurnal mengajar.
      */
-    private function mapelDipilih(Request $request, array $mapelDiampu): ?string
+    public function destroy(Classroom $class, TeachingJournal $jurnal): RedirectResponse
     {
-        $diminta = trim((string) $request->query('mapel', ''));
+        $jurnal->delete();
 
-        if ($diminta === '' || ! in_array($diminta, $mapelDiampu, true)) {
-            // Satu mapel saja: tidak perlu memilih, langsung tampilkan.
-            return count($mapelDiampu) === 1 ? $mapelDiampu[0] : null;
-        }
+        return redirect()->route('classes.jurnal.index', $class)
+            ->with('success', 'Jurnal mengajar berhasil dihapus.');
+    }
 
-        return $diminta;
+    /**
+     * Cetak rekap lembar jurnal mengajar kelas ke format PDF resmi.
+     */
+    public function exportPdf(Classroom $class): Response
+    {
+        $journals = TeachingJournal::where('class_id', $class->id)
+            ->orderBy('meeting_number')
+            ->get();
+
+        $pdf = Pdf::loadView('jurnal.pdf', [
+            'classroom' => $class,
+            'journals' => $journals,
+            'user' => auth()->user(),
+        ])
+        ->setPaper('a4', 'landscape');
+
+        $filename = 'Jurnal_Mengajar_' . str_replace(' ', '_', $class->name) . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

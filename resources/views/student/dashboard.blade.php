@@ -2,70 +2,66 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="p-6 lg:p-8 space-y-6">
+<div class="p-6 lg:p-8 space-y-6 max-w-5xl mx-auto pb-12">
     <!-- Welcome Header -->
-    <div class="card">
+    <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-6">
         <div class="flex items-center gap-4">
-            <div class="avatar-hero">
-                <span class="avatar-hero-initials">{{ substr($student->name, 0, 2) }}</span>
+            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800 font-extrabold text-xl shrink-0 shadow-2xs">
+                <span>{{ substr($student->name, 0, 2) }}</span>
             </div>
             <div>
-                <h1 class="text-2xl font-semibold text-slate-900">Selamat datang, {{ $student->name }}!</h1>
-                <p class="text-slate-500">{{ $class->name }} &bull; Tahun Pelajaran {{ $class->academic_year }}</p>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">Selamat datang, {{ $student->name }}!</h1>
+                <p class="text-xs text-slate-500 mt-0.5">{{ $class->name }} &bull; Tahun Pelajaran {{ $class->academic_year }}</p>
             </div>
         </div>
     </div>
 
     <!-- Quick Stats -->
-    <dl class="deret-angka">
-        <div>
-            <dt class="stat-label">Catatan Karakter</dt>
-            <dd class="stat-value">{{ $portfolioStats['records'] }}</dd>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Catatan Karakter</p>
+            <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ $portfolioStats['records'] }}</p>
         </div>
-        <div>
-            <dt class="stat-label">Kehadiran</dt>
-            <dd class="stat-value {{ $attendanceStats['rate'] >= 85 ? 'text-emerald-700' : ($attendanceStats['rate'] >= 75 ? 'text-amber-700' : 'text-rose-700') }}">{{ $attendanceStats['rate'] }}%</dd>
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Kehadiran</p>
+            <p class="mt-1 text-2xl font-extrabold {{ $attendanceStats['rate'] >= 85 ? 'text-emerald-700' : ($attendanceStats['rate'] >= 75 ? 'text-amber-700' : 'text-rose-700') }}">{{ $attendanceStats['rate'] }}%</p>
         </div>
-        <div>
-            <dt class="stat-label">Poin Karakter</dt>
-            <dd class="stat-value {{ $violationStats['points'] < 0 ? 'text-rose-700' : '' }}">{{ $violationStats['points'] }}</dd>
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Poin Disiplin</p>
+            <p class="mt-1 text-2xl font-extrabold {{ $violationStats['points'] < 0 ? 'text-rose-700' : 'text-emerald-700' }}">{{ $violationStats['points'] }}</p>
         </div>
-        <div>
-            <dt class="stat-label">Badge Diraih</dt>
-            <dd class="stat-value">{{ $portfolioStats['badges'] }}</dd>
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Badge Diraih</p>
+            <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ $portfolioStats['badges'] }}</p>
         </div>
-    </dl>
+    </div>
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a href="{{ route('student.portfolio') }}" class="card flex items-center gap-4 transition-colors hover:border-slate-300">
-            <div>
-                <h3 class="font-semibold text-slate-900">Portofolio Karakter</h3>
-                <p class="text-sm text-slate-500">Catat pencapaian dan refleksi</p>
-            </div>
+        <a href="{{ route('student.portfolio') }}" class="group bg-white rounded-2xl border border-emerald-200 hover:border-emerald-400 shadow-xs p-5 transition-all block">
+            <h3 class="text-sm font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors">Portofolio Karakter</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Catat pencapaian dan refleksi dirimu</p>
         </a>
 
-        <a href="{{ route('student.biodata') }}" class="card flex items-center gap-4 transition-colors hover:border-slate-300">
-            <div>
-                <h3 class="font-semibold text-slate-900">Biodata Diri</h3>
-                <p class="text-sm text-slate-500">Lihat dan perbarui data Anda</p>
-            </div>
+        <a href="{{ route('student.biodata') }}" class="group bg-white rounded-2xl border border-emerald-200 hover:border-emerald-400 shadow-xs p-5 transition-all block">
+            <h3 class="text-sm font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors">Biodata Diri</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Lihat dan perbarui data diri serta kontak orang tua</p>
         </a>
     </div>
 
     <!-- Recent Records -->
-    <div class="card">
-        <h2 class="font-semibold text-lg mb-4">Catatan Terbaru</h2>
+    <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-6">
+        <h2 class="text-sm font-extrabold text-slate-900 mb-4 border-b border-emerald-100 pb-3">Catatan Terbaru</h2>
         @if($records->isEmpty())
-            <div class="empty-state empty-state--compact">
-                <p class="empty-state__title">Belum ada catatan</p>
-                <a href="{{ route('student.portfolio') }}" class="empty-state__description text-indigo-600 hover:underline">Mulai catat pencapaian</a>
+            <div class="py-8 text-center text-xs text-slate-400">
+                <p class="font-bold text-slate-700">Belum ada catatan</p>
+                <a href="{{ route('student.portfolio') }}" class="text-emerald-700 font-bold hover:underline mt-1 inline-block">Mulai catat pencapaian &rarr;</a>
             </div>
         @else
-            <div class="space-y-3">
+            <div class="divide-y divide-slate-100">
                 @foreach($records->take(5) as $record)
-                    <div class="flex items-center gap-3 p-3 rounded border border-slate-200 bg-slate-50">
-                        <div class="stat-icon {{ $record->type === 'positive' ? 'stat-icon--emerald' : 'stat-icon--rose' }}">
+                    <div class="flex items-center gap-3 py-3.5 hover:bg-slate-50/50 transition-colors">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-xl font-bold shrink-0 {{ $record->type === 'positive' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
                             @if($record->type === 'positive')
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -76,17 +72,17 @@
                                 </svg>
                             @endif
                         </div>
-                        <div class="flex-1">
-                            <p class="font-medium text-slate-900">{{ $record->title }}</p>
-                            <p class="text-sm text-slate-500">{{ $record->dimension?->name }} &bull; {{ $record->record_date->format('d M Y') }}</p>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-900">{{ $record->title }}</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5 font-mono">{{ $record->dimension?->name }} &bull; {{ $record->record_date->format('d M Y') }}</p>
                         </div>
-                        <div class="text-sm font-semibold {{ $record->score > 0 ? 'text-emerald-700' : 'text-rose-700' }}">
+                        <div class="text-xs font-extrabold font-mono {{ $record->score > 0 ? 'text-emerald-700' : 'text-rose-700' }}">
                             {{ $record->score > 0 ? '+' : '' }}{{ $record->score }}
                         </div>
                     </div>
                 @endforeach
             </div>
-            <a href="{{ route('student.portfolio') }}" class="block text-center text-sm text-indigo-600 hover:underline mt-4">
+            <a href="{{ route('student.portfolio') }}" class="block text-center text-xs font-bold text-emerald-700 hover:underline mt-4 pt-3 border-t border-slate-100">
                 Lihat semua catatan &rarr;
             </a>
         @endif

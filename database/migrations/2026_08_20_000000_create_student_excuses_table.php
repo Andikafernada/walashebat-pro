@@ -28,6 +28,8 @@ return new class extends Migration
             $table->date('tanggal');
             $table->enum('jenis', ['izin', 'sakit']);
             $table->text('keterangan')->nullable();
+            $table->string('attachment_path')->nullable();
+            $table->boolean('parent_phone_verified')->default(false);
             $table->timestamps();
 
             // Dipakai roster untuk mencari laporan pada tanggal sesi itu.

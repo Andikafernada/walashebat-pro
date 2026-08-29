@@ -1,20 +1,43 @@
 @extends('layouts.app')
-@section('title', 'Impor Data Siswa')
+@section('title', 'Impor Data Siswa — ' . $classroom->name)
 @section('content')
-    @include('partials.class-nav')
 
-    <div class="page-header mb-5">
+@include('partials.class-nav', ['classroom' => $classroom])
+
+<div class="space-y-6 pb-12">
+
+    {{-- HEADER --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h2 class="page-header__title">Impor siswa dari Excel</h2>
-            <p class="page-header__description">
-                Menambah siswa baru sekaligus memperbarui yang sudah ada di {{ $classroom->name }}.
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.show', $classroom) }}" class="hover:text-slate-600">{{ $classroom->name }}</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.students.index', $classroom) }}" class="hover:text-slate-600">Siswa</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Impor Excel</span>
+            </nav>
+            <h1 class="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                Impor Data Siswa dari Excel
+            </h1>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-600 font-medium">
+                Tambah siswa baru sekaligus perbarui biodata di kelas {{ $classroom->name }} secara massal.
             </p>
         </div>
+        <a href="{{ route('classes.students.index', $classroom) }}"
+           class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all">
+            ← Kembali ke Daftar Siswa
+        </a>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-3">
-        <div class="lg:col-span-2">
-            <div class="card-elevated">
+    @include('partials.flash')
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+        {{-- LEFT COLUMN: FORM UPLOAD (2/3) --}}
+        <div class="lg:col-span-2 space-y-4">
+            <div class="rounded-3xl border border-emerald-200 bg-white p-6 sm:p-8 shadow-xs">
                 <form method="POST"
                       action="{{ route('classes.students.import', $classroom) }}"
                       enctype="multipart/form-data"
@@ -23,16 +46,14 @@
                       class="space-y-6">
                     @csrf
 
-                    <div class="form-group">
-                        <label for="file" class="form-label form-label--required">Berkas Excel atau CSV</label>
+                    <div>
+                        <label for="file" class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Pilih Berkas Excel / CSV *</label>
 
                         <label for="file"
-                               class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-indigo-400 hover:bg-indigo-50/40">
-                            <svg class="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                            </svg>
-                            <span class="text-sm font-semibold text-slate-700" x-text="nama || 'Pilih berkas'"></span>
-                            <span class="text-xs text-slate-500">.xlsx, .xls, atau .csv — maksimal 5 MB</span>
+                               class="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 px-6 py-12 text-center transition hover:border-emerald-500 hover:bg-emerald-100/50">
+                            <span class="text-4xl">📊</span>
+                            <span class="text-sm font-extrabold text-slate-900" x-text="nama || 'Klik untuk memilih berkas Excel'"></span>
+                            <span class="text-xs text-slate-500 font-medium">Format didukung: .xlsx, .xls, atau .csv (Maksimal 5 MB)</span>
                         </label>
 
                         <input id="file" name="file" type="file" class="sr-only" required
@@ -40,22 +61,23 @@
                                @change="nama = $event.target.files[0]?.name ?? ''">
 
                         @error('file')
-                            <p class="form-error" role="alert">{{ $message }}</p>
+                            <p class="mt-2 text-xs font-bold text-slate-900" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div class="flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row">
+                    <div class="flex flex-col gap-3 border-t border-emerald-100 pt-6 sm:flex-row">
                         <button type="submit"
-                                class="btn-primary justify-center"
+                                class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-sm shadow-emerald-200 transition-all flex items-center justify-center gap-2"
                                 :disabled="loading"
                                 :class="loading ? 'opacity-70 cursor-not-allowed' : ''">
-                            <span x-show="!loading" class="inline-flex items-center gap-2">Unggah dan proses</span>
+                            <span x-show="!loading">🚀 Unggah &amp; Proses Data</span>
                             <span x-show="loading" x-cloak class="flex items-center gap-2">
-                                <span class="spinner spinner--white"></span>
-                                Memproses...
+                                <span class="spinner"></span>
+                                Memproses Data...
                             </span>
                         </button>
-                        <a href="{{ route('classes.students.index', $classroom) }}" class="btn-secondary justify-center">
+                        <a href="{{ route('classes.students.index', $classroom) }}"
+                           class="px-5 py-3 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 font-bold text-xs sm:text-sm transition-colors flex items-center justify-center">
                             Batal
                         </a>
                     </div>
@@ -63,80 +85,59 @@
             </div>
         </div>
 
+        {{-- RIGHT COLUMN: TEMPLATE DOWNLOAD & GUIDE (1/3) --}}
         <div class="space-y-4">
-            <div class="card">
-                <h3 class="text-base font-semibold text-slate-900">Mulai dari mana</h3>
-                <p class="mt-1 text-sm text-slate-600">
-                    Cara paling cepat: unduh data kelas ini, isi kolom yang masih kosong di Excel,
-                    lalu unggah berkas yang sama kembali.
+            {{-- Download Template Card --}}
+            <div class="rounded-3xl border border-emerald-200 bg-white p-5 sm:p-6 shadow-xs space-y-3">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Unduh Template</h3>
+                <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                    Unduh data kelas yang sudah ada atau gunakan template kosong standar sistem.
                 </p>
 
-                {{-- Isi template mengikuti jenis kelas, jadi keterangannya harus ikut
-                     juga. Menjanjikan "34 kolom biodata" kepada guru mapel yang akan
-                     menerima berkas 2 kolom membuat ia mengira unduhannya gagal. --}}
-                <p class="mt-2 rounded-lg border px-3 py-2 text-xs {{ $classroom->kelasAjar() ? 'border-teal-200 bg-teal-50/60 text-teal-900' : 'border-indigo-200 bg-indigo-50/60 text-indigo-900' }}">
+                <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-slate-900 font-medium">
                     @if ($classroom->kelasAjar())
-                        Kelas ini Anda ajar sebagai <strong>guru mapel</strong>, jadi templatenya hanya
-                        <strong>NIS</strong> dan <strong>Nama</strong>. Biodata lengkap adalah urusan wali kelasnya.
+                        Kelas guru mapel: Format hanya membutuhkan <strong>NIS</strong> dan <strong>Nama Siswa</strong>.
                     @else
-                        Kelas <strong>perwalian</strong>: templatenya berisi seluruh kolom biodata,
-                        lengkap dengan pilihan siap-klik dan petunjuk di tiap judul kolom.
+                        Kelas perwalian: Template mencakup seluruh kolom biodata lengkap siap impor.
                     @endif
-                </p>
+                </div>
 
-                <div class="mt-4 space-y-2">
+                <div class="space-y-2 pt-2">
                     <a href="{{ route('classes.students.export', $classroom) }}"
-                       class="btn-secondary btn-secondary--sm w-full justify-center">
-                        Unduh data kelas ini
+                       class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-900 text-xs font-bold shadow-2xs transition-all">
+                        📥 Unduh Data Kelas Ini (.xlsx)
                     </a>
                     <a href="{{ route('classes.students.template', $classroom) }}"
-                       class="btn-ghost btn-ghost--sm w-full justify-center">
-                        Unduh template kosong
+                       class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-100 text-emerald-950 border border-emerald-300 hover:bg-emerald-200 text-xs font-bold transition-all">
+                        📄 Unduh template kosong
                     </a>
                 </div>
             </div>
 
-            <div class="card">
-                <h3 class="text-base font-semibold text-slate-900">Yang perlu diketahui</h3>
-                <ul class="mt-3 space-y-3 text-sm text-slate-600">
-                    <li class="flex gap-2">
-                        <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400"></span>
-                        <span><strong class="font-semibold text-slate-800">NIS</strong> dipakai untuk mencocokkan
-                            siswa. Kalau NIS kosong, nama yang dipakai. Kalau keduanya tidak ketemu,
-                            siswa baru dibuat.</span>
+            {{-- Guide Card --}}
+            <div class="rounded-3xl border border-emerald-200 bg-white p-5 sm:p-6 shadow-xs space-y-3">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Petunjuk Impor</h3>
+                <ul class="space-y-2.5 text-xs text-slate-700 font-medium leading-relaxed">
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-800 font-bold shrink-0">✓</span>
+                        <span><strong>NIS</strong> digunakan untuk mencocokkan data siswa yang ada.</span>
                     </li>
-                    <li class="flex gap-2">
-                        <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400"></span>
-                        <span>Sel yang dibiarkan kosong <strong class="font-semibold text-slate-800">tidak
-                            menghapus</strong> data yang sudah ada.</span>
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-800 font-bold shrink-0">✓</span>
+                        <span>Kolom kosong di Excel tidak akan menghapus data yang sudah ada di aplikasi.</span>
                     </li>
-                    <li class="flex gap-2">
-                        <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400"></span>
-                        <span>Judul kolom di baris pertama jangan diubah atau dihapus. Urutannya boleh berbeda,
-                            kolom tambahan diabaikan.</span>
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-800 font-bold shrink-0">✓</span>
+                        <span>Format tanggal lahir: <span class="font-mono text-[11px] bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200 font-bold text-slate-900">YYYY-MM-DD</span> (Contoh: 2008-05-17).</span>
                     </li>
-                    <li class="flex gap-2">
-                        <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400"></span>
-                        <span>Tanggal lahir pakai format <span class="font-mono text-xs">YYYY-MM-DD</span>,
-                            contoh <span class="font-mono text-xs">2010-08-17</span>.</span>
-                    </li>
-                    <li class="flex gap-2">
-                        <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400"></span>
-                        <span>Nomor HP boleh ditulis <span class="font-mono text-xs">08…</span> —
-                            akan diubah sendiri ke <span class="font-mono text-xs">628…</span>.</span>
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-800 font-bold shrink-0">✓</span>
+                        <span>Nomor WhatsApp diawali <span class="font-mono text-[11px] bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200 font-bold text-slate-900">08...</span> otomatis dikonversi ke <span class="font-mono text-[11px] bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200 font-bold text-slate-900">628...</span>.</span>
                     </li>
                 </ul>
             </div>
-
-            <div class="alert alert--info">
-                <div class="min-w-0">
-                    <p class="alert__title">NIS berawalan angka nol</p>
-                    <p class="alert__body">
-                        Excel suka membuang nol di depan. Kolom NIS pada berkas unduhan sudah diatur
-                        sebagai teks, jadi biarkan formatnya apa adanya.
-                    </p>
-                </div>
-            </div>
         </div>
+
     </div>
+</div>
 @endsection

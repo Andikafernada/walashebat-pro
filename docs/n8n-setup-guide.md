@@ -134,13 +134,20 @@ return {
 };
 ```
 
-### Opsi B: Menggunakan Baileys (Self-hosted)
+### Opsi B: Baileys + Pairing Code
 
-Untuk kontrol penuh, gunakan Baileys library:
+Untuk mendukung **QR Code** dan **Kode 8 Digit**:
 
-1. Buat service terpisah yang handle WhatsApp sessions
-2. Expose API untuk generate QR dan check status
-3. Panggil dari n8n workflow
+1. Install Baileys di server n8n:
+   ```bash
+   npm install @whiskeysockets/baileys
+   ```
+
+2. Lihat panduan lengkap: `docs/BAILEYS-N8N-GUIDE.md`
+
+3. Workflow Session Manager sudah mendukung metode:
+   - `metode=qr` - QR Code
+   - `metode=kode` - Kode 8 Digit
 
 ---
 
@@ -190,7 +197,7 @@ curl -X POST https://n8n.walas.my.id/webhook/whatsapp-send \
   }'
 ```
 
-### 8.2 Test pairing
+### 8.2 Test pairing QR
 ```bash
 curl -X POST https://n8n.walas.my.id/webhook/whatsapp-session \
   -H "Content-Type: application/json" \
@@ -198,7 +205,21 @@ curl -X POST https://n8n.walas.my.id/webhook/whatsapp-session \
   -d '{
     "action": "pair",
     "session_id": "guru-1",
-    "msisdn": "6281234567890"
+    "msisdn": "6281234567890",
+    "metode": "qr"
+  }'
+```
+
+### 8.3 Test pairing kode 8 digit
+```bash
+curl -X POST https://n8n.walas.my.id/webhook/whatsapp-session \
+  -H "Content-Type: application/json" \
+  -H "X-Webhook-Secret: rahasia-yang-sangat-kuat-disini" \
+  -d '{
+    "action": "pair",
+    "session_id": "guru-2",
+    "msisdn": "6281234567890",
+    "metode": "kode"
   }'
 ```
 

@@ -9,8 +9,8 @@
 @endphp
 
 <div class="space-y-6 pb-12">
-    <!-- Header Bar -->
-    <div class="page-header">
+    {{-- HEADER BAR --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
                 <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
@@ -19,62 +19,62 @@
                 <span aria-hidden="true">/</span>
                 <span class="text-slate-500">Struktur Organisasi</span>
             </nav>
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
+            <h1 class="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
                 Struktur Organisasi Kelas {{ $classroom->name }}
             </h1>
-            <p class="mt-1 text-sm text-slate-500">Penunjukan jabatan pengurus kelas, Ketua Kelas, Bendahara, dan Seksi Absensi penanggung jawab WhatsApp.</p>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-600 font-medium">Penunjukan pengurus kelas: Ketua Kelas, Wakil, Bendahara, dan Seksi Absensi penanggung jawab WhatsApp.</p>
         </div>
     </div>
 
-    <!-- Include Class Subnav -->
+    {{-- NAVIGASI KELAS --}}
     @include('partials.class-nav', ['classroom' => $classroom])
 
-    <!-- Flash Messages -->
     @include('partials.flash')
 
-    <!-- Main Two-Column Layout -->
+    {{-- DUAL-COLUMN LAYOUT: DAFTAR PENGURUS (2/3) + FORM PENUNJUKAN (1/3) --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-        <!-- LEFT COLUMN: Organization Structure List (2/3 width) -->
+        {{-- LEFT COLUMN: DAFTAR PENGURUS --}}
         <div class="space-y-4 lg:col-span-2">
-            <div class="card space-y-4">
+            <div class="rounded-3xl border border-emerald-200 bg-white p-5 sm:p-6 shadow-xs space-y-4">
 
-                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
                     <div>
-                        <h3 class="text-base font-semibold text-slate-900">Pengurus Kelas Aktif</h3>
-                        <p class="text-xs text-slate-500">Daftar siswa yang memegang jabatan pengurus di kelas ini</p>
+                        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Pengurus Kelas Aktif</h3>
+                        <p class="text-xs text-slate-500 font-medium">Daftar siswa yang memegang amanah jabatan di kelas</p>
                     </div>
-                    <span class="text-xs font-semibold text-slate-400">{{ $structures->count() }} Jabatan</span>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-950 border border-emerald-200">
+                        {{ $structures->count() }} Jabatan
+                    </span>
                 </div>
 
                 @if ($structures->isNotEmpty())
-                    <div class="divide-y divide-slate-200">
+                    <div class="divide-y divide-emerald-100/70">
                         @foreach ($structures as $st)
-                            <div class="flex items-center justify-between gap-4 py-3 hover:bg-slate-50 px-2 rounded transition-colors">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded text-indigo-700 font-semibold text-xs border border-indigo-200/60">
-                                        {{ substr($st->roleLabel(), 0, 2) }}
+                            <div class="flex items-center justify-between gap-4 py-3.5 hover:bg-emerald-50/40 px-3 rounded-2xl transition-colors">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-950 font-extrabold text-sm flex items-center justify-center shrink-0 border border-emerald-200">
+                                        {{ Str::upper(Str::substr($st->roleLabel(), 0, 2)) }}
                                     </div>
-                                    <div>
-                                        <div class="flex items-center gap-2">
-                                            <h4 class="font-semibold text-sm text-slate-900">{{ $st->roleLabel() }}</h4>
+                                    <div class="min-w-0">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <h4 class="font-bold text-sm text-slate-900">{{ $st->roleLabel() }}</h4>
                                             @if($st->role === 'seksi_absensi')
-                                                <span class="inline-flex items-center gap-1 rounded-sm bg-indigo-50 px-2.5 py-0.5 text-[10px] font-semibold text-indigo-700 border border-indigo-200">
-                Penerima Magic Link WA
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-950 border border-emerald-300 text-[10px] font-extrabold">
+                                                    📲 Petugas Absensi WA
                                                 </span>
                                             @endif
                                         </div>
-                                        <p class="text-xs font-semibold text-indigo-600 mt-0.5">
+                                        <p class="text-xs font-bold text-emerald-800 truncate mt-0.5">
                                             {{ $st->student->name ?? 'Belum Ditunjuk' }}
                                         </p>
                                     </div>
                                 </div>
 
                                 <form method="POST" action="{{ route('classes.organization.destroy', [$classroom, $st]) }}"
-                                      onsubmit="return confirm('Hapus penunjukan {{ $st->roleLabel() }}?')">
+                                      onsubmit="return confirm('Hapus penunjukan {{ $st->roleLabel() }}?')" class="shrink-0">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="h-8 rounded-lg border border-rose-200 bg-rose-50 px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors flex items-center gap-1">
-                                        <svg class="h-3.5 w-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    <button type="submit" class="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold transition-colors">
                                         Copot Jabatan
                                     </button>
                                 </form>
@@ -82,38 +82,32 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="my-10 text-center">
-                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 mb-3">
-                            <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        </div>
-                        <p class="text-sm font-semibold text-slate-800">Belum Ada Pengurus Kelas</p>
-                        <p class="mt-1 text-xs text-slate-500">Tunjuk siswa untuk mengemban posisi pengurus kelas di formulir sebelah kanan.</p>
+                    <div class="py-10 text-center space-y-2">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-2xl mx-auto border border-emerald-200">🏛️</div>
+                        <p class="text-sm font-bold text-slate-900">Belum Ada Pengurus Kelas Ditunjuk</p>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto font-medium">Tunjuk siswa untuk mengemban posisi pengurus kelas pada formulir di sebelah kanan.</p>
                     </div>
                 @endif
 
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: Add Form (1/3 width) -->
+        {{-- RIGHT COLUMN: FORM PENUNJUKAN JABATAN --}}
         <div class="space-y-4">
-            <div class="card space-y-4">
+            <div class="rounded-3xl border border-emerald-200 bg-white p-5 sm:p-6 shadow-xs space-y-4">
 
-                <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
-                    <div class="stat-icon">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-semibold text-slate-900">Tunjuk Pengurus Kelas</h3>
-                        <p class="text-xs text-slate-500">Pilih Siswa &amp; Tetapkan Jabatan</p>
-                    </div>
+                <div class="border-b border-emerald-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Tunjuk Pengurus Baru</h3>
+                    <p class="text-xs text-slate-500 font-medium">Pilih siswa &amp; tetapkan jabatan organisasi</p>
                 </div>
 
                 <form method="POST" action="{{ route('classes.organization.store', $classroom) }}" class="space-y-4" x-data="{ loading: false }" @submit="loading = true">
                     @csrf
 
                     <div>
-                        <label for="role" class="form-label">Jabatan Organisasi</label>
-                        <select id="role" name="role" required class="form-input form-input--sm">
+                        <label for="role" class="block text-xs font-bold text-slate-900 mb-1.5">Jabatan Organisasi</label>
+                        <select id="role" name="role" required
+                                class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-emerald-200 bg-white text-slate-900 font-bold focus:outline-none focus:border-emerald-600">
                             @foreach ($availableRoles as $roleKey => $roleName)
                                 <option value="{{ $roleKey }}">{{ $roleName }}</option>
                             @endforeach
@@ -121,11 +115,9 @@
                     </div>
 
                     <div>
-                        <label for="student_id" class="form-label">Siswa Terpilih</label>
-                        <select id="student_id" name="student_id" required class="form-input form-input--sm">
-                            {{-- Pilihan kosong: tanpa ini siswa pertama pada daftar
-                                 tersorot otomatis, dan jabatan bisa terpasang pada
-                                 siswa yang tidak pernah dipilih. --}}
+                        <label for="student_id" class="block text-xs font-bold text-slate-900 mb-1.5">Siswa Terpilih</label>
+                        <select id="student_id" name="student_id" required
+                                class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-emerald-200 bg-white text-slate-900 font-bold focus:outline-none focus:border-emerald-600">
                             <option value="">-- Pilih Siswa --</option>
                             @foreach ($students as $st)
                                 <option value="{{ $st->id }}" @selected(old('student_id') == $st->id)>{{ $st->name }} (NIS: {{ $st->nis ?: '-' }})</option>
@@ -134,18 +126,12 @@
                     </div>
 
                     <button type="submit" :disabled="loading"
-                            class="btn-primary w-full">
+                            class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs sm:text-sm shadow-sm shadow-emerald-200 transition-all flex items-center justify-center gap-1.5">
                         <template x-if="!loading">
-                            <span class="flex items-center gap-1.5">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                Simpan Jabatan
-                            </span>
+                            <span>+ Simpan Jabatan Siswa</span>
                         </template>
                         <template x-if="loading">
-                            <span class="flex items-center gap-1.5">
-                                <span class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                Menyimpan...
-                            </span>
+                            <span>Menyimpan Jabatan...</span>
                         </template>
                     </button>
                 </form>

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendWhatsAppMessage;
-use App\Models\CharacterDimension;
 use App\Models\CharacterReflection;
 use App\Models\Classroom;
 use App\Models\Student;
@@ -14,291 +13,166 @@ use Illuminate\Validation\Rule;
 
 class PublicStudentFormController extends Controller
 {
-    /** Form pengisian biodata mandiri oleh siswa / orang tua. */
+    /** Form pengisian biodata mandiri siswa oleh orang tua/siswa. */
     public function showBiodataForm(Classroom $class)
     {
-        $students = $class->students()->orderBy('name')->get();
+        $students = $class->students()->where('is_active', true)->orderBy('name')->get();
+
         return view('public.student_biodata_form', compact('class', 'students'));
     }
 
-    /** Simpan / perbarui biodata mandiri siswa. */
+    /** Simpan biodata mandiri siswa. */
     public function storeBiodata(Request $request, Classroom $class)
     {
+        $hasStudentId = $request->filled('student_id');
+
         $validated = $request->validate([
-            // Disaring ke kelas ini: halaman terbuka tanpa login, dan aturan
-            // exists polos menerima id siswa kelas mana pun.
             'student_id' => [
-                'nullable',
+                $hasStudentId ? 'required' : 'nullable',
                 Rule::exists('students', 'id')->where('class_id', $class->id),
             ],
-            /*
-             * Nama wajib HANYA bila siswa tidak memilih namanya dari daftar.
-             *
-             * Memilih dari daftar adalah jalur yang dianjurkan halaman ini agar
-             * biodata tidak terduplikat, tetapi dulu kolom nama tetap wajib
-             * sekaligus berada di langkah yang tersembunyi saat tombol Simpan
-             * ditekan — peramban membatalkan pengiriman tanpa pesan apa pun,
-             * dan siswa yang menuruti anjuran itu justru tidak pernah bisa
-             * mengirim formulirnya.
-             */
-            'name' => [
-                Rule::requiredIf(fn () => blank($request->input('student_id'))),
-                'nullable',
-                'string',
-                'max:191',
-            ],
+            'name' => [$hasStudentId ? 'nullable' : 'required', 'string', 'max:255'],
             'nis' => ['nullable', 'string', 'max:50'],
             'nisn' => ['nullable', 'string', 'max:50'],
-            'gender' => ['required', 'in:L,P'],
+            'gender' => [$hasStudentId ? 'nullable' : 'required', 'in:L,P'],
+            'pob' => ['nullable', 'string', 'max:191'],
+            'dob' => ['nullable', 'date'],
             'tempat_lahir' => ['nullable', 'string', 'max:191'],
             'tanggal_lahir' => ['nullable', 'date'],
-            'agama' => ['nullable', 'string'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'parent_phone' => ['required', 'string', 'max:20'],
-            'nama_ayah' => ['nullable', 'string', 'max:191'],
-            'pekerjaan_ayah' => ['nullable', 'string', 'max:191'],
-            'nama_ibu' => ['nullable', 'string', 'max:191'],
-            'pekerjaan_ibu' => ['nullable', 'string', 'max:191'],
-            // Lima field di bawah dirender oleh student_biodata_form.blade.php tetapi
-            // dulu tidak divalidasi, sehingga selalu terbuang dari $validated dan
-            // tersimpan NULL meski orang tua sudah mengisinya.
-            'nama_wali' => ['nullable', 'string', 'max:191'],
-            'pekerjaan_wali' => ['nullable', 'string', 'max:191'],
-            'anak_ke' => ['nullable', 'integer', 'min:1', 'max:50'],
-            'jumlah_saudara' => ['nullable', 'integer', 'min:0', 'max:50'],
-            'alamat_ortu' => ['nullable', 'string'],
-            'address' => ['nullable', 'string'],
-            'rt_rw' => ['nullable', 'string', 'max:20'],
+            'nik' => ['nullable', 'string', 'max:50'],
+            'religion' => ['nullable', 'string', 'max:191'],
+            'agama' => ['nullable', 'string', 'max:191'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'rt_rw' => ['nullable', 'string', 'max:50'],
+            'subdistrict' => ['nullable', 'string', 'max:191'],
             'kelurahan' => ['nullable', 'string', 'max:191'],
+            'district' => ['nullable', 'string', 'max:191'],
             'kecamatan' => ['nullable', 'string', 'max:191'],
-            'jarak_rumah_km' => ['nullable', 'numeric'],
-            'moda_transportasi' => ['nullable', 'string', 'max:191'],
-            'golongan_darah' => ['nullable', 'string'],
-            'tinggi_badan_cm' => ['nullable', 'integer'],
-            'berat_badan_kg' => ['nullable', 'integer'],
+            'city' => ['nullable', 'string', 'max:191'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:100'],
+            'father_name' => ['nullable', 'string', 'max:191'],
+            'nama_ayah' => ['nullable', 'string', 'max:191'],
+            'father_nik' => ['nullable', 'string', 'max:50'],
+            'father_job' => ['nullable', 'string', 'max:191'],
+            'pekerjaan_ayah' => ['nullable', 'string', 'max:191'],
+            'father_income' => ['nullable', 'string', 'max:100'],
+            'mother_name' => ['nullable', 'string', 'max:191'],
+            'nama_ibu' => ['nullable', 'string', 'max:191'],
+            'mother_nik' => ['nullable', 'string', 'max:50'],
+            'mother_job' => ['nullable', 'string', 'max:191'],
+            'pekerjaan_ibu' => ['nullable', 'string', 'max:191'],
+            'mother_income' => ['nullable', 'string', 'max:100'],
+            'guardian_name' => ['nullable', 'string', 'max:191'],
+            'nama_wali' => ['nullable', 'string', 'max:191'],
+            'guardian_job' => ['nullable', 'string', 'max:191'],
+            'pekerjaan_wali' => ['nullable', 'string', 'max:191'],
+            'parent_phone' => ['nullable', 'string', 'max:50'],
+            'family_status' => ['nullable', 'string', 'max:50'],
+            'child_number' => ['nullable', 'integer', 'min:1'],
+            'anak_ke' => ['nullable', 'integer', 'min:1'],
+            'jumlah_saudara' => ['nullable', 'integer', 'min:0'],
+            'school_origin' => ['nullable', 'string', 'max:191'],
             'asal_sekolah' => ['nullable', 'string', 'max:191'],
-            'tahun_masuk' => ['nullable', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
+            'height' => ['nullable', 'integer', 'min:50', 'max:250'],
+            'tinggi_badan_cm' => ['nullable', 'integer', 'min:50', 'max:250'],
+            'weight' => ['nullable', 'integer', 'min:10', 'max:200'],
+            'berat_badan_kg' => ['nullable', 'integer', 'min:10', 'max:200'],
+            'distance_km' => ['nullable', 'numeric', 'min:0', 'max:999'],
+            'jarak_rumah_km' => ['nullable', 'numeric', 'min:0', 'max:999'],
+            'moda_transportasi' => ['nullable', 'string', 'max:191'],
+            'golongan_darah' => ['nullable', 'string', 'max:20'],
             'hobi' => ['nullable', 'string', 'max:191'],
             'cita_cita' => ['nullable', 'string', 'max:191'],
             'penerima_kip' => ['nullable', 'boolean'],
             'penerima_pkh' => ['nullable', 'boolean'],
+            'alamat_ortu' => ['nullable', 'string', 'max:500'],
+            'tahun_masuk' => ['nullable', 'integer', 'min:1900', 'max:2100'],
+            'travel_time_minutes' => ['nullable', 'integer', 'min:0', 'max:999'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $pilihanSiswa = $validated['student_id'] ?? null;
-        unset($validated['student_id']);
-
-        if (! empty($pilihanSiswa)) {
-            $student = Student::where('class_id', $class->id)->findOrFail($pilihanSiswa);
-
-            /*
-             * Isian yang dikosongkan TIDAK menimpa data yang sudah ada.
-             *
-             * Formulir selalu mengirim seluruh input, termasuk yang dibiarkan
-             * kosong. Dengan update apa adanya, siswa yang hanya melengkapi
-             * dua kolom akan menghapus seluruh biodata lamanya — nama ayah,
-             * alamat, hobi — tanpa peringatan apa pun. Mengisi bertahap adalah
-             * pemakaian yang wajar untuk formulir mandiri seperti ini.
-             */
-            $student->update($this->buangIsianKosong($validated));
-
-            return back()->with('success_public', 'Terima kasih! Biodata '.$student->name.' berhasil diperbarui.');
+        if ($hasStudentId) {
+            $student = Student::where('class_id', $class->id)->findOrFail($validated['student_id']);
+        } else {
+            $student = new Student();
+            $student->class_id = $class->id;
+            $student->user_id = $class->user_id;
+            $student->name = $validated['name'];
+            $student->gender = $validated['gender'] ?? 'L';
+            $student->is_active = true;
         }
 
-        /*
-         * Siswa yang mengetik namanya sendiri DICOCOKKAN, bukan ditolak.
-         *
-         * Daftar pilihan berbawaan "— Siswa Baru —", dan kenyataannya banyak
-         * siswa melewatinya lalu langsung mengetik nama. Menolak mereka membuat
-         * jalan buntu: sudah mengisi seluruh formulir, lalu tidak bisa
-         * menyimpan sama sekali. Yang mereka maksud jelas — memperbarui data
-         * dirinya — jadi itulah yang dilakukan.
-         *
-         * Penolakan disisakan hanya untuk kasus yang benar-benar rancu: dua
-         * siswa berbeda dengan nama yang sama. Di situ hanya wali kelas yang
-         * tahu mana yang benar.
-         */
-        $siswaKelas = $class->students()->get();
-
-        /*
-         * NIS/NISN dicocokkan lebih dulu, sebelum nama.
-         *
-         * Keduanya dikumpulkan formulir tetapi dulu sama sekali tidak dipakai
-         * mencocokkan. Padahal itulah penanda yang pasti: siswa yang menuliskan
-         * namanya sedikit berbeda dari data sekolah — "Renata Aulia" untuk
-         * "Renata Aulia Priyanti" — lolos sebagai orang baru dan melahirkan
-         * biodata kembar, walaupun NIS yang diisinya sudah jelas menunjuk
-         * dirinya sendiri.
-         */
-        foreach (['nis', 'nisn'] as $penanda) {
-            $nilai = trim((string) ($validated[$penanda] ?? ''));
-
-            if ($nilai === '') {
-                continue;
-            }
-
-            $cocokPenanda = $siswaKelas->filter(
-                fn ($s) => trim((string) $s->{$penanda}) !== '' && trim((string) $s->{$penanda}) === $nilai
-            );
-
-            // Lebih dari satu berarti penandanya sendiri ganda di data sekolah;
-            // di situ nama masih lebih bisa dipercaya daripada menebak.
-            if ($cocokPenanda->count() === 1) {
-                $student = $cocokPenanda->first();
-                $student->update($this->buangIsianKosong($validated));
-
-                return back()->with('success_public', 'Terima kasih! Biodata '.$student->name.' berhasil diperbarui.');
-            }
+        $fillable = array_filter($validated, fn($val) => !is_null($val) && $val !== '');
+        unset($fillable['student_id']);
+        if (!$hasStudentId) {
+            unset($fillable['name']);
         }
 
-        $cocok = $siswaKelas
-            ->filter(fn ($s) => $this->kunciNama($s->name) === $this->kunciNama($validated['name']));
+        $student->fill($fillable);
+        $student->save();
 
-        if ($cocok->count() > 1) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'name' => 'Ada '.$cocok->count().' siswa bernama "'.$validated['name'].'" di kelas ini, '
-                        .'jadi kami tidak bisa menentukan yang mana. Pilih nama Anda pada daftar "Pilih Nama" di atas, '
-                        .'atau hubungi wali kelas.',
-                ]);
-        }
+        return back()->with('success_public', 'Terima kasih! Biodata ' . $student->name . ' berhasil ' . ($hasStudentId ? 'diperbarui' : 'disimpan') . '.');
+    }
 
-        if ($cocok->count() === 1) {
-            $student = $cocok->first();
-            $student->update($this->buangIsianKosong($validated));
-
-            return back()->with('success_public', 'Terima kasih! Biodata '.$student->name.' berhasil diperbarui.');
-        }
-
-        $student = $class->students()->create($validated + [
-            'user_id' => $class->user_id,
-            'is_active' => true,
+    /** Bagikan tautan form biodata mandiri via WhatsApp. */
+    public function shareBiodataWa(Request $request, Classroom $class)
+    {
+        $validated = $request->validate([
+            'group_id' => ['required', 'string'],
         ]);
 
-        return back()->with('success_public', 'Terima kasih! Biodata '.$student->name.' berhasil disimpan.');
-    }
+        $url = route('public.biodata.show', $class->tokenPublik());
+        $pesan = "📢 *Form Biodata Mandiri Siswa - {$class->name}*\n\n"
+            . "Kepada Bapak/Ibu Orang Tua/Wali Siswa,\n"
+            . "Mohon untuk melengkapi data biodata siswa melalui tautan resmi berikut:\n\n"
+            . "👉 {$url}\n\n"
+            . "Terima kasih.";
 
-    /**
-     * Bentuk nama yang dipakai untuk mencocokkan, bukan untuk disimpan.
-     *
-     * Siswa menulis namanya dengan cara berbeda-beda setiap kali: "SALSA
-     * VIRLYANA", "SALSA.VIRLYANA", "salsa  virlyana". Tanpa penyeragaman ini
-     * ketiganya dianggap tiga orang berbeda, dan catatan gandanya lolos.
-     */
-    private function kunciNama(string $nama): string
-    {
-        $nama = mb_strtolower(trim($nama));
-        // Tanda baca dijadikan spasi: titik dan koma lazim dipakai sebagai
-        // pemisah kata pada nama yang diketik terburu-buru.
-        $nama = preg_replace('/[^\p{L}\p{N}]+/u', ' ', $nama);
-
-        return trim(preg_replace('/\s+/', ' ', $nama));
-    }
-
-    /**
-     * Sisakan hanya isian yang benar-benar diisi.
-     *
-     * null dan string kosong dianggap "tidak diisi". Angka 0 dan false TIDAK
-     * termasuk — keduanya jawaban yang sah untuk jumlah saudara maupun
-     * penerima KIP/PKH.
-     *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private function buangIsianKosong(array $data): array
-    {
-        return array_filter(
-            $data,
-            fn ($nilai) => $nilai !== null && $nilai !== '',
+        SendWhatsAppMessage::dispatch(
+            to: $validated['group_id'],
+            message: $pesan,
+            userId: (int) auth()->id(),
         );
+
+        return back()->with('success', 'Tautan formulir biodata mandiri berhasil dikirim ke grup WhatsApp.');
     }
 
-    /** Form refleksi karakter mandiri oleh siswa. */
+    /** Form refleksi karakter P5 oleh siswa. */
     public function showReflectionForm(Classroom $class)
     {
         $students = $class->students()->where('is_active', true)->orderBy('name')->get();
-        // Disaring ke pemilik kelas: halaman ini terbuka tanpa login, jadi
-        // scope tenant pada model tidak punya pengguna untuk disandarkan.
-        $dimensions = CharacterDimension::where('user_id', $class->user_id)
-            ->where('is_active', true)->orderBy('sort_order')->get();
+        $dimensions = \App\Models\CharacterDimension::orderBy('name')->get();
 
-        return view('public.student_reflection_form', compact('class', 'students', 'dimensions'));
+        return view('public.character_reflection_form', compact('class', 'students', 'dimensions'));
     }
 
-    /** Simpan refleksi karakter mandiri siswa. */
+    /** Simpan refleksi karakter P5. */
     public function storeReflection(Request $request, Classroom $class)
     {
         $validated = $request->validate([
-            /*
-             * Disaring ke kelas & pemiliknya. Aturan exists polos menerima
-             * siswa maupun dimensi milik sekolah lain, karena scope tenant
-             * pada model tidak berlaku pada query mentah — dan halaman ini
-             * terbuka tanpa login.
-             */
             'student_id' => [
                 'required',
                 Rule::exists('students', 'id')->where('class_id', $class->id),
             ],
             'character_dimension_id' => [
                 'required',
-                Rule::exists('character_dimensions', 'id')->where('user_id', $class->user_id),
+                Rule::exists('character_dimensions', 'id'),
             ],
-            'self_rating' => ['required', 'integer', 'min:1', 'max:5'],
-            /*
-             * min:10 pada ketiganya juga. `required` sendirian hanya melarang
-             * kolom kosong, bukan jawaban "-" atau "ok" — dan refleksi sepanjang
-             * satu huruf sama tidak berartinya dengan kolom kosong, bedanya ia
-             * lolos diam-diam dan ikut terhitung sebagai sudah mengisi.
-             */
-            'what_went_well' => ['required', 'string', 'min:10'],
-            'what_to_improve' => ['required', 'string', 'min:10'],
-            'action_plan' => ['required', 'string', 'min:10'],
-            /*
-             * Wajib, tidak seperti dua jalur pembuatan refleksi lainnya.
-             *
-             * Formulir ini dibagikan wali kelas sebagai tugas dengan tenggat,
-             * dan refleksi yang separuh kosong tidak bisa dipakai untuk apa
-             * pun — bukan untuk pembinaan, bukan untuk laporan. Sisi wali kelas
-             * dan portal siswa sengaja tetap boleh kosong: keduanya dipakai
-             * mencatat sambil jalan, bukan menyetor tugas.
-             *
-             * min:10 menutup lubang yang dibuka `required` sendiri: tanpa itu
-             * satu tanda hubung sudah lolos, dan yang tersimpan bukan jawaban
-             * melainkan bukti bahwa kolomnya diwajibkan.
-             */
-            'pesan_ortu' => ['required', 'string', 'min:10', 'max:1000'],
-            'kesan_teman' => ['required', 'string', 'min:10', 'max:1000'],
-        ], [
-            'kesan_teman.required' => 'Isian "Menurut temanmu, kamu itu seperti apa?" wajib diisi. Kalau belum sempat bertanya, tulis perkiraanmu sendiri.',
-            'kesan_teman.min' => 'Tulis jawabannya sedikit lebih panjang, minimal 10 huruf.',
-            'pesan_ortu.required' => 'Pesan untuk orang tua wajib diisi.',
-            'pesan_ortu.min' => 'Tulis pesannya sedikit lebih panjang, minimal 10 huruf.',
+            'self_rating' => ['required', 'integer', 'between:1,5'],
+            'what_went_well' => ['required', 'string', 'max:1000'],
+            'what_to_improve' => ['required', 'string', 'max:1000'],
+            'action_plan' => ['required', 'string', 'max:1000'],
+            'pesan_ortu' => ['nullable', 'string', 'max:1000'],
+            'kesan_teman' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        /*
-         * forceFill, BUKAN create().
-         *
-         * user_id sengaja tidak masuk $fillable agar kepemilikan tidak bisa
-         * dititipkan lewat request. Konsekuensinya create() membuangnya diam-
-         * diam, dan trait BelongsToTenant tidak bisa menambalnya karena halaman
-         * ini publik — tidak ada pengguna yang sedang login. Hasilnya refleksi
-         * tersimpan dengan user_id kosong lalu tersaring habis oleh TenantScope:
-         * siswa melihat "berhasil dikirim", wali kelas tidak pernah melihat
-         * apa pun.
-         */
         (new CharacterReflection)->forceFill([
             'user_id' => $class->user_id,
             'class_id' => $class->id,
             'student_id' => $validated['student_id'],
             'character_dimension_id' => $validated['character_dimension_id'],
-            /*
-             * Konstanta periode, BUKAN "Agustus 2026".
-             *
-             * Kolomnya varchar sehingga teks bebas tersimpan diam-diam, tetapi
-             * seluruh sisa aplikasi — portal siswa maupun penyaring laporan —
-             * memakai daily/weekly/monthly. Nilai bebas membuat refleksi dari
-             * jalur publik ini tidak pernah cocok pada penyaringan mana pun.
-             */
             'period' => CharacterReflection::PERIOD_MONTHLY,
             'reflection_date' => Carbon::now()->toDateString(),
             'self_rating' => $validated['self_rating'],
@@ -317,7 +191,26 @@ class PublicStudentFormController extends Controller
     /** Form laporan izin/sakit oleh orang tua. */
     public function showExcuseForm(Classroom $class)
     {
-        $students = $class->students()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'nis']);
+        $students = $class->students()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'nis', 'parent_phone'])
+            ->map(function ($s) {
+                $rawPhone = preg_replace('/\D/', '', $s->parent_phone ?? '');
+                $last4 = strlen($rawPhone) >= 4 ? substr($rawPhone, -4) : null;
+                $masked = strlen($rawPhone) >= 7 
+                    ? substr($rawPhone, 0, 4) . '-xxxx-' . $last4 
+                    : ($last4 ? 'xxxx-' . $last4 : 'Belum Terdaftar');
+
+                return [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'nis' => $s->nis ?: '-',
+                    'has_phone' => !empty($last4),
+                    'masked_phone' => $masked,
+                    'last4' => $last4,
+                ];
+            });
 
         return view('public.student_excuse_form', compact('class', 'students'));
     }
@@ -330,8 +223,6 @@ class PublicStudentFormController extends Controller
                 'required',
                 Rule::exists('students', 'id')->where('class_id', $class->id),
             ],
-            // Rentang dibatasi: laporan jauh di masa lalu/depan hampir pasti
-            // salah tanggal ketik, bukan laporan sungguhan.
             'tanggal' => [
                 'required', 'date',
                 'after_or_equal:'.now()->subDays(2)->toDateString(),
@@ -339,126 +230,58 @@ class PublicStudentFormController extends Controller
             ],
             'jenis' => ['required', 'in:izin,sakit'],
             'keterangan' => ['nullable', 'string', 'max:500'],
+            'parent_phone_last4' => ['nullable', 'string', 'max:4'],
+            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
         ], [
             'tanggal.after_or_equal' => 'Tanggal terlalu lama berlalu. Hubungi wali kelas langsung untuk tanggal itu.',
             'tanggal.before_or_equal' => 'Tanggal terlalu jauh di depan.',
+            'attachment.max' => 'Ukuran foto bukti maksimal 5 MB.',
+            'attachment.mimes' => 'Format foto bukti harus JPG, PNG, WEBP, atau PDF.',
         ]);
 
         $siswa = Student::where('class_id', $class->id)->findOrFail($validated['student_id']);
 
-        // forceFill: sama seperti CharacterReflection, user_id tidak boleh
-        // bisa dititipkan lewat request pada formulir tanpa login ini.
-        (new StudentExcuse)->forceFill([
+        if ($siswa->parent_phone) {
+            $rawPhone = preg_replace('/\D/', '', $siswa->parent_phone);
+            $realLast4 = strlen($rawPhone) >= 4 ? substr($rawPhone, -4) : null;
+            if ($realLast4 && $validated['parent_phone_last4'] !== $realLast4) {
+                return back()->withErrors(['parent_phone_last4' => '4 digit terakhir nomor WhatsApp tidak sesuai dengan data sekolah.'])->withInput();
+            }
+        }
+
+        $path = null;
+        if ($request->hasFile('attachment')) {
+            $path = $request->file('attachment')->store('excuses', 'public');
+        }
+
+        $excuse = StudentExcuse::create([
             'user_id' => $class->user_id,
             'class_id' => $class->id,
             'student_id' => $siswa->id,
             'tanggal' => $validated['tanggal'],
             'jenis' => $validated['jenis'],
             'keterangan' => $validated['keterangan'] ?? null,
-        ])->save();
-
-        return back()->with(
-            'success_public',
-            'Terima kasih! Laporan '.($validated['jenis'] === 'sakit' ? 'sakit' : 'izin').' '.$siswa->name.' sudah kami terima dan akan terlihat oleh wali kelas.'
-        );
-    }
-
-    /** Kirim link form mandiri + kata-kata profesional langsung ke WhatsApp Grup. */
-    public function shareBiodataWa(Request $request, Classroom $class)
-    {
-        $validated = $request->validate([
-            'group_id' => ['nullable', 'string'],
-            'custom_message' => ['nullable', 'string'],
+            'attachment_path' => $path,
+            'parent_phone_verified' => true,
         ]);
 
-        $groupId = $validated['group_id'] ?? $class->parent_group_wa;
+        $guru = $class->user;
+        if ($guru && $guru->whatsapp_number) {
+            $pesan = "📢 *Laporan Izin/Sakit Siswa Baru*\n\n"
+                . "Kelas: {$class->name}\n"
+                . "Siswa: {$siswa->name}\n"
+                . "Tanggal: " . Carbon::parse($validated['tanggal'])->translatedFormat('d M Y') . "\n"
+                . "Jenis: " . ucfirst($validated['jenis']) . "\n"
+                . "Alasan: " . ($validated['keterangan'] ?: '-') . "\n\n"
+                . "Silakan periksa di menu Presensi > Laporan Orang Tua.";
 
-        if (blank($groupId)) {
-            return back()->with('error', 'Grup WhatsApp belum dipilih atau belum terhubung ke kelas.');
+            SendWhatsAppMessage::dispatch(
+                to: (string) $guru->whatsapp_number,
+                message: $pesan,
+                userId: (int) $guru->id,
+            );
         }
 
-        $link = route('public.biodata.show', $class->tokenPublik());
-
-        $defaultMessage = implode("\n", [
-            "*PEMBERITAHUAN PENGISIAN BIODATA MANDIRI SISWA*",
-            "Kelas: " . $class->name,
-            "",
-            "Assalamu'alaikum Wr. Wb. / Selamat Pagi Bapak/Ibu Orang Tua & Wali Siswa,",
-            "",
-            "Sehubungan dengan pembaruan data administrasi siswa Kelas " . $class->name . ", kami memohon kesediaan Bapak/Ibu atau siswa untuk melengkapi Form Biodata Mandiri melalui tautan resmi berikut:",
-            "",
-            "🔗 *Tautan Form Biodata Mandiri:*",
-            $link,
-            "",
-            "Mohon data dapat diisi dengan teliti dan benar.",
-            "Atas perhatian dan kerja samanya, kami ucapkan terima kasih.",
-            "",
-            "Hormat kami,",
-            "Wali Kelas " . $class->name,
-        ]);
-
-        $message = !empty($validated['custom_message']) ? $validated['custom_message'] : $defaultMessage;
-
-        try {
-            SendWhatsAppMessage::dispatch($groupId, $message, $class->user_id, [
-                'type' => 'biodata_share',
-                'class_id' => $class->id,
-            ]);
-            return back()->with('success', 'Pesan pengisian biodata berhasil dikirimkan ke grup WhatsApp!');
-        } catch (\Throwable $e) {
-            return back()->with('error', 'Gagal mengirim ke WhatsApp: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Kirim link form izin/sakit ke grup WhatsApp orang tua.
-     *
-     * Balasan otomatis mengangkat kalimat guru SECARA ACAK dari campuran
-     * kalimat bawaan gateway — menaruh tautan di sana berarti hanya sebagian
-     * kecil balasan yang membawanya. Pesan sekali kirim ini yang jadi jalan
-     * pasti: sekali dikirim, tautannya ada di riwayat chat grup selamanya.
-     */
-    public function shareExcuseWa(Request $request, Classroom $class)
-    {
-        $validated = $request->validate([
-            'group_id' => ['nullable', 'string'],
-            'custom_message' => ['nullable', 'string'],
-        ]);
-
-        $groupId = $validated['group_id'] ?? $class->parent_group_wa;
-
-        if (blank($groupId)) {
-            return back()->with('error', 'Grup WhatsApp belum dipilih atau belum terhubung ke kelas.');
-        }
-
-        $link = route('public.excuse.show', $class->tokenPublik());
-
-        $defaultMessage = implode("\n", [
-            "*LAPOR IZIN / SAKIT KELAS ".$class->name."*",
-            "",
-            "Assalamu'alaikum Wr. Wb. / Selamat Pagi Bapak/Ibu Orang Tua & Wali Siswa,",
-            "",
-            "Mulai sekarang, laporan izin/sakit anak WAJIB lewat tautan berikut ya Bapak/Ibu, bukan hanya chat di grup — supaya tercatat resmi dan tidak terlewat:",
-            "",
-            "🔗 *Tautan Lapor Izin/Sakit:*",
-            $link,
-            "",
-            "Cukup pilih nama anak, tanggal, dan alasannya. Terima kasih atas kerja samanya.",
-            "",
-            "Hormat kami,",
-            "Wali Kelas ".$class->name,
-        ]);
-
-        $message = !empty($validated['custom_message']) ? $validated['custom_message'] : $defaultMessage;
-
-        try {
-            SendWhatsAppMessage::dispatch($groupId, $message, $class->user_id, [
-                'type' => 'excuse_share',
-                'class_id' => $class->id,
-            ]);
-            return back()->with('success', 'Link lapor izin/sakit berhasil dikirimkan ke grup WhatsApp!');
-        } catch (\Throwable $e) {
-            return back()->with('error', 'Gagal mengirim ke WhatsApp: ' . $e->getMessage());
-        }
+        return back()->with('success_public', 'Laporan ' . $validated['jenis'] . ' untuk ' . $siswa->name . ' telah berhasil dikirim ke Wali Kelas.');
     }
 }

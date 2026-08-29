@@ -1,52 +1,68 @@
 @extends('layouts.app')
-@section('title', 'Arsip Kelas')
+@section('title', 'Arsip Kelas — ' . config('app.name'))
 @section('content')
 
-    <!-- Page Header -->
-    <div class="page-header mb-5">
+<div class="space-y-6 pb-12">
+
+    {{-- HEADER --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <p class="text-sm text-slate-500">{{ $classes->total() }} kelas diarsipkan</p>
+            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+                <a href="{{ route('dashboard') }}" class="hover:text-slate-600">Dashboard</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <span aria-hidden="true">/</span>
+                <span class="text-slate-500">Arsip</span>
+            </nav>
+            <h1 class="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Arsip Kelas Terhapus</h1>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-600 font-medium">{{ $classes->total() }} kelas tersimpan di arsip sementara</p>
         </div>
-        <a href="{{ route('classes.index') }}" class="btn-ghost btn-ghost--sm">Kembali ke daftar kelas
+        <a href="{{ route('classes.index') }}"
+           class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all">
+            ← Kembali ke Semua Kelas
         </a>
     </div>
 
+    @include('partials.flash')
+
     @if ($classes->isEmpty())
-        <!-- Empty State -->
-        <div class="empty-state">
-            <div class="empty-state__icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                         d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                </svg>
-            </div>
-            <p class="empty-state__title">Arsip kosong</p>
-            <p class="empty-state__description">
-                Kelas yang dihapus akan muncul di sini. Anda bisa memulihkan atau menghapusnya permanen.
+        <div class="rounded-3xl border border-emerald-200 bg-white p-12 text-center space-y-3 shadow-xs">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-2xl mx-auto border border-emerald-200">📁</div>
+            <p class="text-base font-bold text-slate-900">Arsip Masih Kosong</p>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto font-medium">
+                Kelas yang Anda hapus akan masuk ke arsip sementara di sini. Anda dapat memulihkannya kapan saja atau menghapusnya secara permanen.
             </p>
         </div>
     @else
-        <div class="table-wrapper">
-            <table class="table">
+        {{-- DESKTOP VIEW --}}
+        <div class="hidden md:block overflow-x-auto rounded-3xl border border-emerald-200 bg-white shadow-xs">
+            <table class="w-full text-left text-xs border-collapse">
                 <thead>
-                    <tr>
-                        <th scope="col">Kelas</th>
-                        <th scope="col">Jurusan</th>
-                        <th scope="col">Dihapus</th>
-                        <th scope="col" class="text-right">Aksi</th>
+                    <tr class="bg-emerald-50/70 border-b border-emerald-100 text-emerald-950 font-bold">
+                        <th class="px-4 py-3 font-extrabold">Nama Kelas</th>
+                        <th class="px-4 py-3 font-extrabold">Jurusan</th>
+                        <th class="px-4 py-3 font-extrabold">Waktu Dihapus</th>
+                        <th class="px-4 py-3 text-right font-extrabold">Aksi Pemulihan</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-emerald-100/60">
                     @foreach ($classes as $class)
-                        <tr>
-                            <td class="font-semibold text-slate-900">{{ $class->name }}</td>
-                            <td class="td--secondary">{{ $class->major ?? '—' }}</td>
-                            <td class="td--secondary">{{ $class->deleted_at?->diffForHumans() }}</td>
-                            <td class="text-right">
+                        <tr class="hover:bg-emerald-50/40 transition-colors">
+                            <td class="px-4 py-3.5 font-bold text-slate-900">
+                                {{ $class->name }}
+                            </td>
+                            <td class="px-4 py-3.5 text-slate-600 font-medium">
+                                {{ $class->major ?? '—' }}
+                            </td>
+                            <td class="px-4 py-3.5 text-slate-500 font-medium">
+                                {{ $class->deleted_at?->translatedFormat('d M Y, H:i') }} ({{ $class->deleted_at?->diffForHumans() }})
+                            </td>
+                            <td class="px-4 py-3.5 text-right whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-2">
                                     <form method="POST" action="{{ route('classes.restore', $class->id) }}" class="inline">
                                         @csrf @method('PATCH')
-                                        <button type="submit" class="btn-ghost btn-ghost--sm text-emerald-600">Pulihkan
+                                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-950 font-bold border border-emerald-300 hover:bg-emerald-200 transition-colors shadow-2xs">
+                                            ✓ Pulihkan Kelas
                                         </button>
                                     </form>
                                     <form method="POST"
@@ -54,8 +70,8 @@
                                           class="inline"
                                           onsubmit="return confirm('Hapus PERMANEN kelas {{ $class->name }}? Seluruh data siswa, absensi, dan kas kelas akan hilang dan TIDAK BISA dikembalikan.')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn-danger-ghost btn-danger-ghost--sm">
-                                            Hapus permanen
+                                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-900 font-bold transition-colors">
+                                            Hapus Permanen
                                         </button>
                                     </form>
                                 </div>
@@ -66,8 +82,41 @@
             </table>
         </div>
 
+        {{-- MOBILE VIEW --}}
+        <div class="md:hidden space-y-3">
+            @foreach ($classes as $class)
+                <div class="bg-white rounded-2xl border border-emerald-200 p-4 shadow-xs space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">{{ $class->name }}</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ $class->major ?? 'Umum' }} &middot; Dihapus {{ $class->deleted_at?->diffForHumans() }}</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-emerald-100 flex items-center justify-end gap-2">
+                        <form method="POST" action="{{ route('classes.restore', $class->id) }}">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors">
+                                Pulihkan
+                            </button>
+                        </form>
+                        <form method="POST"
+                              action="{{ route('classes.force-delete', $class->id) }}"
+                              onsubmit="return confirm('Hapus PERMANEN kelas {{ $class->name }}?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold text-xs">
+                                Hapus
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
         @if($classes->hasPages())
             <div class="mt-6">{{ $classes->links() }}</div>
         @endif
     @endif
+
+</div>
 @endsection

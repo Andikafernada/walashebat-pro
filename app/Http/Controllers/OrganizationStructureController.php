@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Classroom;
 use App\Models\OrganizationStructure;
+use App\Support\PoinKerajinan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -33,14 +34,23 @@ class OrganizationStructureController extends Controller
 
         $class->organizationStructures()->create($data + ['user_id' => $class->user_id]);
 
-        return back()->with('success', 'Jabatan ditambahkan.');
+        if (!empty($data['student_id'])) {
+            PoinKerajinan::hitungUlang((int) $data['student_id']);
+        }
+
+        return back()->with('success', 'Jabatan berhasil ditambahkan (+2 Poin Keaktifan).');
     }
 
     public function destroy(Classroom $class, OrganizationStructure $organizationStructure): RedirectResponse
     {
         abort_unless($organizationStructure->class_id === $class->id, 403);
+        $studentId = $organizationStructure->student_id;
         $organizationStructure->delete();
 
-        return back()->with('success', 'Jabatan dihapus.');
+        if ($studentId) {
+            PoinKerajinan::hitungUlang((int) $studentId);
+        }
+
+        return back()->with('success', 'Jabatan berhasil dihapus.');
     }
 }

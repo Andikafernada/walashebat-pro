@@ -7,15 +7,15 @@
     <!-- Header Bar -->
     <div class="page-header">
         <div>
-            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+            <nav class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5" aria-label="Remah roti">
                 <a href="{{ route('dashboard') }}" class="hover:text-slate-600">Dashboard</a>
                 <span aria-hidden="true">/</span>
                 <span class="text-slate-500">Master Jenis Pelanggaran</span>
             </nav>
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
+            <h1 class="mt-1 text-xl font-bold tracking-tight text-slate-900">
                 Jenis &amp; Bobot Pelanggaran
             </h1>
-            <p class="mt-1 text-sm text-slate-500">Kelola daftar master jenis pelanggaran siswa dan akumulasi poin bobot kedisiplinan.</p>
+            <p class="mt-1 text-xs text-slate-500">Kelola daftar master jenis pelanggaran siswa dan akumulasi poin bobot kedisiplinan.</p>
         </div>
     </div>
 
@@ -24,27 +24,27 @@
 
     <!-- Top Metric Cards -->
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div class="card">
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Jenis</span>
-            <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ $types->total() }}</p>
+            <p class="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">{{ $types->total() }}</p>
             <p class="mt-1 text-[11px] text-slate-400">Pelanggaran terdaftar</p>
         </div>
 
-        <div class="rounded-lg border border-emerald-200/80 bg-emerald-50/50 p-4">
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
             <span class="text-xs font-semibold text-emerald-800 uppercase tracking-wider block">Kategori Ringan</span>
-            <p class="mt-2 text-2xl font-semibold tracking-tight text-emerald-950">{{ $types->filter(fn($t) => strtolower($t->category) === 'ringan')->count() }}</p>
+            <p class="mt-2 text-2xl font-extrabold tracking-tight text-emerald-950">{{ $types->filter(fn($t) => strtolower($t->category) === 'ringan')->count() }}</p>
             <p class="mt-1 text-[11px] text-emerald-600">Bobot poin 1 - 10</p>
         </div>
 
-        <div class="rounded-lg border border-amber-200/80 bg-amber-50/50 p-4">
+        <div class="bg-white rounded-2xl border border-amber-200 shadow-xs p-4">
             <span class="text-xs font-semibold text-amber-800 uppercase tracking-wider block">Kategori Sedang</span>
-            <p class="mt-2 text-2xl font-semibold tracking-tight text-amber-950">{{ $types->filter(fn($t) => strtolower($t->category) === 'sedang')->count() }}</p>
+            <p class="mt-2 text-2xl font-extrabold tracking-tight text-amber-950">{{ $types->filter(fn($t) => strtolower($t->category) === 'sedang')->count() }}</p>
             <p class="mt-1 text-[11px] text-amber-600">Bobot poin 11 - 30</p>
         </div>
 
-        <div class="rounded-lg border border-rose-200/80 bg-rose-50/50 p-4">
+        <div class="bg-white rounded-2xl border border-rose-200 shadow-xs p-4">
             <span class="text-xs font-semibold text-rose-800 uppercase tracking-wider block">Kategori Berat</span>
-            <p class="mt-2 text-2xl font-semibold tracking-tight text-rose-950">{{ $types->filter(fn($t) => strtolower($t->category) === 'berat')->count() }}</p>
+            <p class="mt-2 text-2xl font-extrabold tracking-tight text-rose-950">{{ $types->filter(fn($t) => strtolower($t->category) === 'berat')->count() }}</p>
             <p class="mt-1 text-[11px] text-rose-600">Bobot poin &gt; 30</p>
         </div>
     </div>
@@ -54,21 +54,22 @@
 
         <!-- LEFT COLUMN: Types List (2/3 width) -->
         <div class="space-y-4 lg:col-span-2">
-            <div class="card">
+            <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4">
 
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4 mb-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-emerald-100 pb-4 mb-4">
                     <div>
-                        <h3 class="text-base font-semibold text-slate-900">Daftar Jenis Pelanggaran</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900">Daftar Jenis Pelanggaran</h3>
                         <p class="text-xs text-slate-500">Master poin dan pengelompokan tingkat pelanggaran</p>
                     </div>
 
                     <div class="flex items-center gap-2">
                         <div class="relative">
                             <input type="text" x-model="search" placeholder="Cari pelanggaran..."
-                                   class="h-9 w-44 rounded border border-slate-200 bg-slate-50 pl-8 pr-3 text-xs text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none">
+                                   class="h-9 w-44 rounded-xl border border-slate-200 bg-slate-50 pl-8 pr-3 text-xs text-slate-800 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
                             <svg class="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </div>
-                        <select x-model="categoryFilter" class="h-9 rounded border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-700 focus:border-indigo-500">
+
+                        <select x-model="categoryFilter" class="h-9 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-xs text-slate-800 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
                             <option value="all">Semua Kategori</option>
                             <option value="ringan">Ringan</option>
                             <option value="sedang">Sedang</option>
@@ -77,44 +78,42 @@
                     </div>
                 </div>
 
-                @if ($types->isNotEmpty())
-                    <div class="divide-y divide-slate-200">
+                @if($types->count() > 0)
+                    <div class="divide-y divide-slate-100">
                         @foreach ($types as $t)
-                            @php
-                                $cat = strtolower($t->category ?? 'ringan');
-                            @endphp
-                            <div class="flex items-center justify-between gap-4 py-3.5 hover:bg-slate-50 px-2 rounded transition-colors"
-                                 x-show="(search === '' || '{{ strtolower($t->name) }}'.includes(search.toLowerCase())) && (categoryFilter === 'all' || categoryFilter === '{{ $cat }}')">
+                            @php $cat = strtolower($t->category); @endphp
+                            <div class="flex items-center justify-between py-3 hover:bg-slate-50/50 rounded-xl px-2 transition-colors"
+                                 x-show="(categoryFilter === 'all' || categoryFilter === '{{ $cat }}') && ('{{ strtolower($t->name) }}'.includes(search.toLowerCase()))">
 
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded font-semibold text-xs {{ $cat === 'ringan' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : '' }} {{ $cat === 'sedang' ? 'bg-amber-100 text-amber-800 border border-amber-200' : '' }} {{ $cat === 'berat' ? 'bg-rose-100 text-rose-800 border border-rose-200' : '' }}">
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold text-xs {{ $cat === 'ringan' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : '' }} {{ $cat === 'sedang' ? 'bg-amber-100 text-amber-800 border border-amber-200' : '' }} {{ $cat === 'berat' ? 'bg-rose-100 text-rose-800 border border-rose-200' : '' }}">
                                         {{ $t->points > 0 ? '+' : '' }}{{ $t->points }}
                                     </div>
                                     <div>
-                                        <h4 class="font-semibold text-sm text-slate-900">{{ $t->name }}</h4>
-                                        <p class="text-xs text-slate-400">Poin Bobot: {{ abs($t->points) }} Poin</p>
+                                        <h4 class="font-bold text-xs text-slate-900">{{ $t->name }}</h4>
+                                        <p class="text-[11px] text-slate-400">Poin Bobot: {{ abs($t->points) }} Poin</p>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-3">
                                     @switch($cat)
                                         @case('ringan')
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
                                                 Ringan
                                             </span>
                                             @break
                                         @case('sedang')
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
                                                 Sedang
                                             </span>
                                             @break
                                         @case('berat')
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 border border-rose-200 px-2.5 py-0.5 text-xs font-semibold text-rose-800">
                                                 Berat
                                             </span>
                                             @break
                                         @default
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 capitalize">
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 capitalize">
                                                 {{ $t->category }}
                                             </span>
                                     @endswitch
@@ -134,7 +133,7 @@
                     </div>
 
                     @if ($types->hasPages())
-                        <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+                        <div class="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-xs text-slate-500">
                             <span>Menampilkan {{ $types->firstItem() }}–{{ $types->lastItem() }} dari {{ $types->total() }} data</span>
                             <div>{{ $types->links() }}</div>
                         </div>
@@ -151,31 +150,31 @@
 
         <!-- RIGHT COLUMN: Add Form (1/3 width) -->
         <div class="space-y-4" id="add-type-form">
-            <div class="card space-y-4">
+            <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs p-4 space-y-4">
 
-                <div class="flex items-center gap-3 border-b border-slate-200 pb-3">
-                    <div class="stat-icon">
+                <div class="flex items-center gap-3 border-b border-emerald-100 pb-3">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-semibold text-slate-900">Tambah Jenis Pelanggaran</h3>
-                        <p class="text-xs text-slate-500">Input Nama &amp; Poin Pelanggaran Baru</p>
+                        <h3 class="text-xs font-bold text-slate-900">Tambah Jenis Pelanggaran</h3>
+                        <p class="text-[11px] text-slate-500">Input Nama &amp; Poin Pelanggaran Baru</p>
                     </div>
                 </div>
 
                 @if(Route::has('violation-types.store'))
-                    <form method="POST" action="{{ route('violation-types.store') }}" class="space-y-4" x-data="{ loading: false }" @submit="loading = true">
+                    <form method="POST" action="{{ route('violation-types.store') }}" class="space-y-3" x-data="{ loading: false }" @submit="loading = true">
                         @csrf
 
                         <div>
-                            <label for="name" class="form-label">Nama Pelanggaran</label>
+                            <label for="name" class="block text-xs font-semibold text-slate-700 mb-1">Nama Pelanggaran</label>
                             <input type="text" id="name" name="name" value="{{ old('name') }}" placeholder="cth: Terlambat Masuk Sekolah, Tidak Pakai Seragam..." required
-                                   class="form-input form-input--sm">
+                                   class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                         </div>
 
                         <div>
-                            <label for="category" class="form-label">Kategori Pelanggaran</label>
-                            <select id="category" name="category" required class="form-input form-input--sm">
+                            <label for="category" class="block text-xs font-semibold text-slate-700 mb-1">Kategori Pelanggaran</label>
+                            <select id="category" name="category" required class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                                 <option value="ringan">Ringan (1 - 10 Poin)</option>
                                 <option value="sedang">Sedang (11 - 30 Poin)</option>
                                 <option value="berat">Berat (&gt; 30 Poin)</option>
@@ -183,13 +182,13 @@
                         </div>
 
                         <div>
-                            <label for="points" class="form-label">Bobot Poin</label>
+                            <label for="points" class="block text-xs font-semibold text-slate-700 mb-1">Bobot Poin</label>
                             <input type="number" id="points" name="points" value="5" min="1" max="100" required
-                                   class="form-input form-input--sm">
+                                   class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                         </div>
 
                         <button type="submit" :disabled="loading"
-                                class="btn-primary w-full">
+                                class="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors disabled:opacity-50">
                             <template x-if="!loading">
                                 <span class="flex items-center gap-1.5">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

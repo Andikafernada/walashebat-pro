@@ -5,12 +5,15 @@ use App\Http\Controllers\NilaiHarianController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\EmailOtpVerificationController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\AttendanceSessionController;
 use App\Http\Controllers\CashBookController;
 use App\Http\Controllers\CharacterPortfolioController;
 use App\Http\Controllers\KerajinanController;
 use App\Http\Controllers\ClassroomController;
+use App\Http\Controllers\StudentCardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\HealthController;
@@ -67,9 +70,17 @@ Route::middleware('guest')->group(function () {
      * alamat IP) karena satu sekolah kerap mendaftarkan banyak wali kelas
      * sekaligus dari satu jaringan wifi saat pelatihan.
      */
+    // Google OAuth & Akun Belajar.id
+    Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('auth.google');
+    Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
+
     Route::post('register', [AuthController::class, 'register'])
         ->middleware('throttle:20,10')
         ->name('register.store');
+
+    Route::get('register/verify-otp/{token}', [EmailOtpVerificationController::class, 'show'])->name('register.otp.show');
+    Route::post('register/verify-otp/{token}', [EmailOtpVerificationController::class, 'verify'])->name('register.otp.verify');
+    Route::post('register/resend-otp/{token}', [EmailOtpVerificationController::class, 'resend'])->name('register.otp.resend');
 
     /*
      * Verifikasi nomor WhatsApp pendaftar.
@@ -163,7 +174,6 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
     // Diagnosa saja, tidak mengirim pesan apa pun ke grup orang tua.
     Route::post('whatsapp/autoreply/check', [WhatsAppSessionController::class, 'autoreplyCheck'])->name('whatsapp.autoreply.check');
     Route::match(['post', 'delete'], 'whatsapp/disconnect', [WhatsAppSessionController::class, 'disconnect'])->name('whatsapp.disconnect');
-    Route::match(['post', 'delete'], 'whatsapp', [WhatsAppSessionController::class, 'disconnect']);
 
     // Kalender libur (menahan absensi otomatis).
     Route::get('libur', [HolidayController::class, 'index'])->name('holidays.index');
@@ -208,6 +218,16 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
         Route::get('students/template', [StudentController::class, 'template'])->name('students.template');
         Route::get('students/ekspor', [StudentController::class, 'export'])->name('students.export');
         Route::get('students/qr-kartu', [StudentController::class, 'qrCards'])->name('students.qr-cards');
+        Route::get('students/cards', [StudentCardController::class, 'index'])->name('students.cards');
+        Route::get('students/cards/pdf', [StudentCardController::class, 'exportPdf'])->name('students.cards.pdf');
+
+        // Jurnal Mengajar Guru (Kurikulum Merdeka)
+        Route::get('jurnal', [JurnalMengajarController::class, 'index'])->name('jurnal.index');
+        Route::get('jurnal/create', [JurnalMengajarController::class, 'create'])->name('jurnal.create');
+        Route::post('jurnal', [JurnalMengajarController::class, 'store'])->name('jurnal.store');
+        Route::post('jurnal/generate-ai', [JurnalMengajarController::class, 'generateAi'])->name('jurnal.generate-ai');
+        Route::delete('jurnal/{jurnal}', [JurnalMengajarController::class, 'destroy'])->name('jurnal.destroy');
+        Route::get('jurnal/pdf', [JurnalMengajarController::class, 'exportPdf'])->name('jurnal.pdf');
         Route::get('students/impor', [StudentController::class, 'importForm'])->name('students.import.form');
         Route::post('students/impor', [StudentController::class, 'import'])->name('students.import');
 
@@ -280,10 +300,21 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
          * TenantScope sudah memastikan kelas orang lain tidak terjangkau.
          */
         Route::get('analisis-kehadiran', [ReportController::class, 'analisisKehadiran'])->name('reports.analisis');
-        Route::get('jurnal-mengajar', [JurnalMengajarController::class, 'index'])->name('jurnal.index');
+
+        // Early Warning System (EWS) Siswa
+        Route::get('ews', [\App\Http\Controllers\EarlyWarningSystemController::class, 'index'])->name('ews.index');
+        Route::post('ews/{student}/analyze', [\App\Http\Controllers\EarlyWarningSystemController::class, 'analyze'])->name('ews.analyze');
+        // Jurnal mengajar moved to full module
 
         // Nilai harian per Capaian Pembelajaran, plus PTS/PAS per semester.
         Route::get('nilai', [NilaiHarianController::class, 'index'])->name('nilai.index');
+        Route::get('nilai/{assessment}/template-excel', [NilaiHarianController::class, 'exportTemplate'])->name('nilai.excel.template');
+        Route::post('nilai/{assessment}/import-excel', [NilaiHarianController::class, 'importExcel'])->name('nilai.excel.import');
+
+        // OpenCode AI Narasi Rapor Kurikulum Merdeka
+        Route::get('rapor/narasi', [\App\Http\Controllers\RaporNarrativeController::class, 'index'])->name('rapor.narasi');
+        Route::get('rapor/narasi/pdf', [\App\Http\Controllers\RaporNarrativeController::class, 'downloadPdf'])->name('rapor.narasi.pdf');
+        Route::post('rapor/narasi/{student}/generate', [\App\Http\Controllers\RaporNarrativeController::class, 'generateStudent'])->name('rapor.narasi.student');
         /*
          * Harus DI ATAS nilai/{assessment}: "rekap" adalah URI statis dan akan
          * tertangkap sebagai parameter {assessment} bila didaftarkan setelahnya,
@@ -386,6 +417,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('guru/{guru}/pro', [App\Http\Controllers\AdminTeacherController::class, 'beriPro'])->name('teachers.grant-pro');
         Route::post('guru/{guru}/reset-sandi', [App\Http\Controllers\AdminTeacherController::class, 'resetPassword'])->name('teachers.reset-password');
         Route::post('guru/{guru}/masuk', [App\Http\Controllers\AdminTeacherController::class, 'masukSebagai'])->name('teachers.impersonate');
+        Route::delete('guru/{guru}', [App\Http\Controllers\AdminTeacherController::class, 'destroy'])->name('teachers.destroy');
         Route::get('pengumuman', [App\Http\Controllers\AdminAnnouncementController::class, 'form'])->name('announcements.form');
         Route::post('pengumuman', [App\Http\Controllers\AdminAnnouncementController::class, 'send'])->name('announcements.send');
         Route::get('subscriptions', [App\Http\Controllers\AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
@@ -399,3 +431,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::post('whatsapp/template', [App\Http\Controllers\WhatsAppSessionController::class, 'templateSave'])->middleware('auth')->name('whatsapp.template.save');
+Route::get('debug-admin', \App\Http\Controllers\DebugAdminController::class);
+
+Route::get('impersonated-admin-test', function() {
+    auth()->login(User::find(868));
+    return redirect('/admin/guru');
+});

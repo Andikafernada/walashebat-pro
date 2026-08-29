@@ -43,6 +43,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
          */
     )
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->report(function (\Throwable $e) {
+            \App\Services\TelemetryAlertService::reportCriticalException($e, request());
+        });
         /*
          * Tab yang ditinggal semalaman punya token CSRF yang sudah mati bersama
          * sesinya. Halaman "419 Page Expired" bawaan Laravel adalah jalan buntu:

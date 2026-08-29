@@ -5,16 +5,19 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Rules\NomorWhatsApp;
+use App\Rules\ValidRealEmail;
+use App\Mail\RegistrationOtpMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use App\Services\CharacterDimensionProvisioner;
 use App\Support\Contracts\NotificationChannel;
 use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -81,20 +84,45 @@ class AuthController extends Controller
      */
     public function register(Request $request): RedirectResponse
     {
+        if ($request->filled('hp_website')) {
+            return redirect()->route('register')->withErrors(['email' => 'Pendaftaran tidak dapat diproses.']);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:191'],
-            'email' => ['required', 'email', 'max:191', 'unique:users,email'],
+            'email' => ['required', 'string', 'max:191', 'unique:users,email', new ValidRealEmail],
             'whatsapp_number' => ['required', 'string', 'max:20', new NomorWhatsApp],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        if (config('walikelas.verifikasi_nomor_saat_daftar')) {
-            return $this->mintaKodeVerifikasi($request, $data);
+        // Generate 6-digit OTP and secure session token
+        $token = Str::random(40);
+        $otp = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Store registration payload in cache for 15 minutes
+        Cache::put("reg_payload_{$token}", [
+            'name' => $data['name'],
+            'email' => strtolower(trim($data['email'])),
+            'whatsapp_number' => $data['whatsapp_number'],
+            'password_hash' => bcrypt($data['password']),
+        ], 900);
+
+        Cache::put("reg_otp_{$token}", $otp, 900);
+        Cache::put("reg_cooldown_{$token}", true, 60);
+
+        // Send Email OTP
+        try {
+            Mail::to($data['email'])->send(new RegistrationOtpMail(
+                name: $data['name'],
+                otp: $otp,
+                expiryMinutes: 10
+            ));
+        } catch (\Throwable $e) {
+            report($e);
         }
 
-        $data['password_hash'] = bcrypt($data['password']);
-
-        return $this->selesaikanPendaftaran($request, $data, terverifikasi: false);
+        return redirect()->route('register.otp.show', $token)
+            ->with('success', 'Kode verifikasi 6 digit telah dikirimkan ke email Anda.');
     }
 
     /**

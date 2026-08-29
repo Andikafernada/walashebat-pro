@@ -4,7 +4,6 @@
 
 @section('content')
 @php
-    // Huruf yang sama dengan Attendance::KODE dan seluruh rekap.
     $pilihan = [
         'hadir' => 'H',
         'terlambat' => 'T',
@@ -18,18 +17,18 @@
 
     <div class="page-header">
         <div class="min-w-0">
-            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+            <nav class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5" aria-label="Remah roti">
                 <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
                 <span aria-hidden="true">/</span>
                 <a href="{{ route('classes.attendance.index', $class) }}" class="hover:text-slate-600">Absensi</a>
                 <span aria-hidden="true">/</span>
                 <span class="text-slate-500">Input Manual</span>
             </nav>
-            <h1 class="mt-1 text-xl font-semibold tracking-tight text-slate-900">Input Absensi Manual / Susulan</h1>
-            <p class="mt-1 text-sm text-slate-500">Isi presensi langsung tanpa magic link — untuk tanggal yang sudah lewat.</p>
+            <h1 class="mt-1 text-xl font-bold tracking-tight text-slate-900">Input Absensi Manual / Susulan</h1>
+            <p class="mt-1 text-xs text-slate-500">Isi presensi langsung tanpa magic link — untuk tanggal yang sudah lewat.</p>
         </div>
 
-        <a href="{{ route('classes.attendance.index', $class) }}" class="btn-secondary btn-secondary--sm shrink-0">Kembali ke Daftar Absensi</a>
+        <a href="{{ route('classes.attendance.index', $class) }}" class="shrink-0 inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Kembali ke Daftar Absensi</a>
     </div>
 
     @include('partials.class-nav', ['classroom' => $class])
@@ -39,96 +38,92 @@
     <form method="POST" action="{{ route('classes.attendance.manual.store', $class) }}" class="space-y-4">
         @csrf
 
-        <section class="blok">
-            <div class="blok__kepala"><h2 class="blok__judul">Keterangan sesi</h2></div>
-            <div class="blok__isi grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div class="form-group">
-                    <label for="session_date" class="form-label form-label--required">Tanggal absensi</label>
-                    <input id="session_date" type="date" name="session_date" required value="{{ date('Y-m-d') }}" class="form-input">
-                    <p class="form-hint">Boleh tanggal lampau.</p>
+        <section class="bg-white rounded-2xl border border-emerald-200 shadow-xs overflow-hidden">
+            <div class="flex items-center justify-between px-4 pt-4 pb-3 border-b border-emerald-100">
+                <h2 class="text-sm font-extrabold text-slate-900">Keterangan Sesi</h2>
+            </div>
+            <div class="p-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="session_date" class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Absensi <span class="text-rose-500">*</span></label>
+                    <input id="session_date" type="date" name="session_date" required value="{{ date('Y-m-d') }}" 
+                           class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    <p class="mt-1 text-xs text-slate-400">Boleh tanggal lampau.</p>
                 </div>
 
-                <div class="form-group">
-                    <label for="title" class="form-label">Judul sesi <span class="font-normal text-slate-400">(opsional)</span></label>
-                    <input id="title" type="text" name="title" value="{{ old('title') }}" placeholder="cth: Absensi Susulan Juli" class="form-input">
+                <div>
+                    <label for="title" class="block text-xs font-semibold text-slate-700 mb-1">Judul Sesi <span class="font-normal text-slate-400">(opsional)</span></label>
+                    <input id="title" type="text" name="title" value="{{ old('title') }}" placeholder="cth: Absensi Susulan Juli" 
+                           class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                 </div>
 
-                {{--
-                    Mapel & materi hanya muncul pada kelas ajar.
-
-                    Keduanya bekal jurnal mengajar. Materi disediakan sejak
-                    sekarang meski laporan jurnalnya menyusul, karena jurnal
-                    tidak bisa diisi mundur — tidak ada yang mengingat materi
-                    tanggal 12 Agustus pada bulan berikutnya.
-                --}}
                 @if ($class->kelasAjar())
                     @php $mapelPilihan = $class->mapelDiampu(); @endphp
-                    <div class="form-group">
-                        <label for="mapel" class="form-label">Mata pelajaran</label>
+                    <div>
+                        <label for="mapel" class="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran</label>
                         @if (count($mapelPilihan) > 1)
-                            <select id="mapel" name="mapel" class="form-select">
+                            <select id="mapel" name="mapel" class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                                 @foreach ($mapelPilihan as $m)
                                     <option value="{{ $m }}" @selected(old('mapel') === $m)>{{ $m }}</option>
                                 @endforeach
                             </select>
                         @else
-                            <input id="mapel" type="text" name="mapel" value="{{ old('mapel', $mapelPilihan[0] ?? '') }}" placeholder="cth: Matematika" class="form-input">
+                            <input id="mapel" type="text" name="mapel" value="{{ old('mapel', $mapelPilihan[0] ?? '') }}" placeholder="cth: Matematika" 
+                                   class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                         @endif
-                        <p class="form-hint">Atur daftar mapel di halaman Ubah Kelas.</p>
+                        <p class="mt-1 text-xs text-slate-400">Atur daftar mapel di halaman Ubah Kelas.</p>
                     </div>
 
-                    <div class="form-group">
-                        <label for="materi" class="form-label">Materi hari ini <span class="font-normal text-slate-400">(opsional)</span></label>
-                        <input id="materi" type="text" name="materi" value="{{ old('materi') }}" placeholder="cth: Sistem bilangan biner" class="form-input">
-                        <p class="form-hint">Dipakai untuk jurnal mengajar.</p>
+                    <div>
+                        <label for="materi" class="block text-xs font-semibold text-slate-700 mb-1">Materi Hari Ini <span class="font-normal text-slate-400">(opsional)</span></label>
+                        <input id="materi" type="text" name="materi" value="{{ old('materi') }}" placeholder="cth: Sistem bilangan biner" 
+                               class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        <p class="mt-1 text-xs text-slate-400">Dipakai untuk jurnal mengajar.</p>
                     </div>
                 @endif
             </div>
         </section>
 
-        <section class="blok">
-            <div class="blok__kepala">
-                <h2 class="blok__judul">Roster siswa</h2>
-                <span class="eyebrow">Bawaan: hadir</span>
+        <section class="bg-white rounded-2xl border border-emerald-200 shadow-xs overflow-hidden">
+            <div class="flex items-center justify-between px-4 pt-4 pb-3 border-b border-emerald-100">
+                <h2 class="text-sm font-extrabold text-slate-900">Roster Siswa</h2>
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Bawaan: hadir</span>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="table">
+                <table class="w-full text-left text-xs">
                     <thead>
-                        <tr>
-                            <th scope="col" class="w-10 text-right">No</th>
-                            <th scope="col">Nama Siswa</th>
-                            <th scope="col" class="text-center">Status</th>
-                            <th scope="col">Catatan / Alasan</th>
+                        <tr class="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                            <th scope="col" class="py-2.5 px-3 w-10 text-right">No</th>
+                            <th scope="col" class="py-2.5 px-3">Nama Siswa</th>
+                            <th scope="col" class="py-2.5 px-3 text-center">Status</th>
+                            <th scope="col" class="py-2.5 px-3">Catatan / Alasan</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100">
                         @foreach($students as $idx => $st)
-                            <tr>
-                                <td class="text-right font-mono text-xs text-slate-400">{{ $idx + 1 }}</td>
-                                <td>
-                                    {{ $st->name }}
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="py-2.5 px-3 text-right font-mono text-xs text-slate-400">{{ $idx + 1 }}</td>
+                                <td class="py-2.5 px-3">
+                                    <span class="font-bold text-slate-900">{{ $st->name }}</span>
                                     <span class="block font-mono text-[10px] font-normal text-slate-400">{{ $st->nis ?: '—' }}</span>
                                 </td>
-                                <td>
-                                    {{-- Lima tombol berdempet, satu ketuk, tanpa warna
-                                         berbeda-beda. Kepala kolomnya satu; huruf H T S I A
-                                         inilah yang dipakai di seluruh rekap dan cetakan. --}}
+                                <td class="py-2.5 px-3">
                                     <fieldset class="flex justify-center">
                                         <legend class="sr-only">Status kehadiran {{ $st->name }}</legend>
-                                        <div class="inline-flex overflow-hidden rounded border border-slate-200">
+                                        <div class="inline-flex overflow-hidden rounded-xl border border-slate-200">
                                             @foreach ($pilihan as $nilai => $huruf)
                                                 <label class="cursor-pointer border-r border-slate-200 last:border-r-0" title="{{ Str::title($nilai) }}">
                                                     <input type="radio" class="peer sr-only" name="attendance[{{ $st->id }}]" value="{{ $nilai }}" @checked($nilai === 'hadir')>
-                                                    <span class="block px-2.5 py-1 font-mono text-xs text-slate-500 transition-colors peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-checked:bg-slate-900 peer-checked:text-white">{{ $huruf }}</span>
+                                                    <span class="block px-2.5 py-1 font-mono text-xs text-slate-500 transition-colors peer-hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 peer-checked:bg-slate-900 peer-checked:text-white">{{ $huruf }}</span>
                                                 </label>
                                             @endforeach
                                         </div>
                                     </fieldset>
                                 </td>
-                                <td>
+                                <td class="py-2.5 px-3">
                                     <label for="note-{{ $st->id }}" class="sr-only">Catatan untuk {{ $st->name }}</label>
-                                    <input id="note-{{ $st->id }}" type="text" name="notes[{{ $st->id }}]" placeholder="cth: surat dokter" class="form-input form-input--sm">
+                                    <input id="note-{{ $st->id }}" type="text" name="notes[{{ $st->id }}]" placeholder="cth: surat dokter" 
+                                           class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                                 </td>
                             </tr>
                         @endforeach
@@ -138,8 +133,8 @@
         </section>
 
         <div class="flex items-center justify-end gap-2">
-            <a href="{{ route('classes.attendance.index', $class) }}" class="btn-secondary">Batal</a>
-            <button type="submit" class="btn-primary">Simpan Absensi Manual Tanggal Ini</button>
+            <a href="{{ route('classes.attendance.index', $class) }}" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Batal</a>
+            <button type="submit" class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors">Simpan Absensi Manual Tanggal Ini</button>
         </div>
     </form>
 </div>

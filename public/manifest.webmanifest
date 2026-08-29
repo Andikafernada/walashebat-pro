@@ -1,32 +1,58 @@
 {
-  "name": "Wali Kelas Hebat",
-  "short_name": "Wali Kelas",
-  "description": "Administrasi wali kelas: presensi WhatsApp otomatis, biodata mandiri siswa, refleksi karakter P5, dan laporan siap cetak.",
-  "lang": "id",
-  "start_url": "/dashboard",
-  "scope": "/",
-  "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#020617",
-  "orientation": "portrait-primary",
-  "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ]
+    "name": "WaliKelas Pro",
+    "short_name": "WaliKelas",
+    "description": "Administrasi wali kelas: presensi WhatsApp otomatis, biodata mandiri siswa, refleksi karakter P5, dan laporan siap cetak.",
+    "lang": "id",
+    "dir": "ltr",
+    "start_url": "/dashboard",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
+    "background_color": "#ffffff",
+    "theme_color": "#6366f1",
+    "orientation": "portrait-primary",
+    "categories": ["education", "productivity"],
+    "icons": [
+        {
+            "src": "/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Buka Dashboard",
+            "short_name": "Dashboard",
+            "url": "/dashboard",
+            "description": "Buka dashboard utama"
+        },
+        {
+            "name": "Kelola Kelas",
+            "short_name": "Kelas",
+            "url": "/classes",
+            "description": "Lihat semua kelas"
+        },
+        {
+            "name": "Pesan WhatsApp",
+            "short_name": "Pesan",
+            "url": "/whatsapp",
+            "description": "Kirim pesan otomatis"
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false
 }

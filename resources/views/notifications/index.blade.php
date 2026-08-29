@@ -3,82 +3,81 @@
 @section('title', 'Notifikasi')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6 pb-12">
     <!-- Header -->
     <div class="page-header">
         <div>
-            <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
+            <nav class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5" aria-label="Remah roti">
                 <a href="{{ route('dashboard') }}" class="hover:text-slate-600">Dashboard</a>
                 <span aria-hidden="true">/</span>
                 <span class="text-slate-500">Notifikasi</span>
             </nav>
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Notifikasi</h1>
-            <p class="mt-1 text-sm text-slate-500">Semua pemberitahuan untuk Anda</p>
+            <h1 class="mt-1 text-xl font-bold tracking-tight text-slate-900">Notifikasi</h1>
+            <p class="mt-1 text-xs text-slate-500">Semua pemberitahuan untuk Anda</p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('notifications.settings') }}" class="btn-secondary btn-secondary--sm">Pengaturan</a>
-            <button id="markAllRead" class="btn-ghost btn-ghost--sm">Tandai semua dibaca</button>
+            <a href="{{ route('notifications.settings') }}" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Pengaturan</a>
+            <button id="markAllRead" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Tandai semua dibaca</button>
         </div>
     </div>
 
     <!-- Filter Tabs -->
-    <div class="flex items-center gap-5 border-b border-slate-200 text-sm">
+    <div class="flex items-center gap-5 border-b border-slate-200 text-xs font-bold">
         @foreach (['all' => 'Semua', 'unread' => 'Belum Dibaca', 'read' => 'Dibaca'] as $key => $label)
             <a href="{{ route('notifications.index', ['filter' => $key]) }}"
                @if ($filter === $key) aria-current="page" @endif
-               class="-mb-px border-b-2 pb-2 font-medium {{ $filter === $key ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-900' }}">
+               class="-mb-px border-b-2 pb-2.5 transition-colors {{ $filter === $key ? 'border-emerald-600 text-emerald-800 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-900' }}">
                 {{ $label }}
             </a>
         @endforeach
     </div>
 
     <!-- Notifications List -->
-    <div class="blok">
-        <div class="divide-y divide-slate-200">
+    <div class="bg-white rounded-2xl border border-emerald-200 shadow-xs overflow-hidden">
+        <div class="divide-y divide-slate-100">
             @forelse($notifications as $notification)
-            <div class="p-4 transition-colors hover:bg-slate-50 {{ $notification->isRead() ? 'opacity-75' : '' }}"
+            <div class="p-4 transition-colors hover:bg-slate-50/50 {{ $notification->isRead() ? 'opacity-70' : '' }}"
                  data-notification-id="{{ $notification->id }}">
                 <div class="flex gap-3">
-                    <!-- Kode margin: warna menandakan sifatnya, hurufnya jenisnya -->
-                    <span class="kode mt-0.5 {{ ['emerald' => 'kode--hadir', 'rose' => 'kode--alfa', 'amber' => 'kode--izin'][$notification->color] ?? 'kode--aksen' }}"
+                    <span class="flex h-7 w-7 items-center justify-center rounded-xl font-bold text-xs shrink-0 {{ ['emerald' => 'bg-emerald-100 text-emerald-800', 'rose' => 'bg-rose-100 text-rose-800', 'amber' => 'bg-amber-100 text-amber-800'][$notification->color] ?? 'bg-emerald-100 text-emerald-800' }}"
                           aria-hidden="true">{{ ['alert' => '!', 'check' => '✓', 'bell' => '•'][$notification->icon] ?? 'i' }}</span>
 
                     <!-- Content -->
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between gap-4">
                             <div>
-                                <p class="font-medium text-slate-900 {{ $notification->isRead() ? '' : 'font-semibold' }}">
+                                <p class="text-xs font-bold text-slate-900 {{ $notification->isRead() ? '' : 'font-extrabold text-emerald-950' }}">
                                     {{ $notification->title }}
                                 </p>
-                                <p class="text-sm text-slate-600 mt-1">{{ $notification->body }}</p>
+                                <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">{{ $notification->body }}</p>
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
-                                <span class="text-xs text-slate-400 whitespace-nowrap">
+                                <span class="text-[11px] text-slate-400 font-mono whitespace-nowrap">
                                     {{ $notification->created_at->diffForHumans() }}
                                 </span>
                                 @if(!$notification->isRead())
-                                <button onclick="markAsRead({{ $notification->id }})" class="btn-ghost btn-ghost--sm">Tandai dibaca</button>
+                                <button onclick="markAsRead({{ $notification->id }})" class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Tandai dibaca</button>
                                 @endif
                             </div>
                         </div>
                         @if($notification->action_url)
                         <a href="{{ $notification->action_url }}"
                            onclick="markAsRead({{ $notification->id }})"
-                           class="mt-2 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-700">Lihat detail &rarr;</a>
+                           class="mt-1.5 inline-block text-xs font-bold text-emerald-700 hover:underline">Lihat detail &rarr;</a>
                         @endif
                     </div>
                 </div>
             </div>
             @empty
-            <div class="empty-state border-0">
-                <p class="empty-state__title">Tidak ada notifikasi</p>
-                <p class="empty-state__description">Notifikasi akan muncul di sini</p>
+            <div class="p-8 text-center">
+                <p class="text-sm font-bold text-slate-800">Tidak ada notifikasi</p>
+                <p class="text-xs text-slate-500 mt-1">Notifikasi akan muncul di sini</p>
             </div>
             @endforelse
         </div>
 
         @if($notifications->hasPages())
-        <div class="px-6 py-4 border-t border-slate-200">
+        <div class="px-6 py-4 border-t border-slate-100">
             {{ $notifications->links() }}
         </div>
         @endif
@@ -100,12 +99,15 @@ function markAsRead(notificationId) {
         if (data.success) {
             const el = document.querySelector(`[data-notification-id="${notificationId}"]`);
             if (el) {
-                el.classList.add('opacity-75');
-                el.querySelector('p.font-semibold')?.classList.remove('font-semibold');
+                el.classList.add('opacity-70');
+                el.querySelector('p.font-extrabold')?.classList.remove('font-extrabold', 'text-emerald-950');
                 el.querySelector('button[onclick*="markAsRead"]')?.remove();
             }
             updateNotificationCount();
         }
+    })
+    .catch(() => {
+        window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Tidak dapat menandai sudah dibaca.', type: 'error' } }));
     });
 }
 
@@ -122,6 +124,9 @@ document.getElementById('markAllRead')?.addEventListener('click', function() {
         if (data.success) {
             window.location.reload();
         }
+    })
+    .catch(() => {
+        window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Tidak dapat menandai semua sudah dibaca.', type: 'error' } }));
     });
 });
 
@@ -138,7 +143,8 @@ function updateNotificationCount() {
                     badge.classList.add('hidden');
                 }
             }
-        });
+        })
+        .catch(() => { });
 }
 </script>
 @endpush

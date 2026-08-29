@@ -103,7 +103,7 @@ class DashboardAdminTest extends TestCase
         $this->actingAs($this->admin())
             ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSeeInOrder(['Bukti Menunggu Verifikasi', '1'])
+            ->assertSeeInOrder(['Persetujuan PRO', '1'])
             // Angkanya tidak berguna tanpa jalan menuju halaman verifikasinya.
             ->assertSee(route('admin.subscriptions.index'), false);
     }

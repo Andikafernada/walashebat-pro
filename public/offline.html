@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#4d7c0f">
+<title>Offline — WaliKelas Pro</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #faf6ee;
+    color: #241d16;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+    text-align: center;
+  }
+  .kartu {
+    background: #fff;
+    border: 1px solid #e8dcc6;
+    border-radius: 12px;
+    padding: 40px 32px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 4px 16px rgb(36 29 22 / 0.08);
+  }
+  .ikon {
+    width: 56px;
+    height: 56px;
+    background: #f0fdf4;
+    border: 2px solid #86efac;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 28px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  p {
+    font-size: 14px;
+    color: #8a7860;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+  .tombol {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #4d7c0f;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+  }
+  .tombol:hover { background: #3f6a0c; }
+  .tombol:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+<div class="kartu">
+  <div class="ikon">📡</div>
+  <h1>Tidak ada koneksi</h1>
+  <p>Periksa sinyal internet Anda, lalu coba lagi. WaliKelas Pro membutuhkan koneksi untuk memuat data.</p>
+  <button class="tombol" onclick="location.reload()">🔄  Coba Lagi</button>
+</div>
+</body>
+</html>

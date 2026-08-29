@@ -4,41 +4,21 @@
 
 @section('content')
 @php
-    /*
-     * Early Warning System (EWS).
-     *
-     * Poin kedisiplinan hanya berlaku di kelas perwalian. Angkanya berasal dari
-     * buku poin pelanggaran — modul yang sengaja disembunyikan dari guru mapel
-     * (lihat partials/class-nav). Menampilkannya di sini membocorkan kembali
-     * catatan pembinaan yang bukan urusannya, lengkap dengan angka yang tidak
-     * punya cara ia perbaiki.
-     */
     $pakaiPoin = ! $classroom->kelasAjar();
+    $totalStudents = $totalStudents ?? $classroom->students()->count();
+    $activeStudentsCount = $classroom->students()->where('is_active', true)->count();
+    $totalSessionsCount = $classroom->attendanceSessions()->count();
+    $overallAttendance = method_exists($classroom, 'persentaseKehadiran') ? ($classroom->persentaseKehadiran() ?? 100) : 100;
 
     $atRiskStudents = $classroom->students()
         ->where('is_active', true)
         ->get()
         ->map(function ($s) use ($classroom, $pakaiPoin) {
-            /*
-             * Dihitung khusus KELAS INI. Tanpa penyaringan class_id, yang
-             * terhitung adalah seluruh ketidakhadiran siswa itu di kelas guru
-             * mana pun: seorang siswa yang sering absen di jam pelajaran orang
-             * lain muncul sebagai berisiko di sini, dan guru yang membukanya
-             * mencari sebab pada pelajaran yang tidak pernah ia tinggalkan.
-             */
             $absen = \App\Models\Attendance::where('student_id', $s->id)
                 ->whereIn('status', ['alfa', 'izin', 'sakit'])
                 ->whereHas('session', fn ($q) => $q
                     ->where('class_id', $classroom->id)
                     ->where('session_date', '>=', now()->subDays(30)))
-                /*
-                 * session_date, BUKAN created_at: yang dicari "berapa kali anak
-                 * ini tidak hadir dalam 30 hari terakhir", bukan "berapa banyak
-                 * baris yang DIKETIK petugas dalam 30 hari terakhir". Absensi
-                 * susulan lazim: di kelas 611 ada baris tanggal sesi 25 Juli
-                 * yang baru dientri 4 Agustus, sehingga jendela lamanya bergeser
-                 * mengikuti kapan orang sempat mengetik.
-                 */
                 ->count();
 
             $poin = $s->discipline_points ?? 100;
@@ -60,157 +40,218 @@
 
 <div class="space-y-5 pb-12">
 
-    <div class="page-header">
+    {{-- HEADER HALAMAN --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="min-w-0">
             <nav class="eyebrow flex items-center gap-1.5" aria-label="Remah roti">
-                <a href="{{ route('classes.index') }}" class="hover:text-slate-600">Kelas</a>
+                <a href="{{ route('classes.index') }}" class="hover:text-slate-600 transition-colors">Kelas</a>
                 <span aria-hidden="true">/</span>
-                <span class="text-slate-500">{{ $classroom->name }}</span>
+                <span class="text-slate-500 font-medium">{{ $classroom->name }}</span>
             </nav>
-            <h1 class="mt-1 text-xl font-semibold tracking-tight text-slate-900">Ringkasan Kelas {{ $classroom->name }}</h1>
-            {{-- Pada kelas ajar pemiliknya adalah guru mapel, bukan wali
-                 kelasnya. Sebutannya ikut jenis kelas; mapel yang diampu
-                 disebut agar guru yang mengampu beberapa kelas tahu ia
-                 sedang membuka yang mana. --}}
-            <p class="mt-1 text-sm text-slate-500">
-                {{-- Titik duanya bagian dari pernyataannya, bukan hiasan:
-                     "Guru Mapel: <nama>" menyebut peran orang itu. Tanpa itu
-                     kalimatnya menggantung dan testnya pun mengunci bentuk ini. --}}
-                {{ $classroom->sebutanPeran() }}:
-                <span class="font-medium text-slate-700">{{ $classroom->owner->name ?? 'belum ditentukan' }}</span>
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Ringkasan Kelas {{ $classroom->name }}</h1>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $classroom->kelasAjar() ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200' }}">
+                    {{ $classroom->kelasAjar() ? 'Guru Mapel' : 'Wali Kelas' }}
+                </span>
+            </div>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">
+                @if ($classroom->kelasAjar())
+                    Guru Mapel: <span class="font-bold text-slate-900">{{ $classroom->owner->name ?? 'belum ditentukan' }}</span>
+                    &middot; Mapel: <span class="font-semibold text-emerald-800">{{ implode(' · ', $classroom->mapelDiampu() ?: ['Mapel']) }}</span>
+                @else
+                    Wali Kelas: <span class="font-bold text-slate-900">{{ $classroom->owner->name ?? 'belum ditentukan' }}</span>
+                    &middot; Kelas perwalian dengan akses seluruh administrasi kelas.
+                @endif
                 &middot; TA {{ $classroom->academic_year ?? '2026/2027' }}
-                &middot; {{ $classroom->kelasAjar() && $classroom->mapelDiampu()
-                        ? implode(' · ', $classroom->mapelDiampu())
-                        : ($classroom->major ?? 'Umum') }}
             </p>
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
-            <a href="{{ route('classes.attendance.index', $classroom) }}" class="btn-primary btn-primary--sm">Kelola Absensi</a>
-            <a href="{{ route('classes.edit', $classroom) }}" class="btn-secondary btn-secondary--sm">Pengaturan</a>
+            @if(! $classroom->kelasAjar())
+                <a href="{{ route('classes.reports.full', $classroom) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all">
+                    📊 Laporan Administrasi
+                </a>
+            @else
+                <a href="{{ route('classes.nilai.index', $classroom) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all">
+                    📝 Nilai Mapel
+                </a>
+            @endif
+            <a href="{{ route('classes.attendance.index', $classroom) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm shadow-emerald-300 transition-all">
+                Kelola Absensi
+            </a>
+            <a href="{{ route('classes.edit', $classroom) }}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 text-slate-800 text-xs font-bold shadow-xs transition-all">
+                Pengaturan
+            </a>
         </div>
     </div>
 
+    {{-- NAVIGASI KELAS (DAILY COMMAND HUB) --}}
     @include('partials.class-nav', ['classroom' => $classroom])
 
     @include('partials.flash')
 
-    {{--
-        Dua angka pokok kelas ini.
+    {{-- ⚡ DAILY COMMAND CENTER (Bright Soft Emerald Gradient) --}}
+    <div class="bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-700 rounded-3xl p-4 sm:p-5 text-white shadow-lg shadow-emerald-600/15 relative overflow-hidden">
+        {{-- Decorative accent --}}
+        <div class="absolute -top-12 -right-12 w-48 h-48 bg-white/20 rounded-full blur-2xl pointer-events-none"></div>
 
-        Dulu keduanya duduk di dalam spanduk bergradien indigo-ke-hitam
-        setinggi 150px dengan lingkaran buram di pojoknya, inisial kelas dalam
-        kotak buram, dan nama kelas dicetak sekali lagi setelah baru saja
-        tertulis sebagai judul halaman di atasnya.
-    --}}
-    <dl class="deret-angka">
-        <div>
-            <dt class="stat-label">Total Siswa</dt>
-            <dd class="stat-value">{{ $totalStudents }}</dd>
+        <div class="relative z-10">
+            <div class="flex items-center justify-between gap-3 mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-white/25 text-white text-sm">⚡</span>
+                    <h2 class="text-sm font-bold tracking-tight text-white uppercase text-[11px] sm:text-xs">Pusat Komando Harian</h2>
+                </div>
+                <span class="text-[11px] text-emerald-100 font-bold">{{ now()->translatedFormat('l, d F Y') }}</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {{-- Aksi 1: Absensi --}}
+                @if(isset($todaySession) && $todaySession && $todaySession->status === 'submitted')
+                    <a href="{{ route('classes.attendance.index', $classroom) }}"
+                       class="flex items-center gap-3 p-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-md transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-xl shrink-0">✅</div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-white group-hover:text-emerald-100 transition-colors">Absensi Selesai</p>
+                            <p class="text-[10px] text-emerald-100 truncate font-semibold">{{ $todayAttendance['hadir'] ?? 0 }} hadir ({{ $todayAttendance['percentage'] ?? 0 }}%)</p>
+                        </div>
+                    </a>
+                @elseif(isset($todaySession) && $todaySession)
+                    <a href="{{ route('classes.attendance.show', [$classroom, $todaySession]) }}"
+                       class="flex items-center gap-3 p-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-md transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-xl shrink-0">⏳</div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-white group-hover:text-emerald-100 transition-colors">Sesi Sedang Berjalan</p>
+                            <p class="text-[10px] text-emerald-100 truncate">Lanjutkan absensi &rarr;</p>
+                        </div>
+                    </a>
+                @else
+                    <a href="{{ route('classes.attendance.index', $classroom) }}"
+                       class="flex items-center gap-3 p-3 rounded-2xl bg-white text-emerald-950 hover:bg-emerald-50 border border-white/50 backdrop-blur-md transition-all group shadow-md">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-950 flex items-center justify-center text-xl shrink-0">📋</div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-extrabold text-slate-900">Mulai Absensi Hari Ini</p>
+                            <p class="text-[10px] text-emerald-800 truncate font-semibold">Buat sesi presensi &rarr;</p>
+                        </div>
+                    </a>
+                @endif
+
+                {{-- Aksi 2: Jurnal Mengajar --}}
+                <a href="{{ route('classes.jurnal.index', $classroom) }}"
+                    class="flex items-center gap-3 p-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/20 backdrop-blur-md transition-all group">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-xl shrink-0">📖</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-bold text-white group-hover:text-emerald-100 transition-colors">Jurnal Mengajar</p>
+                        <p class="text-[10px] text-emerald-100 truncate">Catat materi pembelajaran &rarr;</p>
+                    </div>
+                </a>
+
+                {{-- Aksi 3: Catat Disiplin / Penilaian --}}
+                @if($pakaiPoin)
+                    <a href="{{ route('classes.violations.index', $classroom) }}"
+                       class="flex items-center gap-3 p-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/20 backdrop-blur-md transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-xl shrink-0">⚠️</div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-white group-hover:text-emerald-100 transition-colors">Buku Pelanggaran</p>
+                            <p class="text-[10px] text-emerald-100 truncate">Catat insiden / sanksi &rarr;</p>
+                        </div>
+                    </a>
+                @else
+                    <a href="{{ route('classes.nilai.index', $classroom) }}"
+                       class="flex items-center gap-3 p-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/20 backdrop-blur-md transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-xl shrink-0">📝</div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-white group-hover:text-emerald-100 transition-colors">Penilaian Siswa</p>
+                            <p class="text-[10px] text-emerald-100 truncate">Input nilai harian &rarr;</p>
+                        </div>
+                    </a>
+                @endif
+            </div>
         </div>
-        <div>
-            <dt class="stat-label">Hadir Hari Ini</dt>
-            <dd class="stat-value">{{ $todayAttendance['percentage'] ?? 0 }}%</dd>
+    </div>
+
+    {{-- STATISTIK KELAS --}}
+    <dl class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="bg-white rounded-3xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs space-y-1">
+            <dt class="text-xs font-bold text-slate-500 uppercase tracking-wider text-[10.5px]">Total Siswa</dt>
+            <dd class="text-2xl font-extrabold text-slate-900">{{ $totalStudents }}</dd>
+            <p class="text-[11px] text-slate-600 font-semibold truncate">{{ $activeStudentsCount }} siswa aktif</p>
         </div>
-        <div>
-            <dt class="stat-label">Perlu Perhatian</dt>
-            <dd class="stat-value {{ $atRiskStudents->count() > 0 ? 'text-rose-700' : '' }}">{{ $atRiskStudents->count() }}</dd>
-            <p class="stat-sub">{{ $pakaiPoin ? 'ketidakhadiran / poin disiplin' : 'ketidakhadiran di mapel ini' }}</p>
+
+        <div class="bg-white rounded-3xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs space-y-1">
+            <dt class="text-xs font-bold text-slate-500 uppercase tracking-wider text-[10.5px]">Kehadiran 30 Hari</dt>
+            <dd class="text-2xl font-extrabold text-emerald-700">{{ $attendanceStats['overall_percentage'] ?? $overallAttendance }}%</dd>
+            <p class="text-[11px] text-slate-600 font-semibold truncate">{{ $attendanceStats['total_sessions'] ?? $totalSessionsCount }} sesi terlaksana</p>
         </div>
+
+        <div class="bg-white rounded-3xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs space-y-1">
+            <dt class="text-xs font-bold text-slate-500 uppercase tracking-wider text-[10.5px]">Presensi Hari Ini</dt>
+            <dd class="text-2xl font-extrabold text-slate-900">
+                @if(isset($todayAttendance['percentage']) && $todayAttendance['percentage'] !== null)
+                    {{ $todayAttendance['percentage'] }}%
+                @else
+                    —
+                @endif
+            </dd>
+            <p class="text-[11px] text-slate-600 font-semibold truncate">
+                @if(isset($todayAttendance['hadir']))
+                    {{ $todayAttendance['hadir'] }} Hadir &middot; {{ $todayAttendance['alfa'] ?? 0 }} Alfa
+                @else
+                    Belum ada sesi
+                @endif
+            </p>
+        </div>
+
+        @if($pakaiPoin)
+        <div class="bg-white rounded-3xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs space-y-1">
+            <dt class="text-xs font-bold text-slate-500 uppercase tracking-wider text-[10.5px]">Siswa Butuh Perhatian</dt>
+            <dd class="text-2xl font-extrabold {{ $atRiskStudents->count() > 0 ? 'text-slate-900' : 'text-emerald-700' }}">
+                {{ $atRiskStudents->count() }}
+            </dd>
+            <p class="text-[11px] text-slate-600 font-semibold truncate">Ketidakhadiran &amp; Poin</p>
+        </div>
+        @else
+        <div class="bg-white rounded-3xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs space-y-1">
+            <dt class="text-xs font-bold text-slate-500 uppercase tracking-wider text-[10.5px]">Peran Anda</dt>
+            <dd class="text-lg font-extrabold text-emerald-800 truncate">Guru Mapel</dd>
+            <p class="text-[11px] text-slate-600 font-semibold truncate">Pengampu Mapel</p>
+        </div>
+        @endif
     </dl>
 
-    @if($atRiskStudents->count() > 0)
-        <section class="blok">
-            <div class="blok__kepala">
-                <h2 class="blok__judul">Siswa berisiko</h2>
-                <span class="kode kode--alfa">{{ $atRiskStudents->count() }}</span>
+    {{-- EARLY WARNING SYSTEM (EWS) --}}
+    @if ($atRiskStudents->isNotEmpty())
+        <section class="bg-white rounded-3xl border border-rose-200 p-5 sm:p-6 shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-rose-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">⚠️</span>
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-900">Siswa Butuh Perhatian Khusus</h2>
+                        <p class="text-xs text-slate-500 font-medium">Siswa terdeteksi berisiko berdasarkan riwayat kehadiran dan poin pembinaan.</p>
+                    </div>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
+                    {{ $atRiskStudents->count() }} Siswa
+                </span>
             </div>
-            <div class="blok__daftar">
-                @foreach($atRiskStudents->take(6) as $st)
-                    <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-medium text-slate-900">{{ $st->name }}</p>
-                            <p class="truncate text-xs text-rose-700">{{ $st->ews_alasan }}</p>
+
+            <div class="divide-y divide-rose-50">
+                @foreach ($atRiskStudents as $st)
+                    <div class="py-2.5 flex items-center justify-between gap-4">
+                        <div>
+                            <a href="{{ route('classes.students.show', [$classroom, $st]) }}" class="text-xs font-bold text-slate-900 hover:text-emerald-600 transition-colors">
+                                {{ $st->name }}
+                            </a>
+                            <p class="text-[11px] text-rose-600 font-semibold mt-0.5">{{ $st->ews_alasan }}</p>
                         </div>
-                        <a href="{{ route('classes.students.show', [$classroom, $st]) }}" class="btn-secondary btn-secondary--sm shrink-0">Detail</a>
+                        <a href="{{ route('classes.students.show', [$classroom, $st]) }}"
+                           class="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-colors">
+                            Lihat Profil
+                        </a>
                     </div>
                 @endforeach
             </div>
         </section>
     @endif
-
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <section class="blok lg:col-span-2">
-            <div class="blok__kepala">
-                <h2 class="blok__judul">Tren kehadiran kelas</h2>
-                {{-- Lencana "Tren Positif" dulu berdiri di sini sebagai teks
-                     tetap: tidak ada satu pun perhitungan naik/turun di
-                     belakangnya, dan ia tetap mengaku positif bahkan pada kelas
-                     yang tepat di bawahnya tertulis "Belum cukup data". --}}
-                <span class="eyebrow">7 sesi terakhir</span>
-            </div>
-
-            @php
-                $recentSessions = $classroom->attendanceSessions()
-                    ->where('status', 'submitted')
-                    ->orderByDesc('session_date')
-                    ->take(7)
-                    ->get()
-                    ->reverse();
-            @endphp
-
-            @if($recentSessions->isNotEmpty())
-                {{-- Batangnya tipis dan sewarna, tanpa sudut membulat: yang
-                     dibandingkan tingginya, dan hiasan apa pun di ujung batang
-                     hanya menambah ketebalan yang ikut terbaca sebagai nilai. --}}
-                <div class="flex items-end justify-between gap-1.5 px-4 pb-3 pt-5">
-                    @foreach($recentSessions as $sess)
-                        @php
-                            $total = $sess->attendances->count();
-                            $hadir = $sess->attendances->where('status', 'hadir')->count();
-                            $pct = $total > 0 ? round(($hadir / $total) * 100) : 100;
-                        @endphp
-                        <div class="flex flex-1 flex-col items-center gap-1">
-                            <span class="angka text-[10px] font-medium text-slate-600">{{ $pct }}%</span>
-                            <div class="relative w-full bg-slate-100" style="height: 88px;">
-                                <div class="absolute bottom-0 w-full bg-indigo-600" style="height: {{ $pct }}%;"></div>
-                            </div>
-                            <span class="font-mono text-[9px] text-slate-400">{{ $sess->session_date->format('d/m') }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="p-4 text-sm text-slate-500">Belum cukup data sesi absensi untuk grafik tren.</p>
-            @endif
-        </section>
-
-        <div class="space-y-4">
-            <a href="{{ route('classes.students.index', $classroom) }}" class="card block transition-colors hover:border-slate-400">
-                <p class="stat-label">Siswa Terdaftar</p>
-                <p class="stat-value">{{ $totalStudents }}</p>
-                <p class="mt-1.5 text-xs font-medium text-indigo-700">Lihat Daftar Siswa &rarr;</p>
-            </a>
-
-            {{--
-                Pintasan kedua mengikuti jenis kelas.
-
-                Laporan Administrasi adalah modul perwalian — class-nav sudah
-                menyingkirkan tabnya dari kelas ajar, tetapi kartu ini dulu
-                membukanya kembali dari halaman ringkasan, sehingga guru mapel
-                tetap sampai ke berkas yang menuntut data milik wali kelas.
-                Di kelas ajar yang setara gunanya adalah daftar nilai mapelnya.
-            --}}
-            @php $pintasan = $classroom->kelasAjar()
-                ? ['rute' => 'classes.nilai.index', 'kepala' => 'Penilaian Mapel', 'judul' => 'Daftar Nilai', 'ajakan' => 'Kelola Nilai &amp; Capaian']
-                : ['rute' => 'classes.reports.full', 'kepala' => 'Laporan Administrasi', 'judul' => 'Rekap Lengkap', 'ajakan' => 'Cetak &amp; Ekspor Laporan'];
-            @endphp
-            <a href="{{ route($pintasan['rute'], $classroom) }}" class="card block transition-colors hover:border-slate-400">
-                <p class="stat-label">{{ $pintasan['kepala'] }}</p>
-                <p class="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">{{ $pintasan['judul'] }}</p>
-                <p class="mt-1.5 text-xs font-medium text-indigo-700">{!! $pintasan['ajakan'] !!} &rarr;</p>
-            </a>
-        </div>
-    </div>
 
 </div>
 @endsection
