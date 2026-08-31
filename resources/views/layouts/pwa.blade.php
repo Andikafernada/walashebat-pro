@@ -1,177 +1,148 @@
-@php
-    $modeOperator = request()->routeIs('admin.*');
-    
-    // Ambil daftar kelas guru yang aktif
-    $kelasPintasan = (isset($kelasPintasan) && $kelasPintasan->isNotEmpty())
-        ? $kelasPintasan
-        : (auth()->check() ? auth()->user()->classes()->where('is_active', true)->orderBy('name')->get() : collect());
-    
-    // Tentukan kelas aktif secara cerdas
-    $kelasAktif = $kelasAktif 
-        ?? (isset($classroom) && $classroom instanceof \App\Models\Classroom ? $classroom : null)
-        ?? (request()->route('class') instanceof \App\Models\Classroom ? request()->route('class') : null)
-        ?? (session('active_class_id') ? $kelasPintasan->firstWhere('id', session('active_class_id')) : null)
-        ?? $kelasPintasan->first();
-
-    $pembatas = $pembatas ?? [];
-
-    // URL kelas aktif
-    $urlKelasAbsensi   = $kelasAktif ? route('classes.attendance.index', $kelasAktif)        : route('classes.index');
-    $urlKelasSiswa     = $kelasAktif ? route('classes.students.index', $kelasAktif)           : route('classes.index');
-    $urlKelasNilai     = $kelasAktif ? route('classes.nilai.index', $kelasAktif)              : route('classes.index');
-    $urlKelasJadwal    = $kelasAktif ? route('classes.schedules.index', $kelasAktif)          : route('classes.index');
-    $urlKelasKarakter  = $kelasAktif ? route('classes.character-portfolio.index', $kelasAktif): route('classes.index');
-    $urlKelasKas       = $kelasAktif ? route('classes.cashbook.index', $kelasAktif)           : route('classes.index');
-    $urlKelasLaporan   = ($kelasAktif && ! $kelasAktif->kelasAjar()) ? route('classes.reports.full', $kelasAktif) : ($kelasAktif ? route('classes.reports.attendance', $kelasAktif) : route('classes.index'));
-    $urlKelasAnalisis  = $kelasAktif ? route('classes.reports.analisis', $kelasAktif)         : route('classes.index');
-    $urlKelasImport    = $kelasAktif ? route('classes.students.import.form', $kelasAktif)     : route('classes.index');
-    $urlKelasQr        = $kelasAktif ? route('classes.students.qr-cards', $kelasAktif)        : route('classes.index');
-    $urlKelasViolasi   = $kelasAktif ? route('classes.violations.index', $kelasAktif)         : route('classes.index');
-    $urlKelasJurnal    = $kelasAktif ? route('classes.jurnal.index', $kelasAktif)             : route('classes.index');
-    $urlKelasKerajinan = $kelasAktif ? route('classes.kerajinan.index', $kelasAktif)          : route('classes.index');
-    $urlKelasDenah     = $kelasAktif ? route('classes.seating.index', $kelasAktif)            : route('classes.index');
-    $urlKelasStruktur  = $kelasAktif ? route('classes.organization.index', $kelasAktif)       : route('classes.index');
-    $urlKelasPerSiswa  = $kelasAktif ? route('classes.cashbook.per-siswa', $kelasAktif)       : route('classes.index');
-    $urlKelasEws       = $kelasAktif ? route('classes.ews.index', $kelasAktif)                : route('classes.index');
-
-    // Route active checks for bottom nav & modal drawer
-    $isBerandaActive = request()->routeIs('dashboard', 'admin.dashboard');
-    $isAbsensiActive = request()->routeIs('classes.attendance.*');
-    $isClassesActive = request()->routeIs('classes.index', 'classes.create');
-    $isProfileActive = request()->routeIs('profile.edit');
-    $isAktivitasActive = request()->routeIs(
-        'classes.schedules.*',
-        'classes.nilai.*',
-        'classes.cashbook.*',
-        'classes.jurnal.*',
-        'classes.reports.*',
-        'holidays.*',
-        'analytics.*'
-    );
-    $isSiswaActive = request()->routeIs(
-        'classes.students.*',
-        'classes.ews.*',
-        'classes.character-portfolio.*',
-        'classes.violations.*',
-        'classes.kerajinan.*',
-        'classes.organization.*',
-        'classes.seating.*'
-    );
-@endphp
 <!DOCTYPE html>
-<html lang="id" class="antialiased h-full">
+<html lang="id" class="h-full bg-slate-50">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', config('app.name', 'WaliKelas Pro'))</title>
+
+    {{-- PWA Primary Meta Tags --}}
+    <meta name="theme-color" content="#064e3b">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WaliKelas">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <title>@yield('title', config('app.name', 'WaliKelas Pro')) - Mobile PWA</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+
+    {{-- Tailwind & Alpine.js via Laravel Mix / Compiled Bundle --}}
+    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    {{-- PWA: Register Service Worker --}}
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(r => console.log('PWA SW registered:', r.scope))
-                    .catch(e => console.log('PWA SW failed:', e));
-            });
-        }
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const banner = document.getElementById('pwa-install-banner');
-            if (banner && !localStorage.getItem('pwa-install-dismissed')) {
-                banner.classList.remove('hidden');
-            }
-        });
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            document.getElementById('pwa-install-banner')?.classList.add('hidden');
-        });
-        async function installPWA() {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') localStorage.setItem('pwa-install-dismissed', 'true');
-            deferredPrompt = null;
-        }
-        function dismissPWAInstall() {
-            document.getElementById('pwa-install-banner')?.classList.add('hidden');
-            localStorage.setItem('pwa-install-dismissed', 'true');
-        }
-    </script>
-
     <style>
+        /* Safe Area Padding for Modern Mobile Devices (iOS & Android Notch) */
         :root {
-            --safe-area-inset-top: env(safe-area-inset-top, 0px);
-            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+            --sat: env(safe-area-inset-top, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --sar: env(safe-area-inset-right, 0px);
         }
-        .safe-area-inset-top { padding-top: var(--safe-area-inset-top); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        html { scroll-behavior: smooth; }
+
+        body {
+            padding-top: var(--sat);
+            padding-bottom: calc(var(--sab) + 76px);
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Smooth Drawer & Touch Feedback */
+        .drawer-scroll-area {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .drawer-scroll-area::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-touch-btn:active {
+            transform: scale(0.92);
+        }
 
         @keyframes drawerSlideUp {
-            from { transform: translateY(100%); opacity: 0.85; }
-            to   { transform: translateY(0); opacity: 1; }
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
         }
+
         .animate-drawer-up {
-            animation: drawerSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: drawerSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         .menu-tab-btn {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .menu-tab-btn.is-active {
-            background-color: #ffffff;
             color: #064e3b;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
-            font-weight: 900;
-        }
-        .menu-tab-btn:not(.is-active) {
-            color: #065f46;
             font-weight: 700;
         }
-
-        .nav-touch-btn {
-            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        .nav-touch-btn:active {
-            transform: scale(0.90);
+        .menu-tab-btn.is-active {
+            background-color: #047857;
+            color: #ffffff;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.35);
         }
     </style>
+    @stack('styles')
 </head>
-<body class="antialiased text-slate-900 bg-[#f0fdf4] min-h-full flex flex-col pb-36" style="overflow-x:hidden;">
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-emerald-500 selection:text-white pb-24">
+
+@php
+    $currentRoute = Route::currentRouteName() ?? '';
+    $user = auth()->user();
+
+    // Resolusi Kelas Aktif
+    $kelasAktif = null;
+    if (isset($classroom) && $classroom instanceof \App\Models\Classroom) {
+        $kelasAktif = $classroom;
+    } elseif (isset($class) && $class instanceof \App\Models\Classroom) {
+        $kelasAktif = $class;
+    } elseif ($user) {
+        $kelasAktif = $user->classes()->latest()->first();
+    }
+
+    // Active State Navigation
+    $isBerandaActive = in_array($currentRoute, ['dashboard', 'home']);
+    $isClassesActive = str_starts_with($currentRoute, 'classes.');
+    $isProfileActive = in_array($currentRoute, ['profile.edit', 'profile.show']);
+    $isWhatsappActive = str_starts_with($currentRoute, 'whatsapp.');
+
+    // Helper URLs
+    $urlKelasAbsensi  = $kelasAktif ? route('classes.attendance.index', $kelasAktif) : route('classes.index');
+    $urlKelasNilai    = $kelasAktif ? route('classes.nilai.index', $kelasAktif) : route('classes.index');
+    $urlKelasJurnal   = $kelasAktif ? route('classes.jurnal.index', $kelasAktif) : route('classes.index');
+    $urlKelasJadwal   = $kelasAktif ? route('classes.schedules.index', $kelasAktif) : route('classes.index');
+    $urlKelasAnalisis = $kelasAktif ? route('classes.reports.analisis', $kelasAktif) : route('classes.index');
+    $urlKelasLaporan  = $kelasAktif ? route('classes.reports.full', $kelasAktif) : route('classes.index');
+
+    $urlKelasSiswa     = $kelasAktif ? route('classes.students.index', $kelasAktif) : route('classes.index');
+    $urlKelasQr        = $kelasAktif ? route('classes.students.qr-cards', $kelasAktif) : route('classes.index');
+    $urlKelasEws       = $kelasAktif ? route('classes.ews.index', $kelasAktif) : route('classes.index');
+    $urlKelasImport    = $kelasAktif ? route('classes.students.import', $kelasAktif) : route('classes.index');
+    $urlKelasKarakter  = $kelasAktif ? route('classes.character-portfolio.index', $kelasAktif) : route('classes.index');
+    $urlKelasViolasi   = $kelasAktif ? route('classes.violations.index', $kelasAktif) : route('classes.index');
+    $urlKelasKerajinan = $kelasAktif ? route('classes.kerajinan.index', $kelasAktif) : route('classes.index');
+    $urlKelasKas       = $kelasAktif ? route('classes.cashbook.index', $kelasAktif) : route('classes.index');
+    $urlKelasDenah     = $kelasAktif ? route('classes.seating.index', $kelasAktif) : route('classes.index');
+    $urlKelasOrganisasi= $kelasAktif ? route('classes.organization.index', $kelasAktif) : route('classes.index');
+@endphp
 
 {{-- ══════════════════════════════════════════════════════════════════════════════════
-     1. MOBILE PWA COMPACT TOP HEADER
+     1. NATIVE-LIKE MOBILE APP HEADER (CLEAN & SLICK)
      ══════════════════════════════════════════════════════════════════════════════════ --}}
-<header class="bg-white/95 backdrop-blur-md border-b border-emerald-200 sticky top-0 z-30 px-4 py-2.5 flex items-center justify-between shadow-2xs">
-    <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 text-decoration-none">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-700 to-teal-500 flex items-center justify-center text-white font-black text-sm shadow-xs">
-            ✨
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-emerald-200 px-4 py-2.5 flex items-center justify-between shadow-2xs">
+    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 no-underline">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-black text-sm shadow-xs">
+            W
         </div>
-        <div>
-            <span class="font-black text-slate-900 text-xs leading-none block tracking-tight">WaliKelas <span class="text-emerald-700 font-extrabold">Pro</span></span>
+        <div class="min-w-0">
+            <h1 class="text-xs font-black text-slate-900 leading-none tracking-tight">WaliKelas <span class="text-emerald-800">Pro</span></h1>
             <span class="text-[9px] font-bold text-emerald-800 uppercase block mt-0.5">{{ $kelasAktif ? $kelasAktif->name : 'Daftar Kelas' }}</span>
         </div>
     </a>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1.5">
+        {{-- QUICK WHATSAPP BADGE --}}
+        @auth
+            <a href="{{ route('whatsapp.index') }}" 
+               class="px-2.5 py-1 rounded-xl {{ $isWhatsappActive ? 'bg-emerald-600 text-white font-black' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold border border-emerald-200' }} text-[11px] transition-all flex items-center gap-1 shadow-2xs"
+               title="Integrasi WhatsApp">
+                <span>📱</span>
+                <span>WhatsApp</span>
+            </a>
+        @endauth
+
         {{-- VIEW SWITCHER: Switch to Web Desktop Mode --}}
         <a href="{{ request()->fullUrlWithQuery(['layout' => 'web']) }}" 
-           class="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 text-[11px] font-bold border border-emerald-200 transition-all flex items-center gap-1">
+           class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold border border-slate-200 transition-all flex items-center gap-1"
+           title="Ganti ke Tampilan Desktop Web">
             <span>🖥️</span>
-            <span>Mode Web</span>
         </a>
 
         @auth
@@ -180,32 +151,38 @@
                title="Profil Guru">
                 {{ Str::upper(Str::substr(auth()->user()->name, 0, 1)) }}
             </a>
-            <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Keluar dari akun?');" class="inline">
-                @csrf
-                <button type="submit" 
-                        class="w-7 h-7 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center text-xs font-bold transition-colors" 
-                        title="Keluar / Logout">
-                    🚪
-                </button>
-            </form>
         @endauth
     </div>
 </header>
 
 {{-- ══════════════════════════════════════════════════════════════════════════════════
-     2. MAIN MOBILE CONTENT CANVAS
+     2. MAIN CONTENT WRAPPER
      ══════════════════════════════════════════════════════════════════════════════════ --}}
-<main class="flex-1 p-3 sm:p-4 max-w-md w-full mx-auto">
-    @include('partials.flash')
+<main class="flex-1 w-full max-w-lg mx-auto px-4 pt-3.5 pb-28">
+    {{-- Global Flash Messages --}}
+    @if(session('success'))
+        <div class="mb-3.5 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-2 shadow-2xs">
+            <span class="text-base">✅</span>
+            <div class="flex-1 leading-snug">{{ session('success') }}</div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-3.5 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-bold flex items-center gap-2 shadow-2xs">
+            <span class="text-base">❌</span>
+            <div class="flex-1 leading-snug">{{ session('error') }}</div>
+        </div>
+    @endif
+
     @yield('content')
 </main>
 
 {{-- ══════════════════════════════════════════════════════════════════════════════════
      3. NEXT-GEN FLOATING GLASS ISLAND FOOTBAR & SUPERAPP ACTION HUB
      ══════════════════════════════════════════════════════════════════════════════════ --}}
-<div x-data="{ openMenuDrawer: false, drawerTab: '{{ $isSiswaActive ? 'siswa' : ($isAktivitasActive ? 'aktivitas' : 'aktivitas') }}' }">
+<div x-data="{ openMenuDrawer: false, drawerTab: '{{ $isWhatsappActive ? 'integrasi' : 'aktivitas' }}' }">
     
-    {{-- FLOATING GLASS PILL NAVBAR (BULLETPROOF INLINE POSITIONING) --}}
+    {{-- FLOATING GLASS PILL NAVBAR --}}
     <nav style="position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); max-width: 480px; z-index: 99999;"
          class="bg-white/95 backdrop-blur-2xl border border-emerald-200/90 rounded-[28px] shadow-[0_12px_36px_-6px_rgba(6,78,59,0.28)] py-1.5 px-3">
         <div class="flex justify-between items-center relative">
@@ -232,30 +209,28 @@
             {{-- 2. ABSENSI (ATTENDANCE) --}}
             <a href="{{ $urlKelasAbsensi }}"
                class="nav-touch-btn flex-1 flex flex-col items-center justify-center py-1 rounded-2xl no-underline group"
-               title="Absensi">
-                <div class="p-1 rounded-xl transition-all {{ $isAbsensiActive ? 'text-emerald-700 font-extrabold' : 'text-slate-500' }}">
-                    <svg class="w-5 h-5 {{ $isAbsensiActive ? 'fill-emerald-600' : 'fill-none stroke-current stroke-2' }}" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+               title="Presensi Harian">
+                <div class="p-1 rounded-xl transition-all {{ str_contains($currentRoute, 'attendance') ? 'text-emerald-700 font-extrabold' : 'text-slate-500' }}">
+                    <svg class="w-5 h-5 {{ str_contains($currentRoute, 'attendance') ? 'fill-emerald-600' : 'fill-none stroke-current stroke-2' }}" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <span class="text-[10px] font-black leading-none mt-0.5 {{ $isAbsensiActive ? 'text-emerald-950 font-black' : 'text-slate-600 font-semibold' }}">
+                <span class="text-[10px] font-black leading-none mt-0.5 {{ str_contains($currentRoute, 'attendance') ? 'text-emerald-950 font-black' : 'text-slate-600 font-semibold' }}">
                     Absensi
                 </span>
-                @if($isAbsensiActive)
+                @if(str_contains($currentRoute, 'attendance'))
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shadow-2xs mt-1"></span>
                 @else
                     <span class="w-1.5 h-1.5 mt-1"></span>
                 @endif
             </a>
 
-            {{-- 3. CENTER SUPERAPP FLOATING ACTION HUB (FAB) --}}
-            <div class="flex-1 flex flex-col items-center justify-center -mt-7">
-                <button @click="openMenuDrawer = true"
-                        type="button"
-                        style="width: 52px; height: 52px;"
-                        class="nav-touch-btn rounded-full bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-400 text-white flex items-center justify-center ring-4 ring-[#f0fdf4] shadow-[0_8px_20px_rgba(5,150,105,0.45)] cursor-pointer group"
-                        title="Buka Menu Fitur Lengkap">
-                    <svg class="w-6 h-6 transform group-hover:rotate-45 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            {{-- 3. TOMBOL TENGAH: SUPER MENU DRAWER (ALL APPS) --}}
+            <div class="flex-1 flex flex-col items-center justify-center relative -top-3">
+                <button @click="openMenuDrawer = true" 
+                        class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-700 to-teal-600 text-white flex items-center justify-center shadow-[0_8px_20px_-4px_rgba(5,150,105,0.6)] active:scale-90 transition-transform cursor-pointer"
+                        title="Buka Seluruh Fitur">
+                    <svg class="w-6 h-6 stroke-white stroke-2 fill-none" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
                 </button>
@@ -265,19 +240,17 @@
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400/80 shadow-2xs mt-1"></span>
             </div>
 
-            {{-- 4. DAFTAR KELAS (CLASSES) --}}
-            <a href="{{ route('classes.index') }}"
+            {{-- 4. INTEGRASI WHATSAPP --}}
+            <a href="{{ route('whatsapp.index') }}"
                class="nav-touch-btn flex-1 flex flex-col items-center justify-center py-1 rounded-2xl no-underline group"
-               title="Daftar Kelas">
-                <div class="p-1 rounded-xl transition-all {{ $isClassesActive ? 'text-emerald-700 font-extrabold' : 'text-slate-500' }}">
-                    <svg class="w-5 h-5 {{ $isClassesActive ? 'fill-emerald-600' : 'fill-none stroke-current stroke-2' }}" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-                    </svg>
+               title="Integrasi WhatsApp & Bot">
+                <div class="p-1 rounded-xl transition-all {{ $isWhatsappActive ? 'text-emerald-700 font-extrabold' : 'text-slate-500' }}">
+                    <span class="text-lg leading-none">📱</span>
                 </div>
-                <span class="text-[10px] font-black leading-none mt-0.5 {{ $isClassesActive ? 'text-emerald-950 font-black' : 'text-slate-600 font-semibold' }}">
-                    Kelas
+                <span class="text-[10px] font-black leading-none mt-0.5 {{ $isWhatsappActive ? 'text-emerald-950 font-black' : 'text-slate-600 font-semibold' }}">
+                    WhatsApp
                 </span>
-                @if($isClassesActive)
+                @if($isWhatsappActive)
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shadow-2xs mt-1"></span>
                 @else
                     <span class="w-1.5 h-1.5 mt-1"></span>
@@ -328,7 +301,7 @@
                         🚀
                     </div>
                     <div>
-                        <h2 class="text-sm font-black text-slate-900 leading-none">Pusat Fitur &amp; Administrasi</h2>
+                        <h2 class="text-sm font-black text-slate-900 leading-none">Pusat Fitur &amp; Integrasi</h2>
                         <p class="text-[11px] font-bold text-emerald-800 mt-0.5">Kelas {{ $kelasAktif ? $kelasAktif->name : 'Pilih Kelas' }}</p>
                     </div>
                 </div>
@@ -338,22 +311,30 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 p-1 bg-emerald-200/60 rounded-2xl my-3 shrink-0">
+            {{-- 3 TABS: AKTIVITAS, SISWA, INTEGRASI --}}
+            <div class="grid grid-cols-3 gap-1.5 p-1 bg-emerald-200/60 rounded-2xl my-3 shrink-0">
                 <button @click="drawerTab = 'aktivitas'" 
                         :class="drawerTab === 'aktivitas' ? 'is-active' : ''"
-                        class="menu-tab-btn py-2 text-xs rounded-xl text-center flex items-center justify-center gap-1.5">
+                        class="menu-tab-btn py-2 text-[11px] rounded-xl text-center flex items-center justify-center gap-1">
                     <span>📖</span>
-                    <span>Aktivitas &amp; Nilai</span>
+                    <span>Kelas &amp; Nilai</span>
                 </button>
                 <button @click="drawerTab = 'siswa'" 
                         :class="drawerTab === 'siswa' ? 'is-active' : ''"
-                        class="menu-tab-btn py-2 text-xs rounded-xl text-center flex items-center justify-center gap-1.5">
+                        class="menu-tab-btn py-2 text-[11px] rounded-xl text-center flex items-center justify-center gap-1">
                     <span>👥</span>
-                    <span>Siswa &amp; Cetak</span>
+                    <span>Siswa</span>
+                </button>
+                <button @click="drawerTab = 'integrasi'" 
+                        :class="drawerTab === 'integrasi' ? 'is-active' : ''"
+                        class="menu-tab-btn py-2 text-[11px] rounded-xl text-center flex items-center justify-center gap-1">
+                    <span>⚡</span>
+                    <span>Integrasi &amp; WA</span>
                 </button>
             </div>
 
             <div class="overflow-y-auto flex-1 drawer-scroll-area space-y-4 py-2">
+                {{-- TAB 1: AKTIVITAS & NILAI --}}
                 <div x-show="drawerTab === 'aktivitas'" class="grid grid-cols-3 gap-2.5">
                     <a href="{{ $urlKelasAbsensi }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📋</span>
@@ -385,8 +366,14 @@
                         <span class="text-xs font-black text-slate-900">Laporan PDF</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Rekap Resmi</span>
                     </a>
+                    <a href="{{ route('classes.index') }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">🏫</span>
+                        <span class="text-xs font-black text-slate-900">Semua Kelas</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Kelola Kelas</span>
+                    </a>
                 </div>
 
+                {{-- TAB 2: SISWA & ADMINISTRASI --}}
                 <div x-show="drawerTab === 'siswa'" class="grid grid-cols-3 gap-2.5">
                     <a href="{{ $urlKelasSiswa }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">👥</span>
@@ -432,6 +419,45 @@
                         <span class="text-2xl mb-1">🪑</span>
                         <span class="text-xs font-black text-slate-900">Denah Meja</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Tata Letak Duduk</span>
+                    </a>
+                    <a href="{{ $urlKelasOrganisasi }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">🏛️</span>
+                        <span class="text-xs font-black text-slate-900">Struktur</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Organisasi Kelas</span>
+                    </a>
+                </div>
+
+                {{-- TAB 3: INTEGRASI & WHATSAPP --}}
+                <div x-show="drawerTab === 'integrasi'" class="grid grid-cols-3 gap-2.5">
+                    <a href="{{ route('whatsapp.index') }}" class="flex flex-col items-center p-3 rounded-2xl bg-gradient-to-tr from-emerald-50 to-teal-50 border-2 border-emerald-300 text-center shadow-xs hover:border-emerald-500 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">📱</span>
+                        <span class="text-xs font-black text-emerald-950">WhatsApp</span>
+                        <span class="text-[9px] text-emerald-700 font-bold mt-0.5">Bot &amp; Gateway</span>
+                    </a>
+                    <a href="{{ route('subscription.index') }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">💎</span>
+                        <span class="text-xs font-black text-slate-900">Paket PRO</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Langganan Aktif</span>
+                    </a>
+                    <a href="{{ route('holidays.index') }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">🏖️</span>
+                        <span class="text-xs font-black text-slate-900">Hari Libur</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Kalender Sekolah</span>
+                    </a>
+                    <a href="{{ route('notifications.index') }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">🔔</span>
+                        <span class="text-xs font-black text-slate-900">Notifikasi</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Pemberitahuan</span>
+                    </a>
+                    <a href="{{ route('analytics.index') }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">📊</span>
+                        <span class="text-xs font-black text-slate-900">Analitik</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Statistik Global</span>
+                    </a>
+                    <a href="{{ route('profile.edit') }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">⚙️</span>
+                        <span class="text-xs font-black text-slate-900">Pengaturan</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Profil &amp; Akun</span>
                     </a>
                 </div>
             </div>
