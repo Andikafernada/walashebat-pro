@@ -13,20 +13,37 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
-/**
- * Penautan nomor WhatsApp milik guru.
- *
- * Arsitekturnya satu nomor per guru, jadi tiap wali kelas harus memindai QR
- * sekali agar nomornya bisa dipakai mengirim magic link absensi. Halaman ini
- * juga tempat menyambungkan ulang ketika sesi putus — kejadian yang normal
- * (ganti HP, logout perangkat tertaut) dan harus bisa diatasi guru sendiri
- * tanpa bantuan admin.
- */
 class WhatsAppSessionController extends Controller
 {
-    /** Simpan templat balasan otomatis izin orang tua. */
+    /**
+     * Tautkan satu kelas ke grup WhatsApp langsung dari halaman kelas.
+     *
+     * Berbeda dari pilihan grup balasan otomatis di halaman WhatsApp yang
+     * sifatnya global untuk nomor guru, di sini relasinya 1-ke-1 dengan kelas
+     * bersangkutan — dipisah agar wali kelas yang mengampu lebih dari satu
+     * kelas tidak bingung grup mana milik kelas mana.
+     */
+    public function setParentGroup(Request $request, Classroom $classroom): RedirectResponse
+    {
+        $data = $request->validate([
+            'parent_group_wa' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $classroom->update(['parent_group_wa' => $data['parent_group_wa'] ?: null]);
+
+        // Dorong ulang pemetaan tautan jika sesi WA sedang aktif
+        $user = $request->user();
+        if ($user && $user->whatsappConnected()) {
+            $manager = app(WhatsAppSessionManager::class);
+            $this->dorongKonfigurasi($user, $manager);
+        }
+
+        return back()->with('success', 'Grup WhatsApp orang tua berhasil diperbarui.');
+    }
+
     public function templateSave(Request $request, WhatsAppSessionManager $manager): RedirectResponse
     {
         $data = $request->validate([
@@ -47,15 +64,6 @@ class WhatsAppSessionController extends Controller
             'wa_sick_keywords' => $data['wa_sick_keywords'] ?? null,
         ]);
 
-        /*
-         * Dorong ulang SELURUH konfigurasi, bukan sebagian.
-         *
-         * Sebelumnya di sini dipanggil autoreplySave() tanpa peta nama anak,
-         * sehingga menyimpan templat diam-diam MENGHAPUS nama yang sudah
-         * terkirim — balasannya kembali menyapa "Ananda" tanpa nama dan tidak
-         * ada yang tahu penyebabnya. Satu jalur bersama menutup seluruh
-         * keluarga kesalahan itu.
-         */
         if ($user->whatsappConnected()) {
             $this->dorongKonfigurasi($user, $manager);
         }
@@ -65,12 +73,6 @@ class WhatsAppSessionController extends Controller
 
     /**
      * Kirim seluruh konfigurasi balasan otomatis ke gateway.
-     *
-     * SATU-SATUNYA tempat yang memanggil autoreplySave(). Selama pemanggilnya
-     * lebih dari satu, setiap penambahan bagian baru (peta nama anak, ragam
-     * kalimat, kata kunci) harus diingat di semua tempat — dan yang terlupa
-     * tidak akan terlihat sebagai galat, hanya sebagai fitur yang diam-diam
-     * berhenti bekerja.
      *
      * $enabled dan $groups boleh null: artinya "pertahankan yang sekarang",
      * dibaca balik dari gateway. Dipakai saat yang berubah hanya templat atau
@@ -102,12 +104,12 @@ class WhatsAppSessionController extends Controller
             $groups,
             $pisahKoma($user->wa_permission_keywords),
             $pisahKoma($user->wa_sick_keywords),
-            $this->petaAnakPerNomorOrangTua(),
+            $this->petaAnakPerNomorOrangTua($user),
             [
                 'izin' => $this->variasiDariTeks($user->wa_permission_template),
                 'sakit' => $this->variasiDariTeks($user->wa_sick_template),
             ],
-            $this->linkIzinPerGrup(),
+            $this->linkIzinPerGrup($user, $groups),
         );
     }
 
@@ -115,17 +117,13 @@ class WhatsAppSessionController extends Controller
      * Peta JID grup WhatsApp => tautan formulir izin/sakit kelas itu.
      *
      * Gateway menempelkan tautan ini di SETIAP balasan izin/sakit untuk grup
-     * bersangkutan, di luar kalimat acak mana pun yang terpilih — beda dari
-     * "Variasi Balasan Anda Sendiri" yang cuma sesekali terpilih.
-     *
-     * Hanya kelas perwalian (bukan kelas ajar, lihat kelasAjar()) yang punya
-     * formulir izin/sakit, dan hanya yang grup orang tuanya sudah dipilih.
+     * bersangkutan, di luar kalimat acak mana pun yang terpilih.
      *
      * @return array<string, string>
      */
-    private function linkIzinPerGrup(): array
+    private function linkIzinPerGrup(?User $user = null, ?array $groups = null): array
     {
-        return Classroom::where('is_active', true)
+        $map = Classroom::where('is_active', true)
             ->whereNotNull('parent_group_wa')
             ->where('parent_group_wa', '<>', '')
             ->get()
@@ -134,18 +132,47 @@ class WhatsAppSessionController extends Controller
                 $k->parent_group_wa => route('public.excuse.show', $k->tokenPublik()),
             ])
             ->all();
+
+        // Jika guru memiliki grup terpilih yang belum tercatat di kolom parent_group_wa classroom
+        if ($user && !empty($groups)) {
+            $userClasses = $user->classes()
+                ->where('is_active', true)
+                ->get()
+                ->reject(fn (Classroom $k) => $k->kelasAjar());
+
+            if ($userClasses->count() === 1) {
+                $primaryClass = $userClasses->first();
+                $link = route('public.excuse.show', $primaryClass->tokenPublik());
+                foreach ($groups as $g) {
+                    if (!isset($map[$g])) {
+                        $map[$g] = $link;
+                        if (empty($primaryClass->parent_group_wa)) {
+                            $primaryClass->update(['parent_group_wa' => $g]);
+                        }
+                    }
+                }
+            } elseif ($userClasses->count() > 1) {
+                foreach ($groups as $g) {
+                    if (!isset($map[$g])) {
+                        $matchedClass = $userClasses->firstWhere('parent_group_wa', $g)
+                            ?: $userClasses->firstWhere('parent_group_wa', null)
+                            ?: $userClasses->first();
+                        if ($matchedClass) {
+                            $map[$g] = route('public.excuse.show', $matchedClass->tokenPublik());
+                            if (empty($matchedClass->parent_group_wa)) {
+                                $matchedClass->update(['parent_group_wa' => $g]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $map;
     }
 
     /**
      * Ubah isian textarea menjadi daftar variasi kalimat.
-     *
-     * Satu baris = satu variasi. Beberapa baris membuat balasan berganti-ganti
-     * alih-alih mengulang kalimat yang sama sepanjang tahun — keluhan yang
-     * justru memulai seluruh perbaikan ini.
-     *
-     * Tanda {nama} yang dipakai wali kelas diterjemahkan ke {anak} milik
-     * gateway. Istilah di layar sengaja berbeda dari istilah internal: yang
-     * dilihat guru harus kata yang wajar, bukan nama variabel.
      *
      * @return array<int, string>
      */
@@ -170,7 +197,7 @@ class WhatsAppSessionController extends Controller
             return $variasi;
         }
 
-        // Pertahankan seluruh teks (termasuk enter/paragrafnya) sebagai 1 pesan utuh
+        // Pertahankan seluruh teks sebagai 1 pesan utuh
         return [str_replace('{nama}', '{anak}', $teks)];
     }
 
@@ -178,28 +205,10 @@ class WhatsAppSessionController extends Controller
     {
         $user = Auth::user();
 
-        /*
-         * Pengaturan balasan otomatis diambil dari gateway, BUKAN disimpan di
-         * database aplikasi. Gateway-lah yang benar-benar menjalankan fitur
-         * ini; menyimpan salinannya di sini hanya akan menciptakan dua sumber
-         * kebenaran yang bisa berbeda tanpa ada yang menyadarinya.
-         *
-         * Kalau gateway tidak terjangkau, autoreplyStatus() mengembalikan
-         * keadaan mati — lebih aman daripada menampilkan "aktif" untuk sesuatu
-         * yang belum tentu berjalan.
-         */
         return view('whatsapp.index', [
-            // $user sengaja TIDAK dikirim: view memakai auth()->user().
             'autoreply' => $user->whatsappConnected()
                 ? $manager->autoreplyStatus($user)
-                // Nomor belum ditautkan: benar-benar mati, bukan "tidak tahu".
                 : ['enabled' => false, 'groups' => [], 'jam' => null, 'error' => null],
-            /*
-             * Nama grup yang sudah dipilih, dibaca dari simpanan — tanpa
-             * menghubungi WhatsApp. Dengan ini halaman bisa menampilkan
-             * pilihan yang tersimpan begitu dibuka, dan pemindaian grup baru
-             * terjadi ketika guru memang menekan "Ubah pilihan".
-             */
             'grupLabels' => $user->whatsappConnected() ? $manager->groupLabels($user) : [],
             'gatewayStatus' => [
                 'healthy' => $manager->isHealthy(),
@@ -213,19 +222,56 @@ class WhatsAppSessionController extends Controller
                     ? $channel->getCircuitStatus()
                     : null,
             ],
-            /*
-             * Pengingat SPP diatur di sini, bukan di halaman kelas, karena
-             * targetnya grup WhatsApp — satu ekor dengan seluruh pengaturan WA
-             * lain di halaman ini. Kelas ajar dikecualikan: iuran adalah urusan
-             * wali kelasnya, bukan guru mapel (lihat kelasAjar()).
-             */
-            'kelasWali' => Classroom::where('is_active', true)
-                ->get(['id', 'name', 'jenis', 'parent_group_wa', 'public_token', 'spp_pengingat_aktif', 'spp_pengingat_tanggal', 'spp_pengingat_teks', 'spp_pengingat_terkirim_pada'])
-                ->reject(fn (Classroom $k) => $k->kelasAjar()),
+            'sppClasses' => $user->classes()
+                ->where('is_active', true)
+                ->get()
+                ->reject(fn (Classroom $c) => $c->kelasAjar()),
         ]);
     }
 
-    /** Simpan pengaturan balasan otomatis untuk grup orang tua. */
+    public function sppReminderSave(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $classes = $user->classes()
+            ->where('is_active', true)
+            ->get()
+            ->reject(fn (Classroom $c) => $c->kelasAjar())
+            ->keyBy('id');
+
+        $data = $request->validate([
+            'spp' => ['array'],
+            'spp.*.target' => ['nullable', 'string', 'in:disabled,group,private,both'],
+            'spp.*.day' => ['nullable', 'integer', 'min:1', 'max:28'],
+            'spp.*.time' => ['nullable', 'date_format:H:i'],
+            'spp.*.nominal' => ['nullable', 'numeric', 'min:0'],
+            'spp.*.notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $diperbarui = 0;
+
+        foreach ($data['spp'] ?? [] as $classId => $row) {
+            $class = $classes->get($classId);
+            if (! $class) {
+                continue;
+            }
+
+            $target = $row['target'] ?? 'disabled';
+
+            $class->update([
+                'spp_reminder_target' => $target,
+                'spp_reminder_day' => $row['day'] ?? 1,
+                'spp_reminder_time' => $row['time'] ?? '07:00',
+                'spp_monthly_amount' => $row['nominal'] ?: null,
+                'spp_notes' => $row['notes'] ?: null,
+            ]);
+
+            $diperbarui++;
+        }
+
+        return back()->with('success', 'Pengaturan pengingat SPP untuk '.$diperbarui.' kelas berhasil disimpan.');
+    }
+
     public function autoreplySave(Request $request, WhatsAppSessionManager $manager): RedirectResponse
     {
         $user = $request->user();
@@ -237,8 +283,6 @@ class WhatsAppSessionController extends Controller
         $data = $request->validate([
             'enabled' => ['sometimes', 'boolean'],
             'groups' => ['sometimes', 'array'],
-            // Hanya JID grup. Tanpa penjagaan ini, satu salah pilih bisa
-            // membuat bot membalas di percakapan pribadi orang tua.
             'groups.*' => ['string', 'ends_with:@g.us'],
         ], [
             'groups.*.ends_with' => 'Hanya grup WhatsApp yang bisa dipilih, bukan chat pribadi.',
@@ -263,31 +307,23 @@ class WhatsAppSessionController extends Controller
     }
 
     /**
-     * Peta nomor WhatsApp orang tua => nama panggilan anaknya.
-     *
-     * Dipakai gateway agar balasan menyebut nama ("Semoga Ananda Dinar lekas
-     * sembuh") alih-alih menyapa siapa pun dengan kalimat yang sama. Itulah
-     * yang paling membedakan balasan personal dari balasan template — jauh
-     * lebih terasa daripada sekadar memutar-mutar susunan kalimat.
-     *
-     * Nomor yang dipakai LEBIH DARI SATU siswa sengaja dibuang: orang tua
-     * dengan dua anak di satu kelas tidak bisa ditentukan sedang mengabarkan
-     * yang mana, dan menyebut nama yang keliru di depan seluruh grup jauh
-     * lebih buruk daripada tidak menyebut nama sama sekali. Nomor seperti itu
-     * jatuh ke sapaan "Ananda" tanpa nama, yang tetap wajar.
-     *
-     * Query-nya otomatis ter-scope ke wali kelas yang login lewat TenantScope,
-     * jadi tidak mungkin membocorkan siswa kelas lain ke gateway.
+     * Peta nomor HP orang tua => nama panggilan anak.
      *
      * @return array<string, string>
      */
-    private function petaAnakPerNomorOrangTua(): array
+    private function petaAnakPerNomorOrangTua(?User $user = null): array
     {
-        $baris = Student::query()
+        $query = Student::query()
             ->where('is_active', true)
             ->whereNotNull('parent_phone')
-            ->where('parent_phone', '<>', '')
-            ->get(['name', 'parent_phone']);
+            ->where('parent_phone', '<>', '');
+
+        if ($user) {
+            $classIds = $user->classes()->pluck('id');
+            $query->whereIn('class_id', $classIds);
+        }
+
+        $baris = $query->get(['name', 'parent_phone']);
 
         $perNomor = [];
 
@@ -305,7 +341,7 @@ class WhatsAppSessionController extends Controller
 
         foreach ($perNomor as $nomor => $namaSiswa) {
             if (count($namaSiswa) !== 1) {
-                continue; // ambigu — lihat catatan di atas
+                continue;
             }
 
             $panggilan = $this->namaPanggilan($namaSiswa[0]);
@@ -320,63 +356,33 @@ class WhatsAppSessionController extends Controller
 
     /**
      * Nama panggilan dari nama lengkap.
-     *
-     * Data nama di lapangan tidak konsisten kapitalisasinya — ada "adzka
-     * muhammad", ada "ALDY BAYU RIONA" — jadi diseragamkan dulu, kalau tidak
-     * balasannya akan berteriak "Semoga Ananda ALDY BAYU RIONA lekas sembuh".
-     *
-     * Umumnya cukup kata pertama: "Ananda Dinar" terdengar wajar di sekolah
-     * Indonesia. Pengecualiannya nama berawalan umum seperti Muhammad, Siti,
-     * atau Nur — di satu kelas bisa ada beberapa "Muhammad", sehingga kata
-     * kedua ikut disertakan agar jelas siapa yang dimaksud.
      */
     private function namaPanggilan(string $namaLengkap): string
     {
-        $kata = preg_split('/\s+/', trim($namaLengkap), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $kata = array_values(array_filter(explode(' ', trim($namaLengkap))));
 
-        if ($kata === []) {
+        if (empty($kata)) {
             return '';
         }
 
-        $rapikan = fn (string $k): string => mb_convert_case(mb_strtolower($k), MB_CASE_TITLE, 'UTF-8');
+        $abaikan = ['muhammad', 'moch', 'moch.', 'mochammad', 'muh', 'muh.', 'm.', 'md', 'siti', 'nur'];
 
-        $awalanUmum = ['muhammad', 'mohammad', 'muhamad', 'muh', 'moh', 'm', 'siti', 'nur', 'dwi', 'tri', 'eka', 'ahmad', 'abdul'];
-
-        $pertama = $rapikan($kata[0]);
-
-        if (isset($kata[1]) && in_array(mb_strtolower($kata[0]), $awalanUmum, true)) {
-            return $pertama.' '.$rapikan($kata[1]);
+        if (count($kata) > 1 && in_array(mb_strtolower($kata[0]), $abaikan, true)) {
+            return Str::title($kata[1]);
         }
 
-        return $pertama;
+        return Str::title($kata[0]);
     }
 
-    /** Mulai penautan; menampilkan QR atau pairing code dari gateway. */
-    public function pair(Request $request, WhatsAppSessionManager $manager): RedirectResponse
+    public function connect(Request $request, WhatsAppSessionManager $manager): RedirectResponse
     {
-        $user = $request->user() ?? Auth::user();
-
-        if (! $user) {
-            return back()->withErrors(['whatsapp' => 'Anda harus login terlebih dahulu.']);
-        }
+        $user = $request->user();
 
         if (blank($user->whatsapp_number)) {
-            return back()->withErrors([
-                'whatsapp' => 'Isi dulu nomor WhatsApp Anda sebelum menautkan.',
-            ]);
+            return back()->withErrors(['whatsapp' => 'Nomor WhatsApp belum diisi di profil Anda.']);
         }
 
-        // Cek apakah gateway tersedia
-        if (! $manager->isHealthy()) {
-            $circuitStatus = $manager->getCircuitStatus();
-
-            return back()->with('warning',
-                'Gateway WhatsApp sedang tidak tersedia. '
-                .'Mohon tunggu '.ceil($circuitStatus['time_until_retry'] / 60).' menit, lalu coba lagi.');
-        }
-
-        // Pilih metode: QR (default) atau KODE (8 digit untuk HP yang sama)
-        $metode = $request->input('metode') === WhatsAppSessionManager::METODE_KODE
+        $metode = $request->input('metode') === 'kode'
             ? WhatsAppSessionManager::METODE_KODE
             : WhatsAppSessionManager::METODE_QR;
 
@@ -391,7 +397,6 @@ class WhatsAppSessionController extends Controller
             }
 
             if ($metode === WhatsAppSessionManager::METODE_KODE) {
-                // Pairing code untuk HP yang sama
                 if (blank($result['pairing_code'] ?? null)) {
                     return back()->with('warning',
                         'Kode penautan belum terbit. Tunggu sebentar lalu coba lagi, '
@@ -402,7 +407,6 @@ class WhatsAppSessionController extends Controller
                     ->with('success', 'Kode penautan berhasil dibuat.');
             }
 
-            // QR bisa TIDAK terbit
             if (blank($result['qr'] ?? null)) {
                 return back()->with('warning',
                     'QR code belum terbit. Tunggu sebentar lalu coba lagi.');
@@ -415,7 +419,6 @@ class WhatsAppSessionController extends Controller
         }
     }
 
-    /** Dipanggil berkala oleh halaman untuk memperbarui status. */
     public function status(Request $request, WhatsAppSessionManager $manager): JsonResponse
     {
         $user = $request->user();
@@ -435,7 +438,6 @@ class WhatsAppSessionController extends Controller
         ]);
     }
 
-    /** Daftar grup untuk dipilih pada form kelas. */
     public function groups(Request $request, WhatsAppSessionManager $manager): JsonResponse
     {
         $user = $request->user();
@@ -456,13 +458,6 @@ class WhatsAppSessionController extends Controller
 
         $hasil = $manager->groupsResult($user, $request->boolean('refresh'));
 
-        /*
-         * "ok" dilaporkan terpisah dari "gateway_healthy". Gateway bisa sehat
-         * (health check lolos) tapi pengambilan grup tetap gagal, karena
-         * WhatsApp membatasi laju groupFetchAllParticipating. Tanpa pembedaan
-         * ini, kegagalan tampil sebagai daftar kosong yang tidak bisa
-         * dibedakan dari "guru belum masuk grup mana pun".
-         */
         $gagalMenyegarkan = $hasil['ok'] && $hasil['error'] !== null;
 
         return response()->json([
@@ -479,16 +474,9 @@ class WhatsAppSessionController extends Controller
         ], $hasil['ok'] ? 200 : 503);
     }
 
-    /**
-     * Periksa apakah balasan otomatis akan benar-benar jalan untuk satu grup.
-     *
-     * Berbeda dari testGroup(): tidak ada pesan apa pun yang dikirim, jadi
-     * aman ditekan berkali-kali tanpa mengganggu grup orang tua.
-     */
     public function autoreplyCheck(Request $request, WhatsAppSessionManager $manager): JsonResponse
     {
         $data = $request->validate([
-            // Hanya JID grup, sejalan dengan penjagaan pada penyimpanan.
             'group_id' => ['required', 'string', 'max:100', 'ends_with:@g.us'],
         ]);
 
@@ -522,12 +510,6 @@ class WhatsAppSessionController extends Controller
         ]);
     }
 
-    /**
-     * Kirim satu pesan uji ke grup yang sedang dipilih.
-     *
-     * Dikirim SINKRON, bukan lewat antrian: gunanya justru memberi kepastian
-     * langsung kepada guru bahwa pilihannya benar.
-     */
     public function testGroup(Request $request, NotificationChannel $channel): JsonResponse
     {
         $data = $request->validate([
@@ -543,7 +525,6 @@ class WhatsAppSessionController extends Controller
             ], 422);
         }
 
-        // Cek apakah gateway tersedia
         if (method_exists($channel, 'isHealthy') && ! $channel->isHealthy()) {
             return response()->json([
                 'ok' => false,
@@ -551,7 +532,6 @@ class WhatsAppSessionController extends Controller
             ], 503);
         }
 
-        // Batasi agar tombol ini tidak jadi alat mengirim beruntun.
         $kunci = 'uji-grup|'.$user->id;
 
         if (RateLimiter::tooManyAttempts($kunci, 3)) {
