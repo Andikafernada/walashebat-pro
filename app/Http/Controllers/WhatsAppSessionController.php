@@ -205,6 +205,11 @@ class WhatsAppSessionController extends Controller
     {
         $user = Auth::user();
 
+        $kelasWali = $user->classes()
+            ->where('is_active', true)
+            ->get()
+            ->reject(fn (Classroom $c) => $c->kelasAjar());
+
         return view('whatsapp.index', [
             'autoreply' => $user->whatsappConnected()
                 ? $manager->autoreplyStatus($user)
@@ -222,10 +227,8 @@ class WhatsAppSessionController extends Controller
                     ? $channel->getCircuitStatus()
                     : null,
             ],
-            'sppClasses' => $user->classes()
-                ->where('is_active', true)
-                ->get()
-                ->reject(fn (Classroom $c) => $c->kelasAjar()),
+            'kelasWali' => $kelasWali,
+            'sppClasses' => $kelasWali,
         ]);
     }
 

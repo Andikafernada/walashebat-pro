@@ -15,8 +15,8 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
 
-    {{-- Tailwind & Alpine.js via Laravel Mix / Compiled Bundle --}}
-    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+    {{-- Tailwind & Alpine.js via Laravel Vite Bundle --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
