@@ -116,6 +116,40 @@
         </div>
     </div>
 
+    
+    {{-- ══════════ FILTER PERIODE BULAN & SEMESTER + CETAK PORTOFOLIO PDF ══════════ --}}
+    <div class="bg-white rounded-2xl border border-emerald-200 p-3.5 sm:p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <form method="GET" action="{{ route('classes.students.show', [$classroom, $siswa]) }}" class="flex flex-wrap items-center gap-2">
+            <input type="hidden" name="mode" value="bulan">
+            <label for="bulan" class="text-xs font-bold text-slate-700">Filter Bulan:</label>
+            <input type="month" id="bulan" name="bulan" 
+                   value="{{ request('bulan', $periode['bulan']->format('Y-m')) }}"
+                   class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-2xs">
+                Tampilkan Bulan
+            </button>
+        </form>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <div class="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                <a href="{{ route('classes.students.show', [$classroom, $siswa, 'mode' => 'semester', 'semester' => 1]) }}"
+                   class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all {{ request('mode') === 'semester' && request('semester', 1) == 1 ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900' }}">
+                    Semester 1
+                </a>
+                <a href="{{ route('classes.students.show', [$classroom, $siswa, 'mode' => 'semester', 'semester' => 2]) }}"
+                   class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all {{ request('mode') === 'semester' && request('semester') == 2 ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900' }}">
+                    Semester 2
+                </a>
+            </div>
+
+            <a href="{{ route('classes.students.pdf', array_merge([$classroom, $siswa], request()->query())) }}" target="_blank"
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md shadow-emerald-600/20 transition-all hover:scale-105 cursor-pointer">
+                <span>🖨️</span>
+                <span>Cetak Portofolio Lengkap PDF</span>
+            </a>
+        </div>
+    </div>
+
     {{-- ══════════ 2. MASTER HERO SECTION (HOLOGRAPHIC FOOTBAR CARD + ANALYTICS) ══════════ --}}
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
