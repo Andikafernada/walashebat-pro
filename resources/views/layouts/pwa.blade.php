@@ -13,7 +13,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WaliKelas">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
 
     {{-- Tailwind & Alpine.js via Laravel Vite Bundle --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -30,9 +30,10 @@
 
         body {
             padding-top: var(--sat);
-            padding-bottom: calc(var(--sab) + 76px);
+            padding-bottom: calc(var(--sab) + 80px);
             -webkit-tap-highlight-color: transparent;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
         }
 
         /* Smooth Drawer & Touch Feedback */
@@ -49,12 +50,12 @@
         }
 
         @keyframes drawerSlideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+            from { transform: translateY(100%); opacity: 0.8; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .animate-drawer-up {
-            animation: drawerSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: drawerSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         .menu-tab-btn {
@@ -66,12 +67,13 @@
             background-color: #047857;
             color: #ffffff;
             font-weight: 800;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.35);
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.3);
         }
     </style>
     @stack('styles')
 </head>
-<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-emerald-500 selection:text-white pb-24">
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-emerald-500 selection:text-white"
+      x-data="{ openMenuDrawer: false, drawerTab: '{{ request()->routeIs('whatsapp.*') ? 'integrasi' : 'akademik' }}' }">
 
 @php
     $currentRoute = Route::currentRouteName() ?? '';
@@ -100,6 +102,7 @@
     $urlKelasJadwal   = $kelasAktif ? route('classes.schedules.index', $kelasAktif) : route('classes.index');
     $urlKelasAnalisis = $kelasAktif ? route('classes.reports.analisis', $kelasAktif) : route('classes.index');
     $urlKelasLaporan  = $kelasAktif ? route('classes.reports.full', $kelasAktif) : route('classes.index');
+    $urlKelasNarasi   = $kelasAktif ? route('classes.rapor.narasi', $kelasAktif) : route('classes.index');
 
     $urlKelasSiswa     = $kelasAktif ? route('classes.students.index', $kelasAktif) : route('classes.index');
     $urlKelasQr        = $kelasAktif ? route('classes.students.qr-cards', $kelasAktif) : route('classes.index');
@@ -107,7 +110,6 @@
     $urlKelasImport    = $kelasAktif ? route('classes.students.import', $kelasAktif) : route('classes.index');
     $urlKelasKarakter  = $kelasAktif ? route('classes.character-portfolio.index', $kelasAktif) : route('classes.index');
     $urlKelasViolasi   = $kelasAktif ? route('classes.violations.index', $kelasAktif) : route('classes.index');
-    $urlKelasKerajinan = $kelasAktif ? route('classes.kerajinan.index', $kelasAktif) : route('classes.index');
     $urlKelasKas       = $kelasAktif ? route('classes.cashbook.index', $kelasAktif) : route('classes.index');
     $urlKelasDenah     = $kelasAktif ? route('classes.seating.index', $kelasAktif) : route('classes.index');
     $urlKelasOrganisasi= $kelasAktif ? route('classes.organization.index', $kelasAktif) : route('classes.index');
@@ -116,31 +118,29 @@
 {{-- ══════════════════════════════════════════════════════════════════════════════════
      1. NATIVE-LIKE MOBILE APP HEADER (CLEAN & SLICK)
      ══════════════════════════════════════════════════════════════════════════════════ --}}
-<header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-emerald-200 px-4 py-2.5 flex items-center justify-between shadow-2xs">
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-emerald-100 px-4 py-2.5 flex items-center justify-between shadow-2xs">
     <a href="{{ route('dashboard') }}" class="flex items-center gap-2 no-underline">
         <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-black text-sm shadow-xs">
             W
         </div>
         <div class="min-w-0">
-            <h1 class="text-xs font-black text-slate-900 leading-none tracking-tight">WaliKelas <span class="text-emerald-800">Pro</span></h1>
+            <h1 class="text-xs font-black text-slate-900 leading-none tracking-tight">WaliKelas <span class="text-emerald-700">Pro</span></h1>
             <span class="text-[9px] font-bold text-emerald-800 uppercase block mt-0.5">{{ $kelasAktif ? $kelasAktif->name : 'Daftar Kelas' }}</span>
         </div>
     </a>
 
     <div class="flex items-center gap-1.5">
-        {{-- QUICK WHATSAPP BADGE --}}
-        @auth
-            <a href="{{ route('whatsapp.index') }}" 
-               class="px-2.5 py-1 rounded-xl {{ $isWhatsappActive ? 'bg-emerald-600 text-white font-black' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold border border-emerald-200' }} text-[11px] transition-all flex items-center gap-1 shadow-2xs"
-               title="Integrasi WhatsApp">
-                <span>📱</span>
-                <span>WhatsApp</span>
-            </a>
-        @endauth
+        {{-- QUICK DRAWER LAUNCHER FROM HEADER --}}
+        <button @click="openMenuDrawer = true" 
+                class="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold border border-emerald-200 text-[11px] transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                title="Buka Menu Modul">
+            <span>⚡</span>
+            <span>Menu Fitur</span>
+        </button>
 
         {{-- VIEW SWITCHER: Switch to Web Desktop Mode --}}
         <a href="{{ request()->fullUrlWithQuery(['layout' => 'web']) }}" 
-           class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold border border-slate-200 transition-all flex items-center gap-1"
+           class="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all flex items-center justify-center"
            title="Ganti ke Tampilan Desktop Web">
             <span>🖥️</span>
         </a>
@@ -148,7 +148,7 @@
         @auth
             <a href="{{ route('profile.edit') }}" 
                class="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center shadow-2xs" 
-               title="Profil Guru">
+               title="Profil Akun">
                 {{ Str::upper(Str::substr(auth()->user()->name, 0, 1)) }}
             </a>
         @endauth
@@ -156,7 +156,7 @@
 </header>
 
 {{-- ══════════════════════════════════════════════════════════════════════════════════
-     2. MAIN CONTENT WRAPPER
+     2. MAIN CONTENT WRAPPER (MAX LEAN & CLEAN)
      ══════════════════════════════════════════════════════════════════════════════════ --}}
 <main class="flex-1 w-full max-w-lg mx-auto px-4 pt-3.5 pb-28">
     {{-- Global Flash Messages --}}
@@ -178,13 +178,13 @@
 </main>
 
 {{-- ══════════════════════════════════════════════════════════════════════════════════
-     3. NEXT-GEN FLOATING GLASS ISLAND FOOTBAR & SUPERAPP ACTION HUB
+     3. NEXT-GEN FLOATING GLASS ISLAND FOOTBAR & UNIFIED ACTION HUB
      ══════════════════════════════════════════════════════════════════════════════════ --}}
-<div x-data="{ openMenuDrawer: false, drawerTab: '{{ $isWhatsappActive ? 'integrasi' : 'aktivitas' }}' }">
+<div>
     
     {{-- FLOATING GLASS PILL NAVBAR --}}
     <nav style="position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); max-width: 480px; z-index: 99999;"
-         class="bg-white/95 backdrop-blur-2xl border border-emerald-200/90 rounded-[28px] shadow-[0_12px_36px_-6px_rgba(6,78,59,0.28)] py-1.5 px-3">
+         class="bg-white/95 backdrop-blur-2xl border border-emerald-200/90 rounded-[28px] shadow-[0_12px_36px_-6px_rgba(6,78,59,0.25)] py-1.5 px-3">
         <div class="flex justify-between items-center relative">
 
             {{-- 1. BERANDA (HOME) --}}
@@ -225,7 +225,7 @@
                 @endif
             </a>
 
-            {{-- 3. TOMBOL TENGAH: SUPER MENU DRAWER (ALL APPS) --}}
+            {{-- 3. TOMBOL TENGAH: SUPER MENU DRAWER (ALL APPS IN 1 PLACE) --}}
             <div class="flex-1 flex flex-col items-center justify-center relative -top-3">
                 <button @click="openMenuDrawer = true" 
                         class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-700 to-teal-600 text-white flex items-center justify-center shadow-[0_8px_20px_-4px_rgba(5,150,105,0.6)] active:scale-90 transition-transform cursor-pointer"
@@ -243,7 +243,7 @@
             {{-- 4. INTEGRASI WHATSAPP --}}
             <a href="{{ route('whatsapp.index') }}"
                class="nav-touch-btn flex-1 flex flex-col items-center justify-center py-1 rounded-2xl no-underline group"
-               title="Integrasi WhatsApp & Bot">
+               title="Integrasi WhatsApp">
                 <div class="p-1 rounded-xl transition-all {{ $isWhatsappActive ? 'text-emerald-700 font-extrabold' : 'text-slate-500' }}">
                     <span class="text-lg leading-none">📱</span>
                 </div>
@@ -301,8 +301,8 @@
                         🚀
                     </div>
                     <div>
-                        <h2 class="text-sm font-black text-slate-900 leading-none">Pusat Fitur &amp; Integrasi</h2>
-                        <p class="text-[11px] font-bold text-emerald-800 mt-0.5">Kelas {{ $kelasAktif ? $kelasAktif->name : 'Pilih Kelas' }}</p>
+                        <h2 class="text-sm font-black text-slate-900 leading-none">Pusat Fitur &amp; Modul</h2>
+                        <p class="text-[11px] font-bold text-emerald-800 mt-0.5">Kelas: {{ $kelasAktif ? $kelasAktif->name : 'Pilih Kelas' }}</p>
                     </div>
                 </div>
                 <button @click="openMenuDrawer = false" 
@@ -311,13 +311,13 @@
                 </button>
             </div>
 
-            {{-- 3 TABS: AKTIVITAS, SISWA, INTEGRASI --}}
+            {{-- 3 TABS: AKADEMIK & NILAI, SISWA & KARAKTER, INTEGRASI --}}
             <div class="grid grid-cols-3 gap-1.5 p-1 bg-emerald-200/60 rounded-2xl my-3 shrink-0">
-                <button @click="drawerTab = 'aktivitas'" 
-                        :class="drawerTab === 'aktivitas' ? 'is-active' : ''"
+                <button @click="drawerTab = 'akademik'" 
+                        :class="drawerTab === 'akademik' ? 'is-active' : ''"
                         class="menu-tab-btn py-2 text-[11px] rounded-xl text-center flex items-center justify-center gap-1">
                     <span>📖</span>
-                    <span>Kelas &amp; Nilai</span>
+                    <span>Akademik</span>
                 </button>
                 <button @click="drawerTab = 'siswa'" 
                         :class="drawerTab === 'siswa' ? 'is-active' : ''"
@@ -329,13 +329,13 @@
                         :class="drawerTab === 'integrasi' ? 'is-active' : ''"
                         class="menu-tab-btn py-2 text-[11px] rounded-xl text-center flex items-center justify-center gap-1">
                     <span>⚡</span>
-                    <span>Integrasi &amp; WA</span>
+                    <span>Layanan</span>
                 </button>
             </div>
 
             <div class="overflow-y-auto flex-1 drawer-scroll-area space-y-4 py-2">
-                {{-- TAB 1: AKTIVITAS & NILAI --}}
-                <div x-show="drawerTab === 'aktivitas'" class="grid grid-cols-3 gap-2.5">
+                {{-- TAB 1: AKADEMIK & NILAI --}}
+                <div x-show="drawerTab === 'akademik'" class="grid grid-cols-3 gap-2.5">
                     <a href="{{ $urlKelasAbsensi }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📋</span>
                         <span class="text-xs font-black text-slate-900">Absensi</span>
@@ -343,7 +343,7 @@
                     </a>
                     <a href="{{ $urlKelasNilai }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📝</span>
-                        <span class="text-xs font-black text-slate-900">Nilai</span>
+                        <span class="text-xs font-black text-slate-900">Leger Nilai</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Asesmen &amp; Excel</span>
                     </a>
                     <a href="{{ $urlKelasJurnal }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
@@ -351,10 +351,10 @@
                         <span class="text-xs font-black text-slate-900">Jurnal AI</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Modul TP/CP</span>
                     </a>
-                    <a href="{{ $urlKelasJadwal }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
-                        <span class="text-2xl mb-1">🗓️</span>
-                        <span class="text-xs font-black text-slate-900">Jadwal</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Agenda Mapel</span>
+                    <a href="{{ $urlKelasNarasi }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">✨</span>
+                        <span class="text-xs font-black text-slate-900">Narasi Rapor</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">AI Deskripsi Rapor</span>
                     </a>
                     <a href="{{ $urlKelasAnalisis }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📈</span>
@@ -364,70 +364,70 @@
                     <a href="{{ $urlKelasLaporan }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📄</span>
                         <span class="text-xs font-black text-slate-900">Laporan PDF</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Rekap Resmi</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Rekap Siap TTD</span>
+                    </a>
+                    <a href="{{ $urlKelasJadwal }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">🗓️</span>
+                        <span class="text-xs font-black text-slate-900">Jadwal</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Agenda Mapel</span>
                     </a>
                     <a href="{{ route('classes.index') }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">🏫</span>
                         <span class="text-xs font-black text-slate-900">Semua Kelas</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Kelola Kelas</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Ganti Kelas</span>
                     </a>
                 </div>
 
-                {{-- TAB 2: SISWA & ADMINISTRASI --}}
+                {{-- TAB 2: SISWA & KARAKTER --}}
                 <div x-show="drawerTab === 'siswa'" class="grid grid-cols-3 gap-2.5">
                     <a href="{{ $urlKelasSiswa }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">👥</span>
                         <span class="text-xs font-black text-slate-900">Daftar Siswa</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Biodata Lengkap</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Biodata &amp; Kontak</span>
                     </a>
                     <a href="{{ $urlKelasQr }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📇</span>
-                        <span class="text-xs font-black text-slate-900">Kartu QR A4</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Siap Cetak PDF</span>
+                        <span class="text-xs font-black text-slate-900">Kartu QR</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Cetak PDF A4</span>
                     </a>
                     <a href="{{ $urlKelasEws }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">🛡️</span>
                         <span class="text-xs font-black text-slate-900">EWS Risiko</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Deteksi Dini</span>
                     </a>
-                    <a href="{{ $urlKelasImport }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
-                        <span class="text-2xl mb-1">📥</span>
-                        <span class="text-xs font-black text-slate-900">Impor Excel</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Sinkron Roster</span>
+                    <a href="{{ $urlKelasViolasi }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">⚖️</span>
+                        <span class="text-xs font-black text-slate-900">Disiplin</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Pelanggaran &amp; Poin</span>
                     </a>
                     <a href="{{ $urlKelasKarakter }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">🌱</span>
                         <span class="text-xs font-black text-slate-900">Karakter P5</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Portofolio Siswa</span>
-                    </a>
-                    <a href="{{ $urlKelasViolasi }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
-                        <span class="text-2xl mb-1">⚠️</span>
-                        <span class="text-xs font-black text-slate-900">Pelanggaran</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Catatan Disiplin</span>
-                    </a>
-                    <a href="{{ $urlKelasKerajinan }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
-                        <span class="text-2xl mb-1">🎖️</span>
-                        <span class="text-xs font-black text-slate-900">Kerajinan</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Kebaikan &amp; Poin</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Refleksi Siswa</span>
                     </a>
                     <a href="{{ $urlKelasKas }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">💰</span>
                         <span class="text-xs font-black text-slate-900">Buku Kas</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Keuangan Kelas</span>
                     </a>
+                    <a href="{{ $urlKelasImport }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">📥</span>
+                        <span class="text-xs font-black text-slate-900">Impor Excel</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Sinkron Data</span>
+                    </a>
                     <a href="{{ $urlKelasDenah }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">🪑</span>
-                        <span class="text-xs font-black text-slate-900">Denah Meja</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Tata Letak Duduk</span>
+                        <span class="text-xs font-black text-slate-900">Denah Duduk</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Tata Letak Meja</span>
                     </a>
                     <a href="{{ $urlKelasOrganisasi }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">🏛️</span>
                         <span class="text-xs font-black text-slate-900">Struktur</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Organisasi Kelas</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Pengurus Kelas</span>
                     </a>
                 </div>
 
-                {{-- TAB 3: INTEGRASI & WHATSAPP --}}
+                {{-- TAB 3: INTEGRASI & LAYANAN --}}
                 <div x-show="drawerTab === 'integrasi'" class="grid grid-cols-3 gap-2.5">
                     <a href="{{ route('whatsapp.index') }}" class="flex flex-col items-center p-3 rounded-2xl bg-gradient-to-tr from-emerald-50 to-teal-50 border-2 border-emerald-300 text-center shadow-xs hover:border-emerald-500 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📱</span>
@@ -486,7 +486,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
 if ('serviceWorker' in navigator) {
