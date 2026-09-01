@@ -302,6 +302,7 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
         Route::get('analisis-kehadiran', [ReportController::class, 'analisisKehadiran'])->name('reports.analisis');
 
         // Early Warning System (EWS) Siswa
+        Route::get('kabar-orang-tua', [\App\Http\Controllers\StudentExcuseController::class, 'index'])->name('excuses.index');
         Route::get('ews', [\App\Http\Controllers\EarlyWarningSystemController::class, 'index'])->name('ews.index');
         Route::post('ews/{student}/analyze', [\App\Http\Controllers\EarlyWarningSystemController::class, 'analyze'])->name('ews.analyze');
         // Jurnal mengajar moved to full module

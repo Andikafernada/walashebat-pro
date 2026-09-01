@@ -4,11 +4,13 @@
     $tabs = [
         ['route' => 'classes.show',                    'aktif' => 'classes.show',                    'label' => 'Ringkasan',   'icon' => '📊'],
         ['route' => 'classes.students.index',          'aktif' => 'classes.students.*',              'label' => 'Siswa',       'icon' => '👥', 'badge' => $classroom->students_count ?? null],
-        ['route' => 'classes.ews.index',               'aktif' => 'classes.ews.*',                   'label' => 'EWS Risiko',  'icon' => '🛡️'],
         ['route' => 'classes.attendance.index',        'aktif' => 'classes.attendance.*',            'label' => 'Absensi',     'icon' => '📋'],
-        ['route' => 'classes.schedules.index',         'aktif' => 'classes.schedules.*',             'label' => 'Jadwal',      'icon' => '🗓️'],
+        ['route' => 'classes.excuses.index',           'aktif' => 'classes.excuses.*',               'label' => 'Kabar Ortu',  'icon' => '📬'],
         ['route' => 'classes.nilai.index',             'aktif' => 'classes.nilai.*',                 'label' => 'Nilai',       'icon' => '📝'],
         ['route' => 'classes.jurnal.index',            'aktif' => 'classes.jurnal.*',                'label' => 'Jurnal',      'icon' => '📖'],
+        ['route' => 'classes.rapor.narasi',          'aktif' => 'classes.rapor.narasi*',          'label' => 'Narasi Rapor','icon' => '🤖'],
+        ['route' => 'classes.ews.index',               'aktif' => 'classes.ews.*',                   'label' => 'EWS Risiko',  'icon' => '🛡️'],
+        ['route' => 'classes.schedules.index',         'aktif' => 'classes.schedules.*',             'label' => 'Jadwal',      'icon' => '🗓️'],
         ['route' => 'classes.character-portfolio.index','aktif' => 'classes.character-portfolio.*',  'label' => 'Karakter P5', 'icon' => '🌱'],
         ['route' => 'classes.violations.index',        'aktif' => 'classes.violations.*',            'label' => 'Pelanggaran', 'icon' => '⚠️'],
         ['route' => 'classes.kerajinan.index',         'aktif' => 'classes.kerajinan.*',             'label' => 'Kerajinan',   'icon' => '🎖️'],
@@ -16,11 +18,10 @@
         ['route' => 'classes.seating.index',           'aktif' => 'classes.seating.*',               'label' => 'Denah',       'icon' => '🪑'],
         ['route' => 'classes.organization.index',      'aktif' => 'classes.organization.*',          'label' => 'Struktur',    'icon' => '🏛️'],
         ['route' => 'classes.reports.analisis',        'aktif' => 'classes.reports.analisis',        'label' => 'Analisis',    'icon' => '📈'],
-        ['route' => 'classes.rapor.narasi',          'aktif' => 'classes.rapor.narasi*',          'label' => 'AI Narasi Rapor', 'icon' => '🤖'],
         ['route' => 'classes.reports.full',            'aktif' => 'classes.reports.full',            'label' => 'Laporan PDF', 'icon' => '📄'],
     ];
 
-    // Modul Guru Mapel: Siswa, Absensi, Nilai, Jurnal Mengajar, Analisis (+ Ringkasan)
+    // Modul Guru Mapel: Ringkasan, Siswa, Absensi Mapel, Nilai, Jurnal Mengajar, Analisis
     if ($classroom && $classroom->kelasAjar()) {
         $hanyaMapel = [
             'classes.show',
@@ -56,7 +57,7 @@
             <button type="button" 
                     @click="openMenuDrawer = true"
                     class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 text-xs font-bold border border-emerald-200 shadow-2xs transition-all active:scale-95">
-                <span>⚡ Modul Kelas</span>
+                <span>⚡ Modul {{ $ajar ? 'Mapel' : 'Kelas' }}</span>
                 <span class="text-[10px]">▾</span>
             </button>
         </div>

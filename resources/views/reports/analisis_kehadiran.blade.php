@@ -2,41 +2,58 @@
 @section('title', 'Analisis Kehadiran — ' . $classroom->name)
 @section('content')
 
-@include('partials.class-nav')
+@include('partials.class-nav', ['classroom' => $classroom])
 
 <div class="space-y-6 pb-12">
 
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <h1 class="text-xl font-bold tracking-tight text-slate-900">Analisis Kehadiran</h1>
-            <p class="mt-1 text-xs text-slate-500">
-                {{ $classroom->name }} &middot; {{ $periode['label'] }} &middot; {{ $jumlahPertemuan }} pertemuan
-                @if ($mapelDipilih) &middot; <span class="font-bold text-emerald-700">{{ $mapelDipilih }}</span> @endif
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Analisis Kehadiran Kelas</h1>
+            <p class="mt-1 text-xs text-slate-500 font-medium">
+                {{ $classroom->name }} &middot; Periode: <span class="font-bold text-emerald-800">{{ $periode['label'] }}</span> &middot; {{ $jumlahPertemuan }} pertemuan
+                @if ($mapelDipilih) &middot; Mapel: <span class="font-bold text-emerald-700">{{ $mapelDipilih }}</span> @endif
             </p>
         </div>
         <button type="button" onclick="window.print()"
-                class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 print:hidden transition-colors">
-                Cetak
+                class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 print:hidden transition-colors shadow-2xs">
+                🖨️ Cetak Analisis
         </button>
     </div>
 
-    @if (count($mapelDiampu) > 1)
-        <div class="flex flex-wrap gap-2 print:hidden">
-            <a href="{{ request()->fullUrlWithQuery(['mapel' => null]) }}"
-               class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-colors {{ $mapelDipilih === null ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
-                Semua Mapel
-            </a>
-            @foreach ($mapelDiampu as $m)
-                <a href="{{ request()->fullUrlWithQuery(['mapel' => $m]) }}"
-                   class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-colors {{ $mapelDipilih === $m ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
-                    {{ $m }}
+    {{-- FILTER PILIH BULAN & PERIODE --}}
+    <div class="bg-white rounded-2xl border border-emerald-200 p-3 sm:p-4 shadow-xs flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <form method="GET" action="{{ route('classes.reports.analisis', $classroom) }}" class="flex flex-wrap items-center gap-2">
+            <input type="hidden" name="mode" value="bulan">
+            <label for="bulan" class="text-xs font-bold text-slate-700">Pilih Periode Bulan:</label>
+            <input type="month" id="bulan" name="bulan" 
+                   value="{{ request('bulan', $periode['bulan']->format('Y-m')) }}"
+                   class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            @if(request('mapel'))
+                <input type="hidden" name="mapel" value="{{ request('mapel') }}">
+            @endif
+            <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-2xs">
+                Tampilkan
+            </button>
+        </form>
+
+        @if (count($mapelDiampu) > 1)
+            <div class="flex flex-wrap gap-1.5">
+                <a href="{{ request()->fullUrlWithQuery(['mapel' => null]) }}"
+                   class="rounded-xl border px-3 py-1 text-xs font-bold transition-colors {{ $mapelDipilih === null ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
+                    Semua Mapel
                 </a>
-            @endforeach
-        </div>
-    @endif
+                @foreach ($mapelDiampu as $m)
+                    <a href="{{ request()->fullUrlWithQuery(['mapel' => $m]) }}"
+                       class="rounded-xl border px-3 py-1 text-xs font-bold transition-colors {{ $mapelDipilih === $m ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
+                        {{ $m }}
+                    </a>
+                @endforeach
+            </div>
+        @endif
+    </div>
 
     @if ($jumlahPertemuan === 0)
-        <div class="rounded-2xl border border-emerald-200 bg-white p-8 text-center shadow-xs">
+        <div class="rounded-3xl border border-emerald-200 bg-white p-8 text-center shadow-xs">
             <p class="text-sm font-bold text-slate-700">Belum Ada Pertemuan Pada Periode Ini</p>
             <p class="mt-1 text-xs text-slate-500">Analisis muncul setelah ada presensi yang terisi.</p>
         </div>
@@ -101,8 +118,6 @@
         <p class="text-[11px] text-slate-500">
             Diurutkan dari kehadiran terendah. Baris merah berada di bawah {{ $ambangPerhatian }}% —
             ambang yang banyak dipakai sekolah sebagai syarat mengikuti ujian.
-            Penyebutnya adalah jumlah isian untuk siswa itu, bukan jumlah pertemuan kelas,
-            supaya siswa yang baru pindah masuk tidak terlihat seperti sering bolos.
         </p>
     @endif
 </div>

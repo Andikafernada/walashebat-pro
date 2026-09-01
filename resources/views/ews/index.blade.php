@@ -35,6 +35,27 @@
 
     @include('partials.flash')
 
+    {{-- FILTER PERIODE BULAN EWS --}}
+    <div class="bg-white rounded-2xl border border-emerald-200 p-3 sm:p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <form method="GET" action="{{ route('classes.ews.index', $classroom) }}" class="flex flex-wrap items-center gap-2">
+            <input type="hidden" name="mode" value="bulan">
+            <label for="bulan" class="text-xs font-bold text-slate-700">Pilih Periode Bulan:</label>
+            <input type="month" id="bulan" name="bulan" 
+                   value="{{ request('bulan', $periode['bulan']->format('Y-m')) }}"
+                   class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            @if(request('level'))
+                <input type="hidden" name="level" value="{{ request('level') }}">
+            @endif
+            <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-2xs">
+                Tampilkan
+            </button>
+        </form>
+        <span class="text-xs font-semibold text-slate-500">
+            Analisis Komprehensif Periode: <strong class="text-emerald-800">{{ $periode['label'] }}</strong>
+        </span>
+    </div>
+
+
     {{-- ══════════ 2. KPI METRICS & RISK LEVEL FILTER ══════════ --}}
     <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
         {{-- Total --}}

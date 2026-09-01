@@ -89,6 +89,8 @@
         $kelasAktif = $user->classes()->latest()->first();
     }
 
+    $isGuruMapel = $kelasAktif ? $kelasAktif->kelasAjar() : false;
+
     // Active State Navigation
     $isBerandaActive = in_array($currentRoute, ['dashboard', 'home']);
     $isClassesActive = str_starts_with($currentRoute, 'classes.');
@@ -103,6 +105,7 @@
     $urlKelasAnalisis = $kelasAktif ? route('classes.reports.analisis', $kelasAktif) : route('classes.index');
     $urlKelasLaporan  = $kelasAktif ? route('classes.reports.full', $kelasAktif) : route('classes.index');
     $urlKelasNarasi   = $kelasAktif ? route('classes.rapor.narasi', $kelasAktif) : route('classes.index');
+    $urlKelasExcuses  = $kelasAktif ? route('classes.excuses.index', $kelasAktif) : route('classes.index');
 
     $urlKelasSiswa     = $kelasAktif ? route('classes.students.index', $kelasAktif) : route('classes.index');
     $urlKelasQr        = $kelasAktif ? route('classes.students.qr-cards', $kelasAktif) : route('classes.index');
@@ -301,7 +304,12 @@
                         🚀
                     </div>
                     <div>
-                        <h2 class="text-sm font-black text-slate-900 leading-none">Pusat Fitur &amp; Modul</h2>
+                        <div class="flex items-center gap-1.5">
+                            <h2 class="text-sm font-black text-slate-900 leading-none">Pusat Fitur &amp; Modul</h2>
+                            <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md {{ $isGuruMapel ? 'bg-indigo-100 text-indigo-900' : 'bg-emerald-100 text-emerald-900' }}">
+                                {{ $isGuruMapel ? 'Guru Mapel' : 'Wali Kelas' }}
+                            </span>
+                        </div>
                         <p class="text-[11px] font-bold text-emerald-800 mt-0.5">Kelas: {{ $kelasAktif ? $kelasAktif->name : 'Pilih Kelas' }}</p>
                     </div>
                 </div>
@@ -339,7 +347,7 @@
                     <a href="{{ $urlKelasAbsensi }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📋</span>
                         <span class="text-xs font-black text-slate-900">Absensi</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Presensi Siswa</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">{{ $isGuruMapel ? 'Presensi Mapel' : 'Presensi Harian' }}</span>
                     </a>
                     <a href="{{ $urlKelasNilai }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📝</span>
@@ -351,26 +359,39 @@
                         <span class="text-xs font-black text-slate-900">Jurnal AI</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Modul TP/CP</span>
                     </a>
+
+                    @if(!$isGuruMapel)
+                    <a href="{{ $urlKelasExcuses }}" class="flex flex-col items-center p-3 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-center shadow-xs hover:border-emerald-500 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">📬</span>
+                        <span class="text-xs font-black text-emerald-950">Kabar Ortu</span>
+                        <span class="text-[9px] text-emerald-700 font-bold mt-0.5">Izin &amp; Sakit Masuk</span>
+                    </a>
                     <a href="{{ $urlKelasNarasi }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">✨</span>
                         <span class="text-xs font-black text-slate-900">Narasi Rapor</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">AI Deskripsi Rapor</span>
-                    </a>
-                    <a href="{{ $urlKelasAnalisis }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
-                        <span class="text-2xl mb-1">📈</span>
-                        <span class="text-xs font-black text-slate-900">Analisis</span>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Grafik Presensi</span>
                     </a>
                     <a href="{{ $urlKelasLaporan }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📄</span>
                         <span class="text-xs font-black text-slate-900">Laporan PDF</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Rekap Siap TTD</span>
                     </a>
+                    @endif
+
+                    <a href="{{ $urlKelasAnalisis }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">📈</span>
+                        <span class="text-xs font-black text-slate-900">Analisis</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Grafik Presensi</span>
+                    </a>
+
+                    @if(!$isGuruMapel)
                     <a href="{{ $urlKelasJadwal }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">🗓️</span>
                         <span class="text-xs font-black text-slate-900">Jadwal</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Agenda Mapel</span>
                     </a>
+                    @endif
+
                     <a href="{{ route('classes.index') }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">🏫</span>
                         <span class="text-xs font-black text-slate-900">Semua Kelas</span>
@@ -389,6 +410,13 @@
                         <span class="text-2xl mb-1">📇</span>
                         <span class="text-xs font-black text-slate-900">Kartu QR</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Cetak PDF A4</span>
+                    </a>
+
+                    @if(!$isGuruMapel)
+                    <a href="{{ $urlKelasExcuses }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">📬</span>
+                        <span class="text-xs font-black text-slate-900">Kabar Ortu</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Izin/Sakit Mandiri</span>
                     </a>
                     <a href="{{ $urlKelasEws }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">🛡️</span>
@@ -425,6 +453,7 @@
                         <span class="text-xs font-black text-slate-900">Struktur</span>
                         <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Pengurus Kelas</span>
                     </a>
+                    @endif
                 </div>
 
                 {{-- TAB 3: INTEGRASI & LAYANAN --}}
