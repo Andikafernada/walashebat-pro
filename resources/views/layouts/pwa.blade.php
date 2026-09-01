@@ -98,17 +98,18 @@
     $isWhatsappActive = str_starts_with($currentRoute, 'whatsapp.');
 
     // Helper URLs
-    $urlKelasAbsensi  = $kelasAktif ? route('classes.attendance.index', $kelasAktif) : route('classes.index');
-    $urlKelasNilai    = $kelasAktif ? route('classes.nilai.index', $kelasAktif) : route('classes.index');
-    $urlKelasJurnal   = $kelasAktif ? route('classes.jurnal.index', $kelasAktif) : route('classes.index');
-    $urlKelasJadwal   = $kelasAktif ? route('classes.schedules.index', $kelasAktif) : route('classes.index');
-    $urlKelasAnalisis = $kelasAktif ? route('classes.reports.analisis', $kelasAktif) : route('classes.index');
-    $urlKelasLaporan  = $kelasAktif ? route('classes.reports.full', $kelasAktif) : route('classes.index');
-    $urlKelasNarasi   = $kelasAktif ? route('classes.rapor.narasi', $kelasAktif) : route('classes.index');
-    $urlKelasExcuses  = $kelasAktif ? route('classes.excuses.index', $kelasAktif) : route('classes.index');
+    $urlKelasAbsensi   = $kelasAktif ? route('classes.attendance.index', $kelasAktif) : route('classes.index');
+    $urlKelasNilai     = $kelasAktif ? route('classes.nilai.index', $kelasAktif) : route('classes.index');
+    $urlKelasJurnal    = $kelasAktif ? route('classes.jurnal.index', $kelasAktif) : route('classes.index');
+    $urlKelasJadwal    = $kelasAktif ? route('classes.schedules.index', $kelasAktif) : route('classes.index');
+    $urlKelasAnalisis  = $kelasAktif ? route('classes.reports.analisis', $kelasAktif) : route('classes.index');
+    $urlKelasLaporan   = $kelasAktif ? route('classes.reports.full', $kelasAktif) : route('classes.index');
+    $urlKelasNarasi    = $kelasAktif ? route('classes.rapor.narasi', $kelasAktif) : route('classes.index');
+    $urlKelasExcuses   = $kelasAktif ? route('classes.excuses.index', $kelasAktif) : route('classes.index');
 
     $urlKelasSiswa     = $kelasAktif ? route('classes.students.index', $kelasAktif) : route('classes.index');
     $urlKelasQr        = $kelasAktif ? route('classes.students.qr-cards', $kelasAktif) : route('classes.index');
+    $urlKelasKerajinan = $kelasAktif ? route('classes.kerajinan.index', $kelasAktif) : route('classes.index');
     $urlKelasEws       = $kelasAktif ? route('classes.ews.index', $kelasAktif) : route('classes.index');
     $urlKelasImport    = $kelasAktif ? route('classes.students.import', $kelasAktif) : route('classes.index');
     $urlKelasKarakter  = $kelasAktif ? route('classes.character-portfolio.index', $kelasAktif) : route('classes.index');
@@ -413,6 +414,11 @@
                     </a>
 
                     @if(!$isGuruMapel)
+                    <a href="{{ $urlKelasKerajinan }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
+                        <span class="text-2xl mb-1">🎖️</span>
+                        <span class="text-xs font-black text-slate-900">Siswa Terajin</span>
+                        <span class="text-[9px] text-slate-500 font-semibold mt-0.5">Poin &amp; Sertifikat</span>
+                    </a>
                     <a href="{{ $urlKelasExcuses }}" class="flex flex-col items-center p-3 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs hover:border-emerald-400 transition-all active:scale-95">
                         <span class="text-2xl mb-1">📬</span>
                         <span class="text-xs font-black text-slate-900">Kabar Ortu</span>
