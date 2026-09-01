@@ -1,203 +1,242 @@
-{{--
-    Gaya Lembar Portofolio Komprehensif Siswa (PDF DOMPDF Compatible)
-    Desain Formal, Presisi, Elegan & Ramah Cetak A4.
---}}
 <style>
     @page { 
         size: A4 portrait;
-        margin: 10mm 12mm 10mm 12mm; 
+        margin: 8mm 10mm 8mm 10mm; 
+    }
+    * {
+        box-sizing: border-box;
     }
     body {
-        font-family: "DejaVu Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-        color: #0f172a;
-        font-size: 8pt;
-        line-height: 1.35;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #1e293b;
+        font-size: 7.5pt;
+        line-height: 1.3;
         background: #ffffff;
         -webkit-print-color-adjust: exact;
+        margin: 0;
+        padding: 0;
     }
-    h1, h2, h3, h4, p { margin: 0; }
+    h1, h2, h3, h4, p { margin: 0; padding: 0; }
 
-    /* KOP DOKUMEN */
-    .kop {
-        border-bottom: 2pt solid #047857;
+    /* HEADER & KOP PERUSAHAAN/SEKOLAH */
+    .header-box {
+        border-bottom: 2.5pt solid #059669;
         padding-bottom: 6pt;
-        margin-bottom: 10pt;
+        margin-bottom: 8pt;
     }
-    .school-name {
+    .school-title {
         font-size: 11pt;
         font-weight: 900;
-        text-transform: uppercase;
         color: #064e3b;
-        letter-spacing: 0.3pt;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1.1;
     }
-    .school-sub { 
-        font-size: 7.5pt; 
-        color: #64748b; 
-        margin-top: 1.5pt; 
-        font-weight: 500;
+    .school-address {
+        font-size: 6.8pt;
+        color: #64748b;
+        margin-top: 1.5pt;
     }
-    .doc-title {
+    .doc-badge {
+        font-size: 9.5pt;
+        font-weight: 900;
+        color: #059669;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
         text-align: right;
-        font-size: 10.5pt;
+    }
+    .doc-period {
+        font-size: 7pt;
+        font-weight: 700;
+        color: #475569;
+        text-align: right;
+        margin-top: 1.5pt;
+    }
+
+    /* PROFILE BANNER CARD */
+    .profile-card {
+        background-color: #f0fdf4;
+        border: 1pt solid #a7f3d0;
+        border-radius: 6pt;
+        padding: 6pt 8pt;
+        margin-bottom: 8pt;
+    }
+    .student-avatar {
+        width: 48pt;
+        height: 60pt;
+        border-radius: 4pt;
+        border: 1.5pt solid #10b981;
+        object-fit: cover;
+    }
+    .student-avatar-empty {
+        width: 48pt;
+        height: 60pt;
+        border-radius: 4pt;
+        border: 1.5pt dashed #6ee7b7;
+        background-color: #ecfdf5;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .avatar-initials {
+        font-size: 16pt;
         font-weight: 900;
         color: #047857;
+        padding-top: 12pt;
+    }
+    .avatar-label {
+        font-size: 4.5pt;
+        color: #059669;
+        font-weight: 700;
         text-transform: uppercase;
     }
-    .doc-subtitle { 
-        text-align: right; 
-        font-size: 7.5pt; 
-        color: #64748b; 
-        margin-top: 1.5pt; 
-        font-weight: 600;
+    .student-name-main {
+        font-size: 11pt;
+        font-weight: 900;
+        color: #064e3b;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        line-height: 1.1;
     }
+    .badge-pill {
+        display: inline-block;
+        padding: 1pt 4pt;
+        border-radius: 3pt;
+        font-size: 6pt;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .badge-emerald { background-color: #d1fae5; color: #065f46; border: 0.5pt solid #a7f3d0; }
+    .badge-blue { background-color: #dbeafe; color: #1e40af; border: 0.5pt solid #bfdbfe; }
+    .badge-rose { background-color: #ffe4e6; color: #9f1239; border: 0.5pt solid #fecdd3; }
+    .badge-amber { background-color: #fef3c7; color: #92400e; border: 0.5pt solid #fde68a; }
 
-    /* BANNER IDENTITAS & PAS FOTO */
-    .banner {
-        background: #f8fafc;
-        border: 1pt solid #cbd5e1;
-        border-left: 4pt solid #059669;
-        padding: 8pt 10pt;
-        border-radius: 6pt;
-        margin-bottom: 10pt;
+    /* STATS 4-BOX ROW */
+    .kpi-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 4pt;
+        margin-bottom: 8pt;
     }
-    .student-name { 
-        font-size: 12pt; 
-        font-weight: 900; 
-        color: #0f172a; 
-        text-transform: uppercase; 
-        line-height: 1.2;
-    }
-    .student-meta { 
-        font-size: 7.5pt; 
-        color: #475569; 
-        margin-top: 3pt; 
-        line-height: 1.4;
-    }
-
-    .foto {
-        width: 60pt;
-        height: 80pt;
-        border: 1pt solid #cbd5e1;
-        border-radius: 4pt;
-    }
-    .foto-kosong {
-        width: 60pt;
-        height: 80pt;
-        border: 1pt dashed #cbd5e1;
-        border-radius: 4pt;
-        background: #f1f5f9;
+    .kpi-box {
+        border-radius: 5pt;
+        padding: 4pt 6pt;
         text-align: center;
+        border: 1pt solid #e2e8f0;
+    }
+    .kpi-val {
+        font-size: 12pt;
+        font-weight: 900;
+        line-height: 1.1;
+    }
+    .kpi-title {
+        font-size: 5.8pt;
+        font-weight: 800;
+        text-transform: uppercase;
         color: #64748b;
-    }
-    .foto-inisial { 
-        font-size: 20pt; 
-        font-weight: 900; 
-        padding-top: 20pt; 
-        color: #047857;
-    }
-    .foto-catatan { 
-        font-size: 5pt; 
-        text-transform: uppercase; 
-        letter-spacing: 0.3pt; 
-        color: #94a3b8;
+        margin-top: 1pt;
+        letter-spacing: 0.3px;
     }
 
     /* SECTION TITLES */
-    .section-title {
-        font-size: 8.5pt;
+    .section-header {
+        font-size: 7.5pt;
         font-weight: 900;
         color: #0f172a;
         text-transform: uppercase;
-        letter-spacing: 0.4pt;
-        margin-top: 8pt;
+        letter-spacing: 0.5px;
+        padding: 2.5pt 5pt;
+        background-color: #f8fafc;
+        border-left: 3pt solid #059669;
+        border-bottom: 0.5pt solid #e2e8f0;
+        margin-top: 6pt;
         margin-bottom: 4pt;
-        padding-bottom: 2pt;
-        border-bottom: 1pt solid #cbd5e1;
     }
 
-    /* STATS GRID */
-    .stats-grid { 
-        width: 100%; 
-        border-collapse: separate; 
-        border-spacing: 3pt; 
-        margin-bottom: 8pt; 
+    /* 2-COLUMN LAYOUT TABLE */
+    .col-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 6pt;
     }
-    .stat-card { 
-        background: #f8fafc; 
-        border: 1pt solid #e2e8f0; 
-        border-radius: 5pt; 
-        padding: 5pt 4pt; 
-        text-align: center; 
+    .col-cell {
+        vertical-align: top;
+        padding: 0 3pt;
     }
-    .stat-val { 
-        font-size: 12pt; 
-        font-weight: 900; 
-        color: #0f172a; 
+
+    /* DATA TABLES */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 5pt;
     }
-    .stat-label { 
-        font-size: 6.5pt; 
-        font-weight: 800; 
-        color: #64748b; 
-        text-transform: uppercase; 
-        margin-top: 1pt; 
+    .data-table th {
+        background-color: #0f172a;
+        color: #ffffff;
+        font-size: 6.5pt;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 3pt 4pt;
+        text-align: left;
+        border: 0.5pt solid #0f172a;
     }
+    .data-table td {
+        font-size: 7pt;
+        padding: 2.5pt 4pt;
+        border: 0.5pt solid #e2e8f0;
+        color: #334155;
+    }
+    .data-table tr:nth-child(even) td {
+        background-color: #f8fafc;
+    }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .font-bold { font-weight: 800; }
 
     /* PROGRESS BAR */
-    .rel { width: 100%; background: #e2e8f0; height: 6pt; border-radius: 3pt; overflow: hidden; }
-    .rel-isi { height: 6pt; border-radius: 3pt; }
-    .rel-tipis { width: 100%; background: #e2e8f0; height: 4.5pt; border-radius: 2.25pt; overflow: hidden; }
-    .rel-tipis-isi { height: 4.5pt; border-radius: 2.25pt; }
-    .bar-tbl { width: 100%; border-collapse: collapse; margin-bottom: 6pt; }
-    .bar-tbl td { font-size: 7.5pt; padding: 2pt 3pt; vertical-align: middle; border: 0; }
-    .bar-label { color: #334155; font-weight: 600; }
-    .bar-angka { font-weight: 800; text-align: right; }
-
-    /* TABLES */
-    .tbl { width: 100%; border-collapse: collapse; margin-bottom: 8pt; }
-    .tbl th {
-        background: #0f172a;
-        color: #ffffff;
-        font-size: 7pt;
-        font-weight: 900;
-        text-transform: uppercase;
-        padding: 4pt 5pt;
-        text-align: left;
-        border: 1pt solid #0f172a;
+    .progress-bar-bg {
+        width: 100%;
+        background-color: #e2e8f0;
+        height: 4pt;
+        border-radius: 2pt;
+        overflow: hidden;
     }
-    .tbl td { 
-        font-size: 7.5pt; 
-        padding: 3.5pt 5pt; 
-        border: 1pt solid #e2e8f0; 
+    .progress-bar-fill {
+        height: 4pt;
+        border-radius: 2pt;
     }
-    .tbl tr:nth-child(even) { background: #f8fafc; }
-    .c { text-align: center; }
-    .r { text-align: right; }
-    .tebal { font-weight: 800; }
-    .kosong { text-align: center; color: #94a3b8; font-style: italic; padding: 6pt; font-size: 7.5pt; }
 
-    /* KUTIPAN REFLEKSI */
-    .kutipan { border-radius: 4pt; padding: 5pt 7pt; margin-bottom: 4pt; }
-    .kutipan-judul { font-size: 6pt; font-weight: 900; text-transform: uppercase; letter-spacing: 0.3pt; }
-    .kutipan-isi { font-size: 7.5pt; font-style: italic; margin-top: 1.5pt; color: #1e293b; }
-    .kutipan-teman { background: #f0f9ff; border: 1pt solid #bae6fd; }
-    .kutipan-teman .kutipan-judul { color: #0369a1; }
-    .kutipan-ortu { background: #fffbeb; border: 1pt solid #fde68a; }
-    .kutipan-ortu .kutipan-judul { color: #b45309; }
-    .kutipan-diri { background: #f8fafc; border: 1pt solid #e2e8f0; }
-    .kutipan-diri .kutipan-judul { color: #475569; }
+    /* SPEECH BUBBLE CARDS FOR REFLECTION */
+    .quote-box {
+        border-radius: 4pt;
+        padding: 4pt 6pt;
+        margin-bottom: 3pt;
+        font-size: 6.8pt;
+        border: 0.5pt solid #cbd5e1;
+    }
+    .quote-self { background-color: #f8fafc; border-left: 2.5pt solid #3b82f6; }
+    .quote-peer { background-color: #f0fdf4; border-left: 2.5pt solid #10b981; }
+    .quote-parent { background-color: #fffbeb; border-left: 2.5pt solid #f59e0b; }
 
-    /* BADGES */
-    .badge { display: inline-block; padding: 1pt 4pt; border-radius: 3pt; font-size: 6.5pt; font-weight: 800; text-transform: uppercase; }
-    .badge-success { background: #dcfce7; color: #166534; }
-    .badge-warning { background: #fef3c7; color: #92400e; }
-    .badge-danger { background: #ffe4e6; color: #9f1239; }
-    .badge-info { background: #e0f2fe; color: #075985; }
-
-    /* SIGNATURE */
-    .sig-table { width: 100%; margin-top: 12pt; border-collapse: collapse; }
-    .sig-cell { width: 50%; text-align: center; vertical-align: top; font-size: 8pt; }
-    .sig-space { height: 16mm; }
-    .sig-line { border-top: 1pt solid #0f172a; width: 65%; margin: 0 auto; padding-top: 2pt; font-weight: 800; }
-
-    .lembar-baru { page-break-before: always; }
+    /* SIGNATURE BLOCK */
+    .sig-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8pt;
+    }
+    .sig-td {
+        width: 50%;
+        text-align: center;
+        vertical-align: top;
+        font-size: 7.2pt;
+    }
+    .sig-space {
+        height: 13mm;
+    }
+    .sig-underline {
+        border-bottom: 1pt solid #0f172a;
+        width: 60%;
+        margin: 0 auto;
+        font-weight: 800;
+        padding-bottom: 1pt;
+    }
 </style>

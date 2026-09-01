@@ -1,365 +1,270 @@
-{{--
-    Satu lembar profil siswa.
-
-    Dipakai dua kali: berkas satu siswa (reports/pdf/siswa) dan lampiran buku
-    administrasi (reports/pdf/administrasi, bagian "profil"). Yang berdiri
-    sendiri memakai kop sekolah karena lembarnya dirobek lalu diserahkan
-    terpisah ke BK atau orang tua, dan lembar tanpa kop tidak bisa dipakai
-    sebagai dokumen; di dalam jilidan kopnya dimatikan lewat $kopLembar.
-
-    Semua "grafik" di sini adalah <div> berlebar persen: lihat _gaya-lembar.
---}}
-
-{{-- Kop hanya untuk lembar yang berdiri sendiri. Di dalam buku administrasi
-     yang dijilid, sampulnya sudah membawa identitas sekolah — mengulangnya di
-     setiap lembar cuma menambah kebisingan pada 39 halaman berturut-turut. --}}
 @if ($kopLembar ?? true)
-    <div class="kop">
-        <table style="width: 100%;">
+    <div class="header-box">
+        <table style="width: 100%; border-collapse: collapse;">
             <tr>
-                <td style="vertical-align: top;">
-                    <div class="school-name">{{ $guru->school_name ?? 'WALI KELAS HEBAT' }}</div>
+                <td style="vertical-align: top; width: 65%;">
+                    <div class="school-title">{{ $guru->school_name ?? 'SMK PASUNDAN 2 BANDUNG' }}</div>
                     @if (! empty($guru->school_address))
-                        <div class="school-sub">{{ $guru->school_address }}</div>
+                        <div class="school-address">{{ $guru->school_address }}</div>
+                    @else
+                        <div class="school-address">Pusat Laporan &amp; Administrasi Digital WaliKelas Pro</div>
                     @endif
                 </td>
-                <td style="vertical-align: top;" class="r">
-                    <div class="doc-title">Laporan Perkembangan Siswa</div>
-                    <div class="doc-subtitle">{{ $periode['label'] }}</div>
+                <td style="vertical-align: top; text-align: right; width: 35%;">
+                    <div class="doc-badge">Portofolio &amp; Rapor Siswa</div>
+                    <div class="doc-period">Periode: {{ $periode['label'] }}</div>
                 </td>
             </tr>
         </table>
     </div>
 @endif
 
-<div class="banner">
-    <table style="width: 100%;">
+{{-- ══════════ 1. PROFILE & BIODATA CARD ══════════ --}}
+<div class="profile-card">
+    <table style="width: 100%; border-collapse: collapse;">
         <tr>
-            <td style="width: 74pt; vertical-align: top;">
+            <td style="width: 54pt; vertical-align: middle;">
                 @if ($fotoSiswa = $siswa->photoDataUri())
-                    <img class="foto" src="{{ $fotoSiswa }}" alt="">
+                    <img class="student-avatar" src="{{ $fotoSiswa }}" alt="Foto">
                 @else
-                    <div class="foto-kosong">
-                        <div class="foto-inisial">{{ $siswa->initials() }}</div>
-                        <div class="foto-catatan">Foto belum ada</div>
+                    <div class="student-avatar-empty">
+                        <div class="avatar-initials">{{ $siswa->initials() }}</div>
+                        <div class="avatar-label">FOTO SISWA</div>
                     </div>
                 @endif
             </td>
-            <td style="vertical-align: top;">
-                <div class="student-name">{{ $siswa->name }}</div>
-                <div class="student-meta">
-                    NIS: <strong>{{ $siswa->nis ?: '-' }}</strong> |
-                    NISN: <strong>{{ $siswa->nisn ?: '-' }}</strong> |
-                    Kelas: <strong>{{ $classroom->name }}</strong>
-                    @unless ($siswa->is_active)
-                        | <span class="badge badge-danger">NONAKTIF</span>
-                    @endunless
+            <td style="vertical-align: middle; padding-left: 8pt;">
+                <div class="student-name-main">{{ $siswa->name }}</div>
+                <div style="font-size: 6.8pt; color: #334155; margin-top: 2pt;">
+                    NIS: <strong>{{ $siswa->nis ?: '—' }}</strong> &middot; 
+                    NISN: <strong>{{ $siswa->nisn ?: '—' }}</strong> &middot; 
+                    Kelas: <strong>{{ $classroom->name }}</strong> &middot; 
+                    JK: <strong>{{ $siswa->gender === 'L' ? 'Laki-laki' : ($siswa->gender === 'P' ? 'Perempuan' : '—') }}</strong>
                 </div>
-                <div class="student-meta">
-                    {{ $siswa->tempat_lahir ?: '-' }},
-                    {{ $siswa->tanggal_lahir ? \Illuminate\Support\Carbon::parse($siswa->tanggal_lahir)->translatedFormat('d F Y') : '-' }}
-                    &middot; {{ $siswa->gender === 'L' ? 'Laki-laki' : ($siswa->gender === 'P' ? 'Perempuan' : '-') }}
-                    {{-- roleLabel(), BUKAN ->position: tabel organization_structures
-                         menyimpan kolom `role`, dan `position` tidak pernah ada.
-                         Eloquent mengembalikan NULL diam-diam untuk atribut yang
-                         tidak ada, jadi badge jabatannya selalu kosong tanpa galat. --}}
-                    @if ($peran?->isNotEmpty())
-                        &middot; <span class="badge badge-info">{{ $peran->map(fn ($p) => $p->roleLabel())->join(', ') }}</span>
-                    @endif
+                <div style="font-size: 6.5pt; color: #64748b; margin-top: 1.5pt;">
+                    TTL: {{ $siswa->tempat_lahir ?: '—' }}, {{ $siswa->tanggal_lahir ? \Illuminate\Support\Carbon::parse($siswa->tanggal_lahir)->translatedFormat('d F Y') : '—' }} &middot;
+                    Ortu: <strong>{{ $siswa->parent_name ?: ($siswa->father_name ?: ($siswa->mother_name ?: '—')) }}</strong>
+                    @if($siswa->parent_phone) (WA: {{ $siswa->parent_phone }}) @endif
+                </div>
+            </td>
+            <td style="width: 75pt; vertical-align: middle; text-align: right;">
+                <span class="badge-pill badge-emerald">{{ $classroom->name }}</span>
+                @if ($peran?->isNotEmpty())
+                    <div style="margin-top: 2pt;">
+                        <span class="badge-pill badge-blue">{{ $peran->first()->roleLabel() }}</span>
+                    </div>
+                @endif
+                <div style="margin-top: 2pt;">
+                    <span class="badge-pill {{ $siswa->is_active ? 'badge-emerald' : 'badge-rose' }}">
+                        {{ $siswa->is_active ? 'SISWA AKTIF' : 'NON-AKTIF' }}
+                    </span>
                 </div>
             </td>
         </tr>
     </table>
 </div>
 
-<table class="stats-grid">
+{{-- ══════════ 2. 4-KPI SUMMARY METRICS ══════════ --}}
+<table class="kpi-table">
     <tr>
         <td style="width: 25%;">
-            <div class="stat-card">
-                <div class="stat-val" style="color: #2e6446;">{{ $kehadiran['persen'] === null ? '-' : $kehadiran['persen'].'%' }}</div>
-                <div class="stat-label">Tingkat Kehadiran</div>
+            <div class="kpi-box" style="background-color: #ecfdf5; border-color: #a7f3d0;">
+                <div class="kpi-val" style="color: #047857;">{{ $kehadiran['persen'] === null ? '100%' : $kehadiran['persen'].'%' }}</div>
+                <div class="kpi-title">Tingkat Kehadiran</div>
             </div>
         </td>
         <td style="width: 25%;">
-            <div class="stat-card">
-                <div class="stat-val" style="color: #e11d48;">{{ $kehadiran['jumlah']['alfa'] }}</div>
-                <div class="stat-label">Jumlah Alfa</div>
+            <div class="kpi-box" style="background-color: {{ $kehadiran['jumlah']['alfa'] > 0 ? '#fff1f2' : '#f8fafc' }}; border-color: {{ $kehadiran['jumlah']['alfa'] > 0 ? '#fecdd3' : '#e2e8f0' }};">
+                <div class="kpi-val" style="color: {{ $kehadiran['jumlah']['alfa'] > 0 ? '#e11d48' : '#334155' }};">{{ $kehadiran['jumlah']['alfa'] }}</div>
+                <div class="kpi-title">Jumlah Alfa</div>
             </div>
         </td>
         <td style="width: 25%;">
-            <div class="stat-card">
-                <div class="stat-val" style="color: #23486b;">{{ $poin['sekarang'] }}</div>
-                <div class="stat-label">Poin Disiplin</div>
+            <div class="kpi-box" style="background-color: #f0f9ff; border-color: #bae6fd;">
+                <div class="kpi-val" style="color: #0369a1;">{{ $poin['sekarang'] ?? 100 }}</div>
+                <div class="kpi-title">Poin Disiplin (100)</div>
             </div>
         </td>
         <td style="width: 25%;">
-            <div class="stat-card">
-                <div class="stat-val" style="color: #8a6317;">{{ $poin['kejadian'] }}</div>
-                <div class="stat-label">Catatan Pelanggaran</div>
+            <div class="kpi-box" style="background-color: #fefce8; border-color: #fef08a;">
+                <div class="kpi-val" style="color: #a16207;">{{ $nilai['rata_rapor'] !== null ? $nilai['rata_rapor'] : '—' }}</div>
+                <div class="kpi-title">Rata Nilai Rapor</div>
             </div>
         </td>
     </tr>
 </table>
 
-<div class="section-title">I. Tren Kehadiran (6 Bulan Terakhir)</div>
-{{--
-    Dulu tabel tiga baris berisi enam angka persen. Angka menuntut dibandingkan
-    satu per satu; batang menunjukkan arahnya dalam sekali lihat — dan yang
-    dicari orang tua di halaman ini justru arahnya: membaik atau memburuk.
---}}
-<table class="bar-tbl">
-    @foreach ($tren as $t)
-        @php
-            $persen = $t['persen'];
-            $warna = $persen === null ? '#cbd5e1' : ($persen >= 90 ? '#2e6446' : ($persen >= 75 ? '#8a6317' : '#e11d48'));
-        @endphp
+{{-- ══════════ 3. RINCIAN PRESENSI & KEHADIRAN ══════════ --}}
+<div class="section-header">I. Rincian Presensi &amp; Rekapitulasi Kehadiran</div>
+<div style="background-color: #f8fafc; border: 0.5pt solid #e2e8f0; border-radius: 4pt; padding: 4pt 6pt; margin-bottom: 6pt;">
+    <table style="width: 100%; border-collapse: collapse;">
         <tr>
-            <td class="bar-label" style="width: 16%;">{{ $t['label'] }}</td>
-            <td style="width: 54%;">
-                <div class="rel"><div class="rel-isi" style="width: {{ $persen ?? 0 }}%; background: {{ $warna }};"></div></div>
+            <td style="font-size: 7pt; font-weight: 700;">
+                🟢 Hadir: <strong>{{ $kehadiran['jumlah']['hadir'] }}</strong> &nbsp;|&nbsp;
+                🟡 Terlambat: <strong>{{ $kehadiran['jumlah']['terlambat'] }}</strong> &nbsp;|&nbsp;
+                🔵 Sakit: <strong>{{ $kehadiran['jumlah']['sakit'] }}</strong> &nbsp;|&nbsp;
+                🟣 Izin: <strong>{{ $kehadiran['jumlah']['izin'] }}</strong> &nbsp;|&nbsp;
+                🔴 Alfa: <strong style="color: #e11d48;">{{ $kehadiran['jumlah']['alfa'] }}</strong>
             </td>
-            <td class="bar-angka" style="width: 12%; color: {{ $warna }};">{{ $persen === null ? '—' : $persen.'%' }}</td>
-            <td class="bar-label" style="width: 18%;">
-                {{-- Angka mentahnya tetap dicetak: batang bagus untuk melihat
-                     bentuk, tidak bisa dipakai membuktikan apa pun. --}}
-                Telat {{ $t['terlambat'] }} &middot; Alfa {{ $t['alfa'] }}
+            <td style="text-align: right; font-size: 6.8pt; color: #64748b;">
+                Total Pertemuan: <strong>{{ $kehadiran['total'] }} Sesi</strong>
             </td>
-        </tr>
-    @endforeach
-</table>
-
-<p style="font-size: 7.5pt; color: #475569; margin-bottom: 8pt;">
-    <strong>Rincian periode ini:</strong>
-    Hadir <strong>{{ $kehadiran['jumlah']['hadir'] }}</strong> &middot;
-    Terlambat <strong>{{ $kehadiran['jumlah']['terlambat'] }}</strong> &middot;
-    Sakit <strong>{{ $kehadiran['jumlah']['sakit'] }}</strong> &middot;
-    Izin <strong>{{ $kehadiran['jumlah']['izin'] }}</strong> &middot;
-    Alfa <strong>{{ $kehadiran['jumlah']['alfa'] }}</strong>
-    (dari {{ $kehadiran['total'] }} kali tercatat).
-</p>
-
-<div class="section-title">II. Biodata &amp; Data Orang Tua</div>
-<div class="biodata-box">
-    <table class="biodata-tbl">
-        <tr>
-            <td style="width: 20%;" class="biodata-label">Agama</td>
-            <td style="width: 30%;">{{ $siswa->agama ?: '-' }}</td>
-            <td style="width: 20%;" class="biodata-label">No. HP Siswa</td>
-            <td style="width: 30%;">{{ $siswa->phone ?: '-' }}</td>
-        </tr>
-        <tr>
-            <td class="biodata-label">Nama Ayah</td>
-            <td>{{ $siswa->nama_ayah ?: '-' }}</td>
-            <td class="biodata-label">Pekerjaan Ayah</td>
-            <td>{{ $siswa->pekerjaan_ayah ?: '-' }}</td>
-        </tr>
-        <tr>
-            <td class="biodata-label">Nama Ibu</td>
-            <td>{{ $siswa->nama_ibu ?: '-' }}</td>
-            <td class="biodata-label">Pekerjaan Ibu</td>
-            <td>{{ $siswa->pekerjaan_ibu ?: '-' }}</td>
-        </tr>
-        <tr>
-            <td class="biodata-label">No. HP Ortu/Wali</td>
-            <td>{{ $siswa->parent_phone ?: '-' }}</td>
-            <td class="biodata-label">Jarak / Transportasi</td>
-            <td>{{ $siswa->jarak_rumah_km ? $siswa->jarak_rumah_km.' km' : '-' }} / {{ $siswa->moda_transportasi ?: '-' }}</td>
-        </tr>
-        <tr>
-            <td class="biodata-label">Alamat Lengkap</td>
-            <td colspan="3">{{ $siswa->address ?: '-' }} (RT/RW: {{ $siswa->rt_rw ?: '-' }}, Kel. {{ $siswa->kelurahan ?: '-' }}, Kec. {{ $siswa->kecamatan ?: '-' }})</td>
         </tr>
     </table>
 </div>
 
-<div class="section-title">III. Kedisiplinan &amp; Apresiasi</div>
-{{-- Poin disiplin adalah angka yang berjalan turun dari 100. Ditulis sebagai
-     angka saja, "62" tidak memberi tahu seberapa dekat ia ke ambang pembinaan;
-     sebagai batang, jaraknya terlihat. --}}
-@php
-    $warnaPoin = $poin['sekarang'] >= 75 ? '#2e6446' : ($poin['sekarang'] >= 50 ? '#8a6317' : '#e11d48');
-@endphp
-<table class="bar-tbl">
+{{-- ══════════ 4. TWO-COLUMN: NILAI AKADEMIK & DISIPLIN/P5 ══════════ --}}
+<table class="col-table">
     <tr>
-        <td class="bar-label" style="width: 16%;">Poin sekarang</td>
-        <td style="width: 54%;">
-            <div class="rel"><div class="rel-isi" style="width: {{ $poin['persen'] }}%; background: {{ $warnaPoin }};"></div></div>
+        {{-- KOLOM KIRI: NILAI RAPOR & ASESMEN (50%) --}}
+        <td class="col-cell" style="width: 52%;">
+            <div class="section-header">II. Capaian Nilai Rapor &amp; Akademik (Sem. {{ $semester }})</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%;">Mata Pelajaran</th>
+                        <th style="width: 15%;" class="text-center">PTS</th>
+                        <th style="width: 15%;" class="text-center">PAS</th>
+                        <th style="width: 25%;" class="text-right">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($nilai['rapor'] as $b)
+                        @php
+                            $skorTampil = $b['pas'] ?? $b['pts'];
+                            $lulus = $skorTampil !== null && $skorTampil >= 75;
+                        @endphp
+                        <tr>
+                            <td class="font-bold">{{ $b['mapel'] }}</td>
+                            <td class="text-center font-bold" style="color: {{ $b['pts'] !== null && $b['pts'] < 75 ? '#e11d48' : '#0f172a' }};">
+                                {{ $b['pts'] ?? '—' }}
+                            </td>
+                            <td class="text-center font-bold" style="color: {{ $b['pas'] !== null && $b['pas'] < 75 ? '#e11d48' : '#0f172a' }};">
+                                {{ $b['pas'] ?? '—' }}
+                            </td>
+                            <td class="text-right">
+                                @if($skorTampil !== null)
+                                    <span class="badge-pill {{ $lulus ? 'badge-emerald' : 'badge-rose' }}">
+                                        {{ $lulus ? 'TUNTAS' : 'REMIDI' }}
+                                    </span>
+                                @else
+                                    <span style="font-size: 6pt; color: #94a3b8;">Belum ada</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="kosong">Belum ada data nilai asesmen semester ini.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </td>
-        <td class="bar-angka" style="width: 12%; color: {{ $warnaPoin }};">{{ $poin['sekarang'] }}</td>
-        <td class="bar-label" style="width: 18%;">dari {{ $poin['awal'] }} &middot; ambang 50</td>
+
+        {{-- KOLOM KANAN: DISIPLIN & KARAKTER P5 (48%) --}}
+        <td class="col-cell" style="width: 48%;">
+            <div class="section-header">III. Kedisiplinan &amp; Karakter P5</div>
+            
+            {{-- Poin Disiplin Ringkas --}}
+            <div style="background-color: #f8fafc; border: 0.5pt solid #e2e8f0; border-radius: 4pt; padding: 3pt 5pt; margin-bottom: 4pt;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="font-size: 6.8pt; font-weight: 700;">Status Disiplin:</td>
+                        <td style="text-align: right; font-size: 6.8pt;">
+                            <span class="badge-pill {{ $poin['sekarang'] >= 85 ? 'badge-emerald' : ($poin['sekarang'] >= 60 ? 'badge-amber' : 'badge-rose') }}">
+                                {{ $poin['sekarang'] >= 85 ? 'Sangat Baik (A)' : ($poin['sekarang'] >= 60 ? 'Cukup (B)' : 'Perlu Bimbingan (C)') }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            {{-- Observasi P5 --}}
+            <div style="font-size: 6.8pt; font-weight: 800; color: #475569; margin-bottom: 2pt;">Observasi Profil Pelajar Pancasila:</div>
+            <table class="data-table" style="margin-bottom: 4pt;">
+                <thead>
+                    <tr>
+                        <th>Dimensi Karakter</th>
+                        <th style="width: 35%;" class="text-center">Indikator Sikap</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($karakter['dimensi'] as $d)
+                        <tr>
+                            <td>{{ $d['dimensi'] }}</td>
+                            <td class="text-center font-bold">
+                                <span style="color: #059669;">+{{ $d['positif'] }} Baik</span>
+                                @if($d['negatif'] > 0)
+                                    &middot; <span style="color: #e11d48;">-{{ $d['negatif'] }} Catatan</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="2" class="kosong">Karakter kondusif &amp; stabil.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </td>
     </tr>
 </table>
-<table class="tbl">
-    <thead>
-        <tr>
-            <th style="width: 18%;" class="c">Tanggal</th>
-            <th>Jenis Catatan / Pelanggaran / Apresiasi</th>
-            <th style="width: 15%;" class="c">Poin</th>
-        </tr>
-    </thead>
-    <tbody>
-    @forelse ($pelanggaran as $v)
-        <tr>
-            <td class="c">{{ $v->occurred_on->format('d/m/Y') }}</td>
-            <td>
-                <strong>{{ $v->type->name ?? 'Catatan Disiplin' }}</strong>
-                @if ($v->note) <br><span style="font-size: 7.5pt; color: #7c7466;">{{ $v->note }}</span> @endif
-            </td>
-            <td class="c tebal" style="color: {{ $v->points >= 0 ? '#166534' : '#991b1b' }};">
-                {{ $v->points >= 0 ? '+' : '' }}{{ $v->points }}
-            </td>
-        </tr>
-    @empty
-        <tr><td colspan="3" class="kosong">Tidak ada catatan pelanggaran pada periode ini. Catatan bersih.</td></tr>
-    @endforelse
-    </tbody>
-</table>
 
-{{-- Disaring per SEMESTER, bukan per rentang tanggal: nilai akhir semester 1
-     lazim baru dimasukkan pada Januari, yang menurut kalender sudah semester 2.
-     Menyaringnya dengan tanggal membuat nilai itu hilang dari berkas yang
-     justru diserahkan ke orang tua. --}}
-<div class="section-title">IV. Nilai Rapor — Semester {{ $semester }}</div>
-<table class="tbl">
-    <thead>
-        <tr>
-            <th style="width: 30%;">Mata Pelajaran</th>
-            <th style="width: 10%;" class="c">PTS</th>
-            <th style="width: 10%;" class="c">PAS</th>
-            <th>Sebaran (garis = KKM 75)</th>
-        </tr>
-    </thead>
-    <tbody>
-    @forelse ($nilai['rapor'] as $b)
-        @php
-            // Batang menggambarkan yang terakhir tersedia: PAS bila sudah ada,
-            // kalau belum PTS. Merata-ratakan keduanya menyembunyikan kenaikan
-            // maupun penurunan, padahal justru itu yang ditanyakan orang tua.
-            $tampil = $b['pas'] ?? $b['pts'];
-        @endphp
-        <tr>
-            <td>{{ $b['mapel'] }}</td>
-            {{-- "-" berarti belum dinilai, bukan nol. --}}
-            <td class="c tebal" style="color: {{ $b['pts'] !== null && $b['pts'] < 75 ? '#991b1b' : '#1a1712' }};">{{ $b['pts'] ?? '-' }}</td>
-            <td class="c tebal" style="color: {{ $b['pas'] !== null && $b['pas'] < 75 ? '#991b1b' : '#1a1712' }};">{{ $b['pas'] ?? '-' }}</td>
-            <td>
-                @if ($tampil === null)
-                    <span style="font-size: 7pt; color: #a79e90; font-style: italic;">belum dinilai</span>
-                @else
-                    <div class="rel-tipis">
-                        <div class="rel-tipis-isi" style="width: {{ max(0, min(100, (int) $tampil)) }}%; background: {{ $tampil < 75 ? '#e11d48' : '#2e6446' }};"></div>
-                    </div>
-                @endif
-            </td>
-        </tr>
-    @empty
-        <tr><td colspan="4" class="kosong">Belum ada nilai PTS/PAS pada semester ini.</td></tr>
-    @endforelse
-    @if ($nilai['rata_rapor'] !== null)
-        <tr>
-            <td class="tebal">Rata-rata seluruh nilai rapor</td>
-            <td colspan="3" class="tebal">{{ $nilai['rata_rapor'] }}</td>
-        </tr>
-    @endif
-    </tbody>
-</table>
-
-<div class="section-title">V. Perkembangan Karakter (P5) — Pengamatan Wali Kelas</div>
-{{--
-    Yang dicari di sini bukan satu angka melainkan bentuknya: anak dengan
-    sepuluh catatan positif pada Gotong Royong dan tiga catatan negatif pada
-    Kemandirian menuntut pembinaan yang sama sekali berbeda dari anak yang
-    sebaliknya — padahal jumlah bersihnya bisa sama persis. Dua batang
-    berdampingan menunjukkan bentuk itu; dua kolom angka tidak.
---}}
-@php
-    $puncak = max(1, collect($karakter['dimensi'])->flatMap(fn ($d) => [$d['positif'], $d['negatif']])->max() ?: 1);
-@endphp
-@forelse ($karakter['dimensi'] as $d)
-    <table class="bar-tbl">
-        <tr>
-            <td class="bar-label" style="width: 24%;">{{ $d['dimensi'] }}</td>
-            <td style="width: 46%;">
-                <div class="rel-tipis"><div class="rel-tipis-isi" style="width: {{ (int) round($d['positif'] / $puncak * 100) }}%; background: #2e6446;"></div></div>
-                <div class="rel-tipis" style="margin-top: 2pt;"><div class="rel-tipis-isi" style="width: {{ (int) round($d['negatif'] / $puncak * 100) }}%; background: #e11d48;"></div></div>
-            </td>
-            <td class="bar-angka" style="width: 30%;">
-                <span style="color: #2e6446;">+{{ $d['positif'] }}</span>
-                <span style="color: #a79e90;"> / </span>
-                <span style="color: #e11d48;">−{{ $d['negatif'] }}</span>
-                @if ($d['lainnya'])
-                    <span style="color: #7c7466; font-weight: normal;"> &middot; {{ $d['lainnya'] }} pengamatan</span>
-                @endif
-            </td>
-        </tr>
-    </table>
-@empty
-    <table class="tbl"><tr><td class="kosong">Belum ada catatan karakter pada periode ini.</td></tr></table>
-@endforelse
-
-<div class="section-title">VI. Suara Siswa — Refleksi Mandiri</div>
-{{--
-    Bagian ini sebelumnya tidak ada di berkas mana pun: refleksi yang ditulis
-    siswa sendiri tersimpan rapi di aplikasi lalu berhenti di situ. Padahal
-    bagian V di atas adalah penilaian GURU tentang anak, dan jarak antara
-    keduanya sering lebih memberi tahu daripada salah satunya saja.
---}}
-@forelse ($refleksi->take(2) as $r)
-    <p style="font-size: 7pt; color: #7c7466; margin-bottom: 3pt;">
-        {{ \Illuminate\Support\Carbon::parse($r->reflection_date)->translatedFormat('d F Y') }}
-        @if ($r->dimension?->name) &middot; Dimensi {{ $r->dimension->name }} @endif
-        @if ($r->self_rating) &middot; Penilaian diri {{ $r->self_rating }}/5 @endif
-    </p>
-
-    <div class="kutipan kutipan-diri">
-        <div class="kutipan-judul">Kata dirinya sendiri</div>
-        <div class="kutipan-isi">
-            <strong>Sudah baik:</strong> {{ $r->what_went_well ?: '-' }}<br>
-            <strong>Perlu ditingkatkan:</strong> {{ $r->what_to_improve ?: '-' }}<br>
-            <strong>Rencana aksi:</strong> {{ $r->action_plan ?: '-' }}
-        </div>
+{{-- ══════════ 5. SUARA SISWA — REFLEKSI MANDIRI ══════════ --}}
+@if($refleksi->isNotEmpty())
+    <div class="section-header">IV. Suara Siswa &amp; Refleksi Perkembangan Belajar</div>
+    <div style="display: block;">
+        @foreach($refleksi->take(1) as $r)
+            <div class="quote-box quote-self">
+                <span style="font-weight: 800; color: #1e40af; text-transform: uppercase; font-size: 6pt;">Evaluasi Diri Siswa:</span>
+                <span style="color: #334155;">
+                    "{{ $r->what_went_well ?: 'Belajar dengan tekun dan tertib' }}
+                    @if($r->what_to_improve) &middot; Perlu ditingkatkan: {{ $r->what_to_improve }} @endif"
+                </span>
+            </div>
+            @if($r->kesan_teman || $r->pesan_ortu)
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        @if($r->kesan_teman)
+                            <td style="width: 50%; padding-right: 2pt;">
+                                <div class="quote-box quote-peer">
+                                    <span style="font-weight: 800; color: #065f46; font-size: 5.8pt;">KATA TEMAN KELAS:</span>
+                                    <div style="font-style: italic;">"{{ $r->kesan_teman }}"</div>
+                                </div>
+                            </td>
+                        @endif
+                        @if($r->pesan_ortu)
+                            <td style="width: 50%; padding-left: 2pt;">
+                                <div class="quote-box quote-parent">
+                                    <span style="font-weight: 800; color: #92400e; font-size: 5.8pt;">PESAN KE ORANG TUA:</span>
+                                    <div style="font-style: italic;">"{{ $r->pesan_ortu }}"</div>
+                                </div>
+                            </td>
+                        @endif
+                    </tr>
+                </table>
+            @endif
+        @endforeach
     </div>
+@endif
 
-    @if ($r->kesan_teman)
-        <div class="kutipan kutipan-teman">
-            <div class="kutipan-judul">Kata temannya</div>
-            <div class="kutipan-isi">&ldquo;{{ $r->kesan_teman }}&rdquo;</div>
-        </div>
-    @endif
-
-    @if ($r->pesan_ortu)
-        <div class="kutipan kutipan-ortu">
-            <div class="kutipan-judul">Pesan untuk orang tua</div>
-            <div class="kutipan-isi">&ldquo;{{ $r->pesan_ortu }}&rdquo;</div>
-        </div>
-    @endif
-
-    @if ($r->teacher_feedback)
-        <div class="kutipan kutipan-diri">
-            <div class="kutipan-judul">Tanggapan wali kelas</div>
-            <div class="kutipan-isi">&ldquo;{{ $r->teacher_feedback }}&rdquo;</div>
-        </div>
-    @endif
-@empty
-    <table class="tbl"><tr><td class="kosong">Siswa belum mengisi refleksi mandiri pada periode ini.</td></tr></table>
-@endforelse
-
-<div style="page-break-inside: avoid; margin-top: 15pt;">
+{{-- ══════════ 6. LEMBAR PENGESAHAN (SIGNATURE) ══════════ --}}
+<div style="page-break-inside: avoid;">
     <table class="sig-table">
         <tr>
-            <td class="sig-cell">
-                <p>Mengetahui,</p>
-                <p style="font-weight: bold;">Orang Tua / Wali Siswa</p>
+            <td class="sig-td">
+                <div>Mengetahui,</div>
+                <div style="font-weight: 800; color: #0f172a; margin-top: 1pt;">Orang Tua / Wali Siswa</div>
                 <div class="sig-space"></div>
-                <div class="sig-line">...................................................</div>
-                <p style="font-size: 7.5pt; color: #7c7466;">Tanda Tangan &amp; Nama Terang</p>
+                <div class="sig-underline">...................................................</div>
+                <div style="font-size: 6.5pt; color: #64748b; margin-top: 1pt;">Tanda Tangan &amp; Nama Terang</div>
             </td>
-            <td class="sig-cell">
-                <p>{{ $guru->school_city ? $guru->school_city.', ' : '' }}{{ now()->translatedFormat('d F Y') }}</p>
-                <p style="font-weight: bold;">Wali Kelas {{ $classroom->name }}</p>
+            <td class="sig-td">
+                <div>{{ $guru->school_city ? $guru->school_city.', ' : 'Bandung, ' }}{{ now()->translatedFormat('d F Y') }}</div>
+                <div style="font-weight: 800; color: #0f172a; margin-top: 1pt;">Wali Kelas {{ $classroom->name }}</div>
                 <div class="sig-space"></div>
-                <div class="sig-line">{{ $guru->name }}</div>
-                <p style="font-size: 7.5pt; color: #7c7466;">NIP. {{ $guru->nip ?: '............................' }}</p>
+                <div class="sig-underline">{{ $guru->name }}</div>
+                <div style="font-size: 6.5pt; color: #64748b; margin-top: 1pt;">NIP: {{ $guru->nip ?: '—' }}</div>
             </td>
         </tr>
     </table>
