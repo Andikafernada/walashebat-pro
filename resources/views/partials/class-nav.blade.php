@@ -4,16 +4,18 @@
     $tabs = [
         ['route' => 'classes.show',                    'aktif' => 'classes.show',                    'label' => 'Ringkasan',   'icon' => '📊'],
         ['route' => 'classes.students.index',          'aktif' => 'classes.students.*',              'label' => 'Siswa',       'icon' => '👥', 'badge' => $classroom->students_count ?? null],
+        ['route' => 'classes.students.qr-cards',       'aktif' => 'classes.students.qr-cards*',      'label' => 'Kartu QR',    'icon' => '📇'],
         ['route' => 'classes.attendance.index',        'aktif' => 'classes.attendance.*',            'label' => 'Absensi',     'icon' => '📋'],
+        ['route' => 'classes.broadcast.index',         'aktif' => 'classes.broadcast.*',             'label' => 'Broadcast WA','icon' => '📢'],
         ['route' => 'classes.excuses.index',           'aktif' => 'classes.excuses.*',               'label' => 'Kabar Ortu',  'icon' => '📬'],
         ['route' => 'classes.nilai.index',             'aktif' => 'classes.nilai.*',                 'label' => 'Nilai',       'icon' => '📝'],
         ['route' => 'classes.jurnal.index',            'aktif' => 'classes.jurnal.*',                'label' => 'Jurnal',      'icon' => '📖'],
         ['route' => 'classes.rapor.narasi',          'aktif' => 'classes.rapor.narasi*',          'label' => 'Narasi Rapor','icon' => '🤖'],
+        ['route' => 'classes.kerajinan.index',         'aktif' => 'classes.kerajinan.*',             'label' => 'Siswa Terajin','icon' => '🎖️'],
         ['route' => 'classes.ews.index',               'aktif' => 'classes.ews.*',                   'label' => 'EWS Risiko',  'icon' => '🛡️'],
         ['route' => 'classes.schedules.index',         'aktif' => 'classes.schedules.*',             'label' => 'Jadwal',      'icon' => '🗓️'],
         ['route' => 'classes.character-portfolio.index','aktif' => 'classes.character-portfolio.*',  'label' => 'Karakter P5', 'icon' => '🌱'],
         ['route' => 'classes.violations.index',        'aktif' => 'classes.violations.*',            'label' => 'Pelanggaran', 'icon' => '⚠️'],
-        ['route' => 'classes.kerajinan.index',         'aktif' => 'classes.kerajinan.*',             'label' => 'Kerajinan',   'icon' => '🎖️'],
         ['route' => 'classes.cashbook.index',          'aktif' => 'classes.cashbook.*',              'label' => 'Buku Kas',    'icon' => '💰'],
         ['route' => 'classes.seating.index',           'aktif' => 'classes.seating.*',               'label' => 'Denah',       'icon' => '🪑'],
         ['route' => 'classes.organization.index',      'aktif' => 'classes.organization.*',          'label' => 'Struktur',    'icon' => '🏛️'],
@@ -21,11 +23,12 @@
         ['route' => 'classes.reports.full',            'aktif' => 'classes.reports.full',            'label' => 'Laporan PDF', 'icon' => '📄'],
     ];
 
-    // Modul Guru Mapel: Ringkasan, Siswa, Absensi Mapel, Nilai, Jurnal Mengajar, Analisis
+    // Modul Guru Mapel: Ringkasan, Siswa, Kartu QR, Absensi Mapel, Nilai, Jurnal Mengajar, Analisis
     if ($classroom && $classroom->kelasAjar()) {
         $hanyaMapel = [
             'classes.show',
             'classes.students.index',
+            'classes.students.qr-cards',
             'classes.attendance.index',
             'classes.nilai.index',
             'classes.jurnal.index',

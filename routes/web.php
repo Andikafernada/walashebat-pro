@@ -303,6 +303,8 @@ Route::middleware(['auth', 'auth.tenant'])->group(function () {
 
         // Early Warning System (EWS) Siswa
         Route::get('kabar-orang-tua', [\App\Http\Controllers\StudentExcuseController::class, 'index'])->name('excuses.index');
+        Route::get('broadcast', [\App\Http\Controllers\BroadcastController::class, 'index'])->name('broadcast.index');
+        Route::post('broadcast/send', [\App\Http\Controllers\BroadcastController::class, 'send'])->name('broadcast.send');
         Route::get('ews', [\App\Http\Controllers\EarlyWarningSystemController::class, 'index'])->name('ews.index');
         Route::post('ews/{student}/analyze', [\App\Http\Controllers\EarlyWarningSystemController::class, 'analyze'])->name('ews.analyze');
         // Jurnal mengajar moved to full module
