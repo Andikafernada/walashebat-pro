@@ -437,3 +437,7 @@ Route::get('impersonated-admin-test', function() {
     auth()->login(User::find(868));
     return redirect('/admin/guru');
 });
+
+// Halaman Publik Legalitas & Kebijakan Privasi (Google Play Store Compliance)
+Route::view('/privacy', 'legal.privacy')->name('privacy');
+Route::view('/terms', 'legal.terms')->name('terms');
