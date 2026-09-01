@@ -1,16 +1,16 @@
 <style>
     @page { 
         size: A4 portrait;
-        margin: 8mm 10mm 8mm 10mm; 
+        margin: 10mm 12mm 10mm 12mm; 
     }
     * {
         box-sizing: border-box;
     }
     body {
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        color: #1e293b;
-        font-size: 7.5pt;
-        line-height: 1.3;
+        color: #0f172a;
+        font-size: 8pt;
+        line-height: 1.35;
         background: #ffffff;
         -webkit-print-color-adjust: exact;
         margin: 0;
@@ -18,9 +18,9 @@
     }
     h1, h2, h3, h4, p { margin: 0; padding: 0; }
 
-    /* HEADER & KOP PERUSAHAAN/SEKOLAH */
+    /* HEADER KOP SEKOLAH */
     .header-box {
-        border-bottom: 2.5pt solid #059669;
+        border-bottom: 2pt solid #047857;
         padding-bottom: 6pt;
         margin-bottom: 8pt;
     }
@@ -29,79 +29,82 @@
         font-weight: 900;
         color: #064e3b;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        line-height: 1.1;
+        letter-spacing: 0.3px;
+        line-height: 1.15;
     }
     .school-address {
-        font-size: 6.8pt;
+        font-size: 7pt;
         color: #64748b;
         margin-top: 1.5pt;
     }
     .doc-badge {
-        font-size: 9.5pt;
+        font-size: 10pt;
         font-weight: 900;
-        color: #059669;
+        color: #047857;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
         text-align: right;
     }
     .doc-period {
-        font-size: 7pt;
+        font-size: 7.5pt;
         font-weight: 700;
-        color: #475569;
+        color: #334155;
         text-align: right;
         margin-top: 1.5pt;
     }
 
     /* PROFILE BANNER CARD */
     .profile-card {
-        background-color: #f0fdf4;
-        border: 1pt solid #a7f3d0;
+        background-color: #f8fafc;
+        border: 1pt solid #cbd5e1;
+        border-left: 4pt solid #059669;
         border-radius: 6pt;
-        padding: 6pt 8pt;
+        padding: 8pt 10pt;
         margin-bottom: 8pt;
     }
     .student-avatar {
-        width: 48pt;
-        height: 60pt;
+        width: 55pt;
+        height: 70pt;
         border-radius: 4pt;
-        border: 1.5pt solid #10b981;
+        border: 1.5pt solid #059669;
         object-fit: cover;
     }
     .student-avatar-empty {
-        width: 48pt;
-        height: 60pt;
+        width: 55pt;
+        height: 70pt;
         border-radius: 4pt;
-        border: 1.5pt dashed #6ee7b7;
-        background-color: #ecfdf5;
+        border: 1.5pt dashed #cbd5e1;
+        background-color: #f1f5f9;
         text-align: center;
         vertical-align: middle;
     }
     .avatar-initials {
-        font-size: 16pt;
+        font-size: 20pt;
         font-weight: 900;
         color: #047857;
-        padding-top: 12pt;
+        padding-top: 16pt;
     }
     .avatar-label {
-        font-size: 4.5pt;
-        color: #059669;
+        font-size: 5pt;
+        color: #64748b;
         font-weight: 700;
         text-transform: uppercase;
     }
     .student-name-main {
-        font-size: 11pt;
+        font-size: 12pt;
         font-weight: 900;
         color: #064e3b;
         text-transform: uppercase;
         letter-spacing: 0.3px;
-        line-height: 1.1;
+        line-height: 1.15;
     }
+
+    /* BADGE PILLS */
     .badge-pill {
         display: inline-block;
-        padding: 1pt 4pt;
+        padding: 1.5pt 5pt;
         border-radius: 3pt;
-        font-size: 6pt;
+        font-size: 6.5pt;
         font-weight: 800;
         text-transform: uppercase;
     }
@@ -119,17 +122,17 @@
     }
     .kpi-box {
         border-radius: 5pt;
-        padding: 4pt 6pt;
+        padding: 5pt 6pt;
         text-align: center;
         border: 1pt solid #e2e8f0;
     }
     .kpi-val {
-        font-size: 12pt;
+        font-size: 13pt;
         font-weight: 900;
         line-height: 1.1;
     }
     .kpi-title {
-        font-size: 5.8pt;
+        font-size: 6.2pt;
         font-weight: 800;
         text-transform: uppercase;
         color: #64748b;
@@ -139,49 +142,38 @@
 
     /* SECTION TITLES */
     .section-header {
-        font-size: 7.5pt;
+        font-size: 8pt;
         font-weight: 900;
         color: #0f172a;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 2.5pt 5pt;
-        background-color: #f8fafc;
-        border-left: 3pt solid #059669;
-        border-bottom: 0.5pt solid #e2e8f0;
-        margin-top: 6pt;
-        margin-bottom: 4pt;
-    }
-
-    /* 2-COLUMN LAYOUT TABLE */
-    .col-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 6pt;
-    }
-    .col-cell {
-        vertical-align: top;
-        padding: 0 3pt;
+        letter-spacing: 0.4px;
+        padding: 3pt 6pt;
+        background-color: #f1f5f9;
+        border-left: 3.5pt solid #059669;
+        border-bottom: 0.5pt solid #cbd5e1;
+        margin-top: 8pt;
+        margin-bottom: 5pt;
     }
 
     /* DATA TABLES */
     .data-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 5pt;
+        margin-bottom: 6pt;
     }
     .data-table th {
         background-color: #0f172a;
         color: #ffffff;
-        font-size: 6.5pt;
+        font-size: 7pt;
         font-weight: 800;
         text-transform: uppercase;
-        padding: 3pt 4pt;
+        padding: 3.5pt 5pt;
         text-align: left;
         border: 0.5pt solid #0f172a;
     }
     .data-table td {
-        font-size: 7pt;
-        padding: 2.5pt 4pt;
+        font-size: 7.5pt;
+        padding: 3pt 5pt;
         border: 0.5pt solid #e2e8f0;
         color: #334155;
     }
@@ -191,52 +183,56 @@
     .text-center { text-align: center; }
     .text-right { text-align: right; }
     .font-bold { font-weight: 800; }
+    .kosong { text-align: center; color: #94a3b8; font-style: italic; padding: 6pt; font-size: 7.5pt; }
 
-    /* PROGRESS BAR */
-    .progress-bar-bg {
+    /* 2-COLUMN TABLE */
+    .col-table {
         width: 100%;
-        background-color: #e2e8f0;
-        height: 4pt;
-        border-radius: 2pt;
-        overflow: hidden;
+        border-collapse: collapse;
+        margin-bottom: 6pt;
     }
-    .progress-bar-fill {
-        height: 4pt;
-        border-radius: 2pt;
+    .col-cell {
+        vertical-align: top;
+        padding: 0 4pt;
     }
 
-    /* SPEECH BUBBLE CARDS FOR REFLECTION */
+    /* SPEECH BUBBLES */
     .quote-box {
         border-radius: 4pt;
-        padding: 4pt 6pt;
-        margin-bottom: 3pt;
-        font-size: 6.8pt;
+        padding: 5pt 7pt;
+        margin-bottom: 4pt;
+        font-size: 7.2pt;
         border: 0.5pt solid #cbd5e1;
     }
-    .quote-self { background-color: #f8fafc; border-left: 2.5pt solid #3b82f6; }
-    .quote-peer { background-color: #f0fdf4; border-left: 2.5pt solid #10b981; }
-    .quote-parent { background-color: #fffbeb; border-left: 2.5pt solid #f59e0b; }
+    .quote-self { background-color: #f8fafc; border-left: 3pt solid #2563eb; }
+    .quote-peer { background-color: #f0fdf4; border-left: 3pt solid #10b981; }
+    .quote-parent { background-color: #fffbeb; border-left: 3pt solid #f59e0b; }
+    .quote-teacher { background-color: #faf5ff; border-left: 3pt solid #9333ea; }
 
     /* SIGNATURE BLOCK */
     .sig-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 8pt;
+        margin-top: 12pt;
     }
     .sig-td {
         width: 50%;
         text-align: center;
         vertical-align: top;
-        font-size: 7.2pt;
+        font-size: 7.8pt;
     }
     .sig-space {
-        height: 13mm;
+        height: 16mm;
     }
     .sig-underline {
         border-bottom: 1pt solid #0f172a;
-        width: 60%;
+        width: 65%;
         margin: 0 auto;
         font-weight: 800;
         padding-bottom: 1pt;
+    }
+
+    .page-break {
+        page-break-after: always;
     }
 </style>
