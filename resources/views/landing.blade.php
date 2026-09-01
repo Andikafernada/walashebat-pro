@@ -128,7 +128,7 @@
     <link rel="canonical" href="{{ $beranda }}">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#10b981">
+    <meta name="theme-color" content="#064e3b">
 
     <meta property="og:type" content="website">
     <meta property="og:locale" content="id_ID">
@@ -675,5 +675,17 @@
         </div>
     </footer>
 
+
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(function(reg) {
+            console.log('SW Registered:', reg.scope);
+        }).catch(function(err) {
+            console.warn('SW Error:', err);
+        });
+    });
+}
+</script>
 </body>
 </html>
